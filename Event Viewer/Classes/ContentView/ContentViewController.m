@@ -10,26 +10,72 @@
 #import "QueryViewController.h"
 
 
-@interface ContentViewController ()
+//Saved in the event future errors, removed for strange syntax (interface should be with...interface....)
+/*@interface ContentViewController ()
 
 @property (nonatomic, retain) UIPopoverController *popoverController;
 - (void)configureView;
 
-@end
+@end*/
+
 
 
 @implementation ContentViewController
 
+@synthesize toolbar, popoverController, detailItem, _detailDescriptionLabel;
+@synthesize queryData = _queryData;
 
-@synthesize toolbar, popoverController, detailItem, detailDescriptionLabel;
 
-
-
+/**
+ *  We may initiaize here, as the view is always loaded into memory
+ *
+ *  NOTE: Because the view is loaded from a .nib, initially viewDidLoad is called twice in succession
+ */
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    self.view.backgroundColor = [UIColor greenColor];
+    //create QueryData model
+    _queryData = [[QueryData alloc] initTestWithPanels:3];
+    
+    //create panelScrubber to navigate between panel overlays 
+    CGRect scrubberBarFrame = CGRectMake(0.0, 924.0, 768.0, 100.0);
+    UIView *scrubberBar = [[UIView alloc] initWithFrame:scrubberBarFrame];
+    scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];
+    scrubberBar.opaque = YES;
+    CGRect scrubberFrame = CGRectMake(100.0, 0.0, 568.0, 50.0);
+    _panelScrubber = [[UISlider alloc] initWithFrame:scrubberFrame];
+    [_panelScrubber addTarget:self action:@selector(scrubberMoved:) forControlEvents:UIControlEventValueChanged];
+    [_panelScrubber addTarget:self action:@selector(scrubberStopped:) forControlEvents:UIControlEventTouchUpInside];
+    UIImage* trackImage = [UIImage imageNamed:@"scrubber.png"];
+    UIImage* useableTrackImage = [trackImage stretchableImageWithLeftCapWidth:5 topCapHeight:0];
+    [_panelScrubber setMinimumTrackImage:useableTrackImage forState:UIControlStateNormal];
+    [_panelScrubber setMaximumTrackImage:useableTrackImage forState:UIControlStateNormal];
+    _panelScrubber.opaque = YES;
+    _panelScrubber.continuous = YES;
+    _panelScrubber.maximumValue = 3.0;
+    _panelScrubber.minimumValue = 0.0;
+    _panelScrubber.value = 2.0;
+    [scrubberBar addSubview:_panelScrubber];
+    [self.view addSubview:scrubberBar];
+    
+    _detailDescriptionLabel.text = [NSString stringWithFormat:@"Should be 3: %d", _queryData.panelNum];
+}
+
+
+#pragma mark -
+#pragma mark Panel Scrubber Control
+
+- (void)scrubberMoved:(id)sender
+{
+    int roundVal = roundf((float)_panelScrubber.value);
+    _detailDescriptionLabel.text = [NSString stringWithFormat:@"Selected value: %d", roundVal];
+}
+
+- (void)scrubberStopped:(id)sender
+{
+    int roundVal = roundf((float)_panelScrubber.value);
+    [_panelScrubber setValue:(float)roundVal animated:YES];
 }
 
 
@@ -57,7 +103,7 @@
 - (void)configureView
 {
     // Update the user interface for the detail item.
-    detailDescriptionLabel.text = [detailItem description];
+    _detailDescriptionLabel.text = [detailItem description];
 	toggleItem.title = ([splitController isShowingMaster]) ? @"Hide Master" : @"Show Master"; // "I... AM... THE MASTER!" Derek Jacobi. Gave me chills.
 	verticalItem.title = (splitController.vertical) ? @"Horizontal Split" : @"Vertical Split";
 	dividerStyleItem.title = (splitController.dividerStyle == MGSplitViewDividerStyleThin) ? @"Enable Dragging" : @"Disable Dragging";
@@ -187,7 +233,7 @@
     [toolbar release];
     
     [detailItem release];
-    [detailDescriptionLabel release];
+    [_detailDescriptionLabel release];
     [super dealloc];
 }
 

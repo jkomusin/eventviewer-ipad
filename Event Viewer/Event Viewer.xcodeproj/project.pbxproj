@@ -19,6 +19,8 @@
 		849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA98B1450F78000F93059 /* MGSplitViewController.m */; };
 		849AA9911450F78900F93059 /* ContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9901450F78900F93059 /* ContentViewController.m */; };
 		849AA9941450F78F00F93059 /* QueryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9931450F78F00F93059 /* QueryViewController.m */; };
+		84BA23871452088B009566D9 /* scrubber.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BA23861452088A009566D9 /* scrubber.png */; };
+		84E626651451FC58007DDF98 /* QueryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 84E626641451FC58007DDF98 /* QueryData.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +44,9 @@
 		849AA9901450F78900F93059 /* ContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContentViewController.m; path = ContentView/ContentViewController.m; sourceTree = "<group>"; };
 		849AA9921450F78F00F93059 /* QueryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryViewController.h; path = QueryView/QueryViewController.h; sourceTree = "<group>"; };
 		849AA9931450F78F00F93059 /* QueryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryViewController.m; path = QueryView/QueryViewController.m; sourceTree = "<group>"; };
+		84BA23861452088A009566D9 /* scrubber.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scrubber.png; path = Images/scrubber.png; sourceTree = "<group>"; };
+		84E626631451FC58007DDF98 /* QueryData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryData.h; path = Model/QueryData.h; sourceTree = "<group>"; };
+		84E626641451FC58007DDF98 /* QueryData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryData.m; path = Model/QueryData.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Event Viewer-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Event Viewer-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		C9CDF7A211FDA7890016C1C5 /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -67,6 +72,7 @@
 				1D3623250D0F684500981E51 /* AppDelegate.m */,
 				84DD27AD1450F7C000E15113 /* QueryView */,
 				84DD27AF1450F7CA00E15113 /* ContentView */,
+				84E626611451FC26007DDF98 /* Model */,
 				C9CDF79E11FDA7140016C1C5 /* MGSplitViewController */,
 			);
 			path = Classes;
@@ -105,6 +111,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				84BA23811452071E009566D9 /* Images */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
 				2804203B108E9BAB000629CD /* DetailView.xib */,
 				8D1107310486CEB800E47090 /* Event Viewer-Info.plist */,
@@ -120,6 +127,14 @@
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		84BA23811452071E009566D9 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				84BA23861452088A009566D9 /* scrubber.png */,
+			);
+			name = Images;
 			sourceTree = "<group>";
 		};
 		84DD27AD1450F7C000E15113 /* QueryView */ = {
@@ -138,6 +153,15 @@
 				849AA9901450F78900F93059 /* ContentViewController.m */,
 			);
 			name = ContentView;
+			sourceTree = "<group>";
+		};
+		84E626611451FC26007DDF98 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				84E626631451FC58007DDF98 /* QueryData.h */,
+				84E626641451FC58007DDF98 /* QueryData.m */,
+			);
+			name = Model;
 			sourceTree = "<group>";
 		};
 		C9CDF79E11FDA7140016C1C5 /* MGSplitViewController */ = {
@@ -208,6 +232,7 @@
 			files = (
 				28AD73600D9D9599002E5188 /* MainWindow.xib in Resources */,
 				2804203C108E9BAB000629CD /* DetailView.xib in Resources */,
+				84BA23871452088B009566D9 /* scrubber.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,6 +250,7 @@
 				849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */,
 				849AA9911450F78900F93059 /* ContentViewController.m in Sources */,
 				849AA9941450F78F00F93059 /* QueryViewController.m in Sources */,
+				84E626651451FC58007DDF98 /* QueryData.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

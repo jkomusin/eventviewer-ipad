@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MGSplitViewController.h"
+#import "QueryData.h"
 
 @interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate> {
 	IBOutlet MGSplitViewController *splitController;
@@ -19,13 +20,19 @@
     UIToolbar *toolbar;
     
     id detailItem;
-    UILabel *detailDescriptionLabel;
+    UILabel *_detailDescriptionLabel;
+    
+    UISlider *_panelScrubber;
+    UIScrollView *_contentScrollView;
 }
 
 @property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, retain) id detailItem;
-@property (nonatomic, retain) IBOutlet UILabel *detailDescriptionLabel;
+@property (nonatomic, retain) IBOutlet UILabel *_detailDescriptionLabel;
+@property (nonatomic, retain) UIPopoverController *popoverController;
+@property (nonatomic, retain) QueryData *queryData;
 
+- (void)configureView;
 - (IBAction)toggleMasterView:(id)sender;
 - (IBAction)toggleVertical:(id)sender;
 - (IBAction)toggleDividerStyle:(id)sender;
