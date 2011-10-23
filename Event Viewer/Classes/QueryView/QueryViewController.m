@@ -1,13 +1,5 @@
-//
-//  RootViewController.m
-//  MGSplitView
-//
-//  Created by Matt Gemmell on 26/07/2010.
-//  Copyright Instinctive Code 2010.
-//
 
 #import "QueryViewController.h"
-#import "ContentViewController.h"
 
 
 @implementation QueryViewController
@@ -70,7 +62,7 @@
     // Dequeue or create a cell of the appropriate type.
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         cell.accessoryType = UITableViewCellAccessoryNone;
     }
     
@@ -87,7 +79,11 @@
 - (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
 	// When a row is selected, set the detail view controller's detail item to the item associated with the selected row.
-    detailViewController.detailItem = [NSString stringWithFormat:@"Row %d", indexPath.row];
+//    detailViewController.detailItem = [NSString stringWithFormat:@"Row %d", indexPath.row];
+    
+    //when selected, create number of test panels and update view
+    QueryData *newData = [[QueryData alloc] initTestWithPanels:indexPath.row];
+    detailViewController.queryData = newData;
 }
 
 
@@ -95,11 +91,6 @@
 #pragma mark Memory management
 
 
-- (void)dealloc
-{
-    [detailViewController release];
-    [super dealloc];
-}
 
 
 @end

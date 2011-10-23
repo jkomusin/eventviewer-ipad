@@ -1,14 +1,9 @@
-//
-//  DetailViewController.h
-//  MGSplitView
-//
-//  Created by Matt Gemmell on 26/07/2010.
-//  Copyright Instinctive Code 2010.
-//
 
 #import <UIKit/UIKit.h>
 #import "MGSplitViewController.h"
+#import "QueryViewController.h"
 #import "QueryData.h"
+#import "ContentScrollView.h"
 
 @interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate> {
 	IBOutlet MGSplitViewController *splitController;
@@ -23,16 +18,14 @@
     UILabel *_detailDescriptionLabel;
     
     UISlider *_panelScrubber;
-    UIScrollView *_contentScrollView;
+    ContentScrollView *_contentScrollView;
 }
 
-@property (nonatomic, retain) IBOutlet UIToolbar *toolbar;
-@property (nonatomic, retain) id detailItem;
-@property (nonatomic, retain) IBOutlet UILabel *_detailDescriptionLabel;
-@property (nonatomic, retain) UIPopoverController *popoverController;
-@property (nonatomic, retain) QueryData *queryData;
+@property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
+@property (nonatomic, strong) id detailItem;
+@property (nonatomic, strong) IBOutlet UILabel *_detailDescriptionLabel;
+@property (nonatomic, copy) QueryData *queryData;
 
-- (void)configureView;
 - (IBAction)toggleMasterView:(id)sender;
 - (IBAction)toggleVertical:(id)sender;
 - (IBAction)toggleDividerStyle:(id)sender;

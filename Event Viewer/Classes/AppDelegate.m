@@ -1,15 +1,5 @@
-//
-//  MGSplitViewAppDelegate.m
-//  MGSplitView
-//
-//  Created by Matt Gemmell on 26/07/2010.
-//  Copyright Instinctive Code 2010.
-//
 
 #import "AppDelegate.h"
-#import "QueryViewController.h"
-#import "ContentViewController.h"
-#import "MGSplitViewController.h"
 
 @implementation AppDelegate
 
@@ -35,13 +25,6 @@
 }
 
 
-- (void)dealloc
-{
-    [splitViewController release];
-    [window release];
-	
-    [super dealloc];
-}
 
 
 @end

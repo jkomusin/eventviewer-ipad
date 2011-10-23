@@ -1,10 +1,3 @@
-//
-//  EventModel.m
-//  Event Viewer
-//
-//  Created by admin on 10/21/11.
-//  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
-//
 
 #import "QueryData.h"
 
@@ -29,6 +22,7 @@
         [mutableMetas setObject:bandArray forKey:@"Bands"];
         
         _selectedMetas = mutableMetas;        
+        _panelNum = 0;
     }
     
     return self;
@@ -53,6 +47,14 @@
     }
 
     return self;
+}
+
+- (id) copyWithZone:(NSZone *)zone
+{
+    QueryData *copy = [[QueryData alloc] init];
+    copy.selectedMetas = [_selectedMetas copyWithZone:zone];
+    copy.panelNum = _panelNum;
+    return copy;
 }
 
 
