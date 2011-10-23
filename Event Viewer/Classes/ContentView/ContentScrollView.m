@@ -19,6 +19,7 @@
         _currentPanel = -1;
     }
     
+    self.opaque = YES;
     return self;
 }
 
@@ -40,6 +41,7 @@
     NSLog(@"Removing panel!");
     
     NSMutableArray *mutablePanels = [_panelViews mutableCopy];
+    [[mutablePanels lastObject] removeFromSuperview];
     [mutablePanels removeLastObject];
     _panelViews = mutablePanels; 
 }
@@ -57,6 +59,7 @@
     
     PanelView *newPan = [_panelViews objectAtIndex:panelNum];
     [newPan unHide];
+    _currentPanel = panelNum;
 }
 
 /*

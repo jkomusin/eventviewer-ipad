@@ -38,7 +38,10 @@
         
         _stackViews = mutableStacks;
         
-        self.backgroundColor = [UIColor redColor];
+        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
+        self.backgroundColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
         self.opaque = YES;
         self.hidden = YES;
     }
@@ -48,6 +51,7 @@
 
 - (void)unHide
 {
+    NSLog(@"Showing panel");
     if (!self.hidden)
         return;
     self.hidden = NO;
@@ -59,6 +63,7 @@
 
 - (void)hide
 {
+    NSLog(@"Hiding panel");
     if (self.hidden)
         return;
     self.hidden = YES;

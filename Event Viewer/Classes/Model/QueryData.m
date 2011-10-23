@@ -52,7 +52,7 @@
 - (id) copyWithZone:(NSZone *)zone
 {
     QueryData *copy = [[QueryData alloc] init];
-    copy.selectedMetas = [_selectedMetas copyWithZone:zone];
+    copy.selectedMetas = [_selectedMetas copy];
     copy.panelNum = _panelNum;
     return copy;
 }
