@@ -15,8 +15,11 @@
     NSArray *_stackViews;    //all StackViews managed by the panel
 }
 
+@property (nonatomic, assign) BOOL isStatic;    //whether or not panel is currently overlayed
+
 - (id)initWithStacks:(int)stackNum Bands:(int)bandNum;
 - (void)unHide;
 - (void)hide;
+- (void)toggleOverlay;
 
 @end

@@ -23,5 +23,6 @@
 - (void)addPanelWithStacks:(int)stackNum Bands:(int)bandNum;
 - (void)removePanel;
 - (void)switchToPanel:(int)panelNum;
+- (void)toggleOverlayPanel:(int)panelNum isVisible:(BOOL)isVisible;
 
 @end

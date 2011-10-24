@@ -33,8 +33,9 @@
     //create panelScrubber to navigate between panel overlays 
     CGRect scrubberBarFrame = CGRectMake(0.0, 924.0, 768.0, 100.0);
     UIView *scrubberBar = [[UIView alloc] initWithFrame:scrubberBarFrame];
-    scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];
-    scrubberBar.opaque = YES;
+    _scrubberBar = scrubberBar;
+    _scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];
+    _scrubberBar.opaque = YES;
     CGRect scrubberFrame = CGRectMake(100.0, 0.0, 568.0, 50.0);
     UISlider *pscrub = [[UISlider alloc] initWithFrame:scrubberFrame];
     _panelScrubber = pscrub;
@@ -49,8 +50,12 @@
     _panelScrubber.maximumValue = (float)_queryData.panelNum;
     _panelScrubber.minimumValue = 0.0;
     _panelScrubber.value = 0.0;
-    [scrubberBar addSubview:_panelScrubber];
-    [self.view addSubview:scrubberBar];
+    [_scrubberBar addSubview:_panelScrubber];
+    [self.view addSubview:_scrubberBar];
+    
+    //initialize empty button array
+    NSArray *tmp = [[NSArray alloc] init];
+    _scrubberButtons = tmp;
     
     //create scroll view for content
     CGRect csvFrame = CGRectMake(0.0, 44.0, 768.0, 880.0);
@@ -93,12 +98,41 @@
     //updated scrubber
     _panelScrubber.maximumValue = (_queryData.panelNum > 0 ? (float)_queryData.panelNum - 1 : 0);
     if (_panelScrubber.value > _panelScrubber.maximumValue)
+    {   //set value to max if over max
         _panelScrubber.value = _panelScrubber.maximumValue;
+    }
+    if (_scrubberButtons.count != 0)    //remove old buttons
+    {
+        for (UIButton *b in _scrubberButtons)
+        {
+            [b removeFromSuperview];
+        }
+    }
+    UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
+    UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
+    NSMutableArray *butts = [[NSMutableArray alloc] init]; 
+    for (int i = 0; i < _queryData.panelNum; i++)
+    {   //create check boxes
+        CGRect frame = CGRectMake(90.0+(568.0/(_queryData.panelNum-1))*i, 
+                                  50.0, 
+                                  20.0, 
+                                  20.0);
+        UIButton *newb = [[UIButton alloc] initWithFrame:frame];
+        newb.opaque = YES;
+        [newb setBackgroundImage:inactiveImg forState:UIControlStateNormal];
+        [newb setBackgroundImage:activeImg forState:UIControlStateHighlighted];
+        newb.tag = i;
+        //indicate button is initially disabled (Green == disabled, Red == enabled)
+        [newb setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
+        [newb addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
+        [butts addObject:newb];
+        [_scrubberBar addSubview:newb];
+    }
+    _scrubberButtons = butts;
     //show appropriate view
     int roundVal = roundf((float)_panelScrubber.value);
     [_contentScrollView switchToPanel:roundVal];
     NSLog(@"Switching to panel %d", roundVal);
-    
 }
 
 
@@ -120,6 +154,26 @@
     //show appropriate view
     [_contentScrollView switchToPanel:roundVal];
     NSLog(@"Switching to panel %d", roundVal);
+}
+
+- (void)buttonPressed:(id)sender
+{
+    UIButton *b = (UIButton *)sender;
+    if ([b titleColorForState:UIControlStateNormal] == [UIColor greenColor])    //disabled
+    {
+        UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
+        [b setBackgroundImage:activeImg forState:UIControlStateNormal];
+        [b setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+    }
+    else    //enabled
+    {
+        UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
+        [b setBackgroundImage:inactiveImg forState:UIControlStateNormal];
+        [b setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
+    }
+    //toggle panel as overlay
+    BOOL isVis = (b.tag == roundf((float)_panelScrubber.value) ? YES : NO);
+    [_contentScrollView toggleOverlayPanel:b.tag isVisible:isVis];
 }
 
 

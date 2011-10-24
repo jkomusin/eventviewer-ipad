@@ -10,9 +10,14 @@
 #import "ContentScrollView.h"
 
 @interface BandView : UIView
+{
+    BOOL _isStatic;     //whether or not band is overlayed
+    UIColor *_color;    //color of events
+}
 
-- (id)initWithBandNum:(int)bandNum;
+- (id)initWithBandNum:(int)bandNum OfColor:(UIColor *)color;
 - (void)unHide;
 - (void)hide;
+- (void)toggleOverlay;
 
 @end

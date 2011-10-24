@@ -10,6 +10,8 @@
 
 @implementation PanelView
 
+@synthesize isStatic = _isStatic;
+
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) 
@@ -29,21 +31,24 @@
     {
         NSMutableArray *mutableStacks = [[NSMutableArray alloc] init];
         
+        //determine color of bands
+        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
+        UIColor *bandColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
         for (int i = 0; i < stackNum; i++)
         {
-            StackView *newStack = [[StackView alloc] initWithStackNum:i OutOf:stackNum WithBands:bandNum];
+            StackView *newStack = [[StackView alloc] initWithStackNum:i OutOf:stackNum WithBands:bandNum OfColor:bandColor];
             [self addSubview:newStack];
             [mutableStacks addObject:newStack];
         }
         
         _stackViews = mutableStacks;
         
-        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
-        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
-        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
-        self.backgroundColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
+        self.backgroundColor = [UIColor whiteColor];
         self.opaque = YES;
         self.hidden = YES;
+        self.isStatic = NO;
     }
     
     return self;
@@ -51,9 +56,9 @@
 
 - (void)unHide
 {
-    NSLog(@"Showing panel");
-    if (!self.hidden)
+    if (_isStatic || !self.hidden)
         return;
+    NSLog(@"Showing panel");
     self.hidden = NO;
     for (StackView *s in _stackViews) 
     {
@@ -63,9 +68,9 @@
 
 - (void)hide
 {
-    NSLog(@"Hiding panel");
-    if (self.hidden)
+    if (_isStatic || self.hidden)
         return;
+    NSLog(@"Hiding panel");
     self.hidden = YES;
     for (StackView *s in _stackViews) 
     {
@@ -73,19 +78,39 @@
     }
 }
 
-- (void)drawRect:(CGRect)rect {
-	/* Set UIView Border */
-	// Get the contextRef
-	CGContextRef contextRef = UIGraphicsGetCurrentContext();
-    
-	// Set the border width
-	CGContextSetLineWidth(contextRef, 1.0);
-    
-	// Set the border color to RED
-	CGContextSetRGBStrokeColor(contextRef, 0.0, 0.0, 0.0, 1.0);
-    
-	// Draw the border along the view edge
-	CGContextStrokeRect(contextRef, rect);
+- (void)toggleOverlay
+{
+    if (!_isStatic)
+    {
+        NSLog(@"Making panel overlay");
+        _isStatic = YES;
+        self.backgroundColor = [UIColor clearColor];
+        self.opaque = NO;
+        for (StackView *s in _stackViews)
+        {
+            [s toggleOverlay];
+        }
+    }
+    else
+    {
+        NSLog(@"Unoverlaying panel");
+        _isStatic = NO;
+        self.backgroundColor = [UIColor whiteColor];
+        self.opaque = YES;
+        for (StackView *s in _stackViews)
+        {
+            [s toggleOverlay];
+        }
+    }
+}
+
+- (void)drawRect:(CGRect)rect 
+{
+	//create 1px black border
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	CGContextSetLineWidth(context, 1.0);
+    [[UIColor blackColor] set];
+	CGContextStrokeRect(context, rect);
 }
 
 @end

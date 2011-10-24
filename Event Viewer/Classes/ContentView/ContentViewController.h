@@ -18,6 +18,8 @@
     UILabel *_detailDescriptionLabel;
     
     UISlider *_panelScrubber;
+    UIView *_scrubberBar;
+    NSArray *_scrubberButtons;
     ContentScrollView *_contentScrollView;
 }
 

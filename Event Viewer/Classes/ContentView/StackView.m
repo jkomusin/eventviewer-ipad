@@ -19,7 +19,7 @@
     return self;
 }
 
-- (id)initWithStackNum:(int)stackNum OutOf:(int)stacks WithBands:(int)bandNum
+- (id)initWithStackNum:(int)stackNum OutOf:(int)stacks WithBands:(int)bandNum OfColor:(UIColor *)color
 {
     float height = (bandNum * (BAND_HEIGHT_P + 16.0) + 16.0);
     CGRect frame = CGRectMake((768.0 - BAND_WIDTH_P)/4, 
@@ -28,20 +28,23 @@
                               height);
     if ((self = [super initWithFrame:frame]))
     {
-        NSMutableArray *mutableBands = [[NSMutableArray alloc] init];
+//        NSMutableArray *mutableBands = [[NSMutableArray alloc] init];
+//        
+//        for (int i = 0; i < bandNum; i++)
+//        {
+//            BandView *newBand = [[BandView alloc] initWithBandNum:i OfColor:color];
+//            [self addSubview:newBand];
+//            [mutableBands addObject:newBand];
+//        }
+//        
+//        _bandViews = mutableBands;
         
-        for (int i = 0; i < bandNum; i++)
-        {
-            BandView *newBand = [[BandView alloc] initWithBandNum:i];
-            [self addSubview:newBand];
-            [mutableBands addObject:newBand];
-        }
-        
-        _bandViews = mutableBands;
-        
-        self.backgroundColor = [UIColor greenColor];
+        self.backgroundColor = [UIColor whiteColor];
         self.opaque = YES;
         self.hidden = YES;
+        _isStatic = NO;
+        _bandNum = bandNum;
+        _eventColor = color;
     }
     
     return self;
@@ -69,19 +72,66 @@
     }
 }
 
-- (void)drawRect:(CGRect)rect {
-	/* Set UIView Border */
-	// Get the contextRef
-	CGContextRef contextRef = UIGraphicsGetCurrentContext();
+- (void)toggleOverlay
+{
+    if (!_isStatic)
+    {
+        _isStatic = YES;
+        self.backgroundColor = [UIColor clearColor];
+        self.opaque = NO;
+        for (BandView *b in _bandViews)
+        {
+            [b toggleOverlay];
+        }
+    }
+    else
+    {
+        _isStatic = NO;
+        self.backgroundColor = [UIColor whiteColor];
+        self.opaque = YES;
+        for (BandView *b in _bandViews)
+        {
+            [b toggleOverlay];
+        }
+    }
+}
+
+- (void)drawRect:(CGRect)rect 
+{
+	//create 1px black border
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	CGContextSetLineWidth(context, 1.0);
+    [[UIColor blackColor] set];
+	CGContextStrokeRect(context, rect);
     
-	// Set the border width
-	CGContextSetLineWidth(contextRef, 1.0);
+    float bandX = (768.0 - BAND_WIDTH_P)/4;
+    //draw bands
+    for (int i = 0; i < _bandNum; i++)
+    {
+        CGRect frame = CGRectMake(bandX, 
+                                  16.0 + (BAND_HEIGHT_P + 16.0)*i, 
+                                  BAND_WIDTH_P, 
+                                  BAND_HEIGHT_P);
+        CGContextStrokeRect(context, frame);
+    }
     
-	// Set the border color to RED
-	CGContextSetRGBStrokeColor(contextRef, 0.0, 0.0, 0.0, 1.0);
-    
-	// Draw the border along the view edge
-	CGContextStrokeRect(contextRef, rect);
+    //draw events
+    [_eventColor set];
+    for (int j = 0; j < _bandNum; j++)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            float x = arc4random() % (int)BAND_WIDTH_P;
+            float width = 25.0;
+            //fix erroneous widths
+            if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
+            CGRect eRect = CGRectMake(bandX + x, 
+                                      16.0 + (BAND_HEIGHT_P + 16.0)*j, 
+                                      width, 
+                                      BAND_HEIGHT_P);
+            CGContextFillRect(context, eRect);
+        }
+    }
 }
 
 @end

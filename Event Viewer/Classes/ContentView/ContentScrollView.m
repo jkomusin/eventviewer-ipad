@@ -54,12 +54,31 @@
     if (_currentPanel >= 0)
     {
         PanelView *oldPan = [_panelViews objectAtIndex:_currentPanel];
-        [oldPan hide];
+        if (!oldPan.isStatic)
+            [oldPan hide];
     }
     
     PanelView *newPan = [_panelViews objectAtIndex:panelNum];
     [newPan unHide];
     _currentPanel = panelNum;
+}
+
+- (void)toggleOverlayPanel:(int)panelNum isVisible:(BOOL)isVisible
+{
+    PanelView *p = [_panelViews objectAtIndex:panelNum];
+    if (!p.isStatic)
+    {    
+        if (!isVisible)
+            [p unHide];
+        [self bringSubviewToFront:p];
+        [p toggleOverlay];
+    }
+    else
+    {
+        [p toggleOverlay];
+        if (!isVisible)
+            [p hide];
+    }
 }
 
 /*
