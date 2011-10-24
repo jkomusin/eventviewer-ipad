@@ -5,6 +5,9 @@
 #import "QueryData.h"
 #import "ContentScrollView.h"
 
+#define TEST_STACKS 4
+#define TEST_BANDS 5
+
 @interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate> {
 	IBOutlet MGSplitViewController *splitController;
 	IBOutlet UIBarButtonItem *toggleItem;

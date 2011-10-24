@@ -83,7 +83,7 @@
         //add new panels
         for (int i = 0; i < _queryData.panelNum - oldValue.panelNum; i++)
         {
-            [_contentScrollView addPanelWithStacks:3 Bands:4];
+            [_contentScrollView addPanelWithStacks:TEST_STACKS Bands:TEST_BANDS];
         }
     }
     else if (_queryData.panelNum < oldValue.panelNum)
