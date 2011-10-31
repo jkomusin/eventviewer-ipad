@@ -75,12 +75,11 @@
 #pragma mark -
 #pragma mark Table view delegate
 
-
+/**
+ *  Fired when a row is selected in the query table
+ */
 - (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-	// When a row is selected, set the detail view controller's detail item to the item associated with the selected row.
-//    detailViewController.detailItem = [NSString stringWithFormat:@"Row %d", indexPath.row];
-    
     //when selected, create number of test panels and update view
     QueryData *newData = [[QueryData alloc] initTestWithPanels:indexPath.row];
     detailViewController.queryData = newData;

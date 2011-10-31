@@ -19,6 +19,15 @@
     return self;
 }
 
+/**
+ *  Overridden initializer to create the stack with a specified number of bands.
+ *  Does not require a frame parameter, because the size and location of the stack is always based on the number of bands and the number stack being drawn.
+ *
+ *  stackNum is the index of the stack (0-indexed)
+ *  stacks is the total number of stacks
+ *  bandNum is the total number of bands per stacl
+ *  color is the color the events should be drawn in
+ */
 - (id)initWithStackNum:(int)stackNum OutOf:(int)stacks WithBands:(int)bandNum OfColor:(UIColor *)color
 {
     float height = (bandNum * (BAND_HEIGHT_P + 16.0) + 16.0);
@@ -50,6 +59,9 @@
     return self;
 }
 
+/**
+ *  Unhides the stack and all of its related components, unless the panel is currently statically overlaid.
+ */
 - (void)unHide
 {
     if (!self.hidden)
@@ -61,6 +73,9 @@
     }
 }
 
+/**
+ *  Hides the stack and all of its related components, unless the panel is currently statically overlaid.
+ */
 - (void)hide
 {
     if (self.hidden)
@@ -72,6 +87,9 @@
     }
 }
 
+/**
+ *  Toggles the stack and all of its related components to become transparent and overlay on top of all other currently displayed components.
+ */
 - (void)toggleOverlay
 {
     if (!_isStatic)
@@ -96,6 +114,9 @@
     }
 }
 
+/**
+ *  Draw all events in the stack in their respectve places
+ */
 - (void)drawRect:(CGRect)rect 
 {
 	//create 1px black border

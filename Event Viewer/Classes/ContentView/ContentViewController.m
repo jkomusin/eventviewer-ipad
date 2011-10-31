@@ -47,7 +47,7 @@
     [_panelScrubber setMaximumTrackImage:useableTrackImage forState:UIControlStateNormal];
     _panelScrubber.opaque = YES;
     _panelScrubber.continuous = YES;
-    _panelScrubber.maximumValue = (float)_queryData.panelNum;
+    _panelScrubber.maximumValue = 0.0;
     _panelScrubber.minimumValue = 0.0;
     _panelScrubber.value = 0.0;
     [_scrubberBar addSubview:_panelScrubber];
@@ -68,35 +68,45 @@
 #pragma mark -
 #pragma mark QueryData
 
+/**
+ *  Overridden setter for the static query data model, so that necessary updates may be performed when a new query is created.
+ *  Implements the 'copy' property descriptor for thread-safety.
+ *
+ *  queryData is the new data model object
+ */
 - (void)setQueryData:(QueryData *)queryData
 {
+    // Copy protocol
     if (_queryData == queryData)
     {
         return;
     }
     QueryData *oldValue = _queryData;
     _queryData = [queryData copy];
+    ///////
     
     //update display with new data
-    if (_queryData.panelNum > oldValue.panelNum)
+    int newPanelNum = [(NSArray *)[_queryData.selectedMetas objectForKey:@"Panels"] count];
+    int oldPanelNum = [(NSArray *)[oldValue.selectedMetas objectForKey:@"Panels"] count];
+    if (newPanelNum > oldPanelNum)
     {
         //add new panels
-        for (int i = 0; i < _queryData.panelNum - oldValue.panelNum; i++)
+        for (int i = 0; i < newPanelNum - oldPanelNum; i++)
         {
             [_contentScrollView addPanelWithStacks:TEST_STACKS Bands:TEST_BANDS];
         }
     }
-    else if (_queryData.panelNum < oldValue.panelNum)
+    else if (newPanelNum < oldPanelNum)
     {
         //remove excess panels
-        for (int i = 0; i < oldValue.panelNum - _queryData.panelNum; i++)
+        for (int i = 0; i < oldPanelNum - newPanelNum; i++)
         {
             [_contentScrollView removePanel];
         }
     }
     
     //updated scrubber
-    _panelScrubber.maximumValue = (_queryData.panelNum > 0 ? (float)_queryData.panelNum - 1 : 0);
+    _panelScrubber.maximumValue = (newPanelNum > 0 ? (float)newPanelNum - 1 : 0);
     if (_panelScrubber.value > _panelScrubber.maximumValue)
     {   //set value to max if over max
         _panelScrubber.value = _panelScrubber.maximumValue;
@@ -111,9 +121,9 @@
     UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
     UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
     NSMutableArray *butts = [[NSMutableArray alloc] init]; 
-    for (int i = 0; i < _queryData.panelNum; i++)
+    for (int i = 0; i < newPanelNum; i++)
     {   //create check boxes
-        CGRect frame = CGRectMake(90.0+(568.0/(_queryData.panelNum-1))*i, 
+        CGRect frame = CGRectMake(90.0+(568.0/(newPanelNum-1))*i, 
                                   50.0, 
                                   20.0, 
                                   20.0);
@@ -139,44 +149,66 @@
 #pragma mark -
 #pragma mark Panel Scrubber Control
 
+/**
+ *  Event fired every time the scrubber is moved and changes value.
+ *  Should switch to a new panel only when there is a new value.
+ *
+ *  sender is the scrubber UISlider object
+ */
 - (void)scrubberMoved:(id)sender
 {
-    //show appropriate view
     int roundVal = roundf((float)_panelScrubber.value);
-    [_contentScrollView switchToPanel:roundVal];
-    NSLog(@"Switching to panel %d", roundVal);
+    if (_contentScrollView.currentPanel != roundVal)
+    {
+        [_contentScrollView switchToPanel:roundVal];
+        NSLog(@"Switching to panel %d", roundVal);
+    }
 }
 
+/**
+ *  Event fired when the scrubber is released.
+ *  Snaps the slider back to the nearest whole value, as the UISlider's value is internally a float.
+ *  Never needs to update which panel is displayed, as the rouded value was calculated and updated when the slider changed to that value.
+ *
+ *  sender is the scrubber UISlider object
+ */
 - (void)scrubberStopped:(id)sender
 {
     int roundVal = roundf((float)_panelScrubber.value);
     [_panelScrubber setValue:(float)roundVal animated:YES];
-    //show appropriate view
-    [_contentScrollView switchToPanel:roundVal];
-    NSLog(@"Switching to panel %d", roundVal);
 }
 
+/**
+ *  Event fired when a button to select a panel as statically overlaid is pressed.
+ *
+ *  sender is the button being pressed, which has the following properties set:
+ *      'tag' property of the index of the panel it is associated with
+ *      'titleColorForState:UIControlStateNormal' is the state of the button.
+ *          [UIColor greenColor] indicates that it was disabled before the press
+ *          [UIColor redColor] indicates the opposite
+ */
 - (void)buttonPressed:(id)sender
 {
     UIButton *b = (UIButton *)sender;
-    if ([b titleColorForState:UIControlStateNormal] == [UIColor greenColor])    //disabled
+    if ([b titleColorForState:UIControlStateNormal] == [UIColor greenColor])
     {
         UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
         [b setBackgroundImage:activeImg forState:UIControlStateNormal];
         [b setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
     }
-    else    //enabled
+    else
     {
         UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
         [b setBackgroundImage:inactiveImg forState:UIControlStateNormal];
         [b setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
     }
-    //toggle panel as overlay
-    BOOL isVis = (b.tag == roundf((float)_panelScrubber.value) ? YES : NO);
-    [_contentScrollView toggleOverlayPanel:b.tag isVisible:isVis];
+
+    [_contentScrollView toggleOverlayPanel:b.tag];
 }
 
 
+
+// MGUISplitViewController functions
 #pragma mark -
 #pragma mark Managing the detail item
 

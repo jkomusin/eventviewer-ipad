@@ -12,10 +12,10 @@
 
 @interface PanelView : UIView
 {
-    NSArray *_stackViews;    //all StackViews managed by the panel
+    NSArray *_stackViews;    // Static array of all StackViews managed by the panel
 }
 
-@property (nonatomic, assign) BOOL isStatic;    //whether or not panel is currently overlayed
+@property (nonatomic, assign) BOOL isStatic;    // YES if panel is currently overlaid, NO otherwise
 
 - (id)initWithStacks:(int)stackNum Bands:(int)bandNum;
 - (void)unHide;

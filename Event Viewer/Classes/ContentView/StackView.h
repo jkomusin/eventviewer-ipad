@@ -12,10 +12,10 @@
 
 @interface StackView : UIView
 {
-    NSArray *_bandViews;    //all BandViews managed by the stack
-    int _bandNum;           //number of bands managed by the stack
-    UIColor *_eventColor;   //color of events
-    BOOL _isStatic;         //whether or not this stack is overlayed
+    NSArray *_bandViews;    // Static array of all BandViews managed by the stack
+    int _bandNum;           // Number of bands managed by the stack
+    UIColor *_eventColor;   // Color of events
+    BOOL _isStatic;         // YES if this stack is overlayed, NO otherwise
 }
 
 - (id)initWithStackNum:(int)stackNum OutOf:(int)stacks WithBands:(int)bandNum OfColor:(UIColor *)color;

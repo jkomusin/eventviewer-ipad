@@ -21,6 +21,13 @@
     return self;
 }
 
+/**
+ *  Overridden initialization to create the panel with a specified number of stacks and bands.
+ *  Does not take a frame parameter, as the frame of a panel is always a size derived from the number of stacks and bands.
+ *
+ *  stackNum is the number of stacks in the panel
+ *  bandNum is the number of bands in each stack
+ */
 - (id)initWithStacks:(int)stackNum Bands:(int)bandNum
 {
     CGRect frame = CGRectMake(0.0, 
@@ -54,6 +61,9 @@
     return self;
 }
 
+/**
+ *  Unhides the panel and all of its related components, unless the panel is currently statically overlaid.
+ */
 - (void)unHide
 {
     if (_isStatic || !self.hidden)
@@ -66,6 +76,9 @@
     }
 }
 
+/**
+ *  Hides the panel and all of its related components, unless the panel is currently statically overlaid.
+ */
 - (void)hide
 {
     if (_isStatic || self.hidden)
@@ -78,6 +91,9 @@
     }
 }
 
+/**
+ *  Toggles the panel and all of its related components to become transparent and overlay on top of all other currently displayed panels.
+ */
 - (void)toggleOverlay
 {
     if (!_isStatic)
