@@ -56,6 +56,11 @@
     return self;
 }
 
+- (int)panelNum
+{
+    return [(NSArray *)[_selectedMetas objectForKey:@"Panels"] count];
+}
+
 /**
  *  Overrriden copying protocol for the NSObject 'copy' internals.
  *  Required to store the object in a property with 'copy' descriptor, or to call 'copy' on an object.

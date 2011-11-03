@@ -86,8 +86,8 @@
     ///////
     
     //update display with new data
-    int newPanelNum = [(NSArray *)[_queryData.selectedMetas objectForKey:@"Panels"] count];
-    int oldPanelNum = [(NSArray *)[oldValue.selectedMetas objectForKey:@"Panels"] count];
+    int newPanelNum = _queryData.panelNum;
+    int oldPanelNum = oldValue.panelNum;
     if (newPanelNum > oldPanelNum)
     {
         //add new panels
@@ -204,6 +204,31 @@
     }
 
     [_contentScrollView toggleOverlayPanel:b.tag];
+}
+
+
+#pragma mark -
+#pragma mark Drag-and-drop functionality
+
+/**
+ *  Determines whether a point inside of the ContentViewController is within the bounds of the panel scrubber.
+ *
+ *  recognizer is the gesture recognizer pointing to a set of coordinates in the view,
+ */
+- (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer
+{
+    return [_scrubberBar pointInside:[recognizer locationInView:_scrubberBar] withEvent:nil];
+}
+
+/**
+ *  Add a new panel to the array of panels in existence.
+ */
+- (void)addNewPanel
+{
+    int newPanelNum = _queryData.panelNum + 1;
+    NSLog(@"New number of panels: %d", newPanelNum);
+    QueryData *newData = [[QueryData alloc] initTestWithPanels:newPanelNum];
+    self.queryData = newData;
 }
 
 

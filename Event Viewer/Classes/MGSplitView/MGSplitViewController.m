@@ -6,6 +6,8 @@
 //  Copyright 2010 Instinctive Code.
 //
 
+#import "QueryViewController.h"
+
 #import "MGSplitViewController.h"
 #import "MGSplitDividerView.h"
 #import "MGSplitCornersView.h"
@@ -700,7 +702,7 @@
 																	 popoverController:_hiddenPopoverController 
 															 willPresentViewController:self.masterViewController];
 		}
-		
+        
 		// Show popover.
 		[_hiddenPopoverController presentPopoverFromBarButtonItem:_barButtonItem permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 	}

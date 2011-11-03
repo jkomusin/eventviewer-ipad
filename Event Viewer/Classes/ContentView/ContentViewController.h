@@ -49,4 +49,7 @@
 - (IBAction)toggleMasterBeforeDetail:(id)sender;
 ///////
 
+- (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer;
+- (void)addNewPanel;
+
 @end
