@@ -40,7 +40,8 @@
     [mutablePanels addObject:newPanel];
     _panelViews = mutablePanels;
     
-    self.contentSize = newPanel.frame.size;
+    if (self.contentSize.width != newPanel.frame.size.width || self.contentSize.height != newPanel.frame.size.height)
+        self.contentSize = newPanel.frame.size;
     [self addSubview:newPanel];
 }
 
