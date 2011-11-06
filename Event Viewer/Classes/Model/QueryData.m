@@ -41,13 +41,25 @@
             NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
             [mutablePanels addObject:new];
         }
+        NSMutableArray *mutableStacks = [[NSMutableArray alloc] init];
+        for (char c = 'A'; c < ('A' + TEST_STACKS); c++)
+        {
+            NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
+            [mutableStacks addObject:new];
+        }
+        NSMutableArray *mutableBands = [[NSMutableArray alloc] init];
+        for (char c = 'A'; c < ('A' + TEST_BANDS); c++)
+        {
+            NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
+            [mutableBands addObject:new];
+        }
         
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
         NSArray *panelArray = [NSArray arrayWithArray:mutablePanels];
         [mutableMetas setObject:panelArray forKey:@"Panels"];
-        NSArray *stackArray = [NSArray arrayWithObjects:nil];
+        NSArray *stackArray = [NSArray arrayWithArray:mutableStacks];
         [mutableMetas setObject:stackArray forKey:@"Stacks"];
-        NSArray *bandArray = [NSArray arrayWithObjects:nil];
+        NSArray *bandArray = [NSArray arrayWithArray:mutableBands];
         [mutableMetas setObject:bandArray forKey:@"Bands"];
         
         _selectedMetas = mutableMetas;
@@ -56,9 +68,20 @@
     return self;
 }
 
+/**
+ *  Count accessors
+ */
 - (int)panelNum
 {
     return [(NSArray *)[_selectedMetas objectForKey:@"Panels"] count];
+}
+- (int)stackNum
+{
+    return [(NSArray *)[_selectedMetas objectForKey:@"Stacks"] count];
+}
+- (int)bandNum
+{
+    return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
 }
 
 /**

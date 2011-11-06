@@ -7,8 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ContentScrollView.h"
-#import "StackView.h"
 
 @interface PanelView : UIView
 {

@@ -1,13 +1,14 @@
 
 #import <UIKit/UIKit.h>
 #import "MGSplitViewController.h"
-#import "QueryViewController.h"
-#import "QueryData.h"
-#import "ContentScrollView.h"
 
 // Number of objects to create during stress testing
 #define TEST_STACKS 4   // Number of stacks in each panel
 #define TEST_BANDS 5    // Number of bands in each stack
+
+@class QueryViewController;
+@class QueryData;
+@class ContentScrollView;
 
 /**
  *  "Primary" ViewController displayed in the MGUISplitViewController
@@ -38,10 +39,6 @@
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, strong) id detailItem;
 @property (nonatomic, strong) IBOutlet UILabel *_detailDescriptionLabel;
-///////
-
-@property (nonatomic, copy) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
-
 // MGUISplitViewController methods
 - (IBAction)toggleMasterView:(id)sender;
 - (IBAction)toggleVertical:(id)sender;
@@ -49,7 +46,12 @@
 - (IBAction)toggleMasterBeforeDetail:(id)sender;
 ///////
 
+@property (nonatomic, copy) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
+
+- (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer;
+- (void)initScrubber;
+- (void)buttonPressed:(id)sender;
 - (void)addNewPanel;
 
 @end

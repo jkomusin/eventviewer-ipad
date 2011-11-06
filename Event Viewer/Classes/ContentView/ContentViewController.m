@@ -1,6 +1,8 @@
 
 #import "ContentViewController.h"
-
+#import "QueryViewController.h"
+#import "QueryData.h"
+#import "ContentScrollView.h"
 
 @interface ContentViewController ()
 
@@ -25,10 +27,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    //create QueryData model
-    QueryData *qdata = [[QueryData alloc] init];
-    _queryData = qdata;
     
     //create panelScrubber to navigate between panel overlays 
     CGRect scrubberBarFrame = CGRectMake(0.0, 924.0, 768.0, 100.0);
@@ -62,6 +60,10 @@
     ContentScrollView *csv = [[ContentScrollView alloc] initWithFrame:csvFrame];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
+    
+    //create QueryData model
+    QueryData *qdata = [[QueryData alloc] init];
+    self.queryData = qdata;
 }
 
 
@@ -106,24 +108,46 @@
     }
     
     //updated scrubber
-    _panelScrubber.maximumValue = (newPanelNum > 0 ? (float)newPanelNum - 1 : 0);
+    [self initScrubber];
+}
+
+
+#pragma mark -
+#pragma mark Panel Scrubber Control
+
+/**
+ *  Initialize/re-initialize scrubber with the current data model.
+ *  Should be called whenever the data model is changed, so that the UI accurately reflects the current query.
+ */
+- (void)initScrubber
+{
+    int panelNum = _queryData.panelNum;
+    _panelScrubber.maximumValue = (panelNum > 0 ? (float)panelNum - 1 : 0);
     if (_panelScrubber.value > _panelScrubber.maximumValue)
-    {   //set value to max if over max
+    {
         _panelScrubber.value = _panelScrubber.maximumValue;
     }
-    if (_scrubberButtons.count != 0)    //remove old buttons
+    //remove all buttons, noting active ones
+    NSMutableArray *active = [[NSMutableArray alloc] init];
+    if (_scrubberButtons.count != panelNum)
     {
         for (UIButton *b in _scrubberButtons)
         {
+            if ([b titleColorForState:UIControlStateNormal] == [UIColor redColor])
+            {
+                [self buttonPressed:b];
+                [active addObject:[NSNumber numberWithInt:[_scrubberButtons indexOfObject:b]]];
+            }
             [b removeFromSuperview];
         }
     }
+    //add new buttons
     UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
     UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
-    NSMutableArray *butts = [[NSMutableArray alloc] init]; 
-    for (int i = 0; i < newPanelNum; i++)
-    {   //create check boxes
-        CGRect frame = CGRectMake(90.0+(568.0/(newPanelNum-1))*i, 
+    NSMutableArray *butts = [[NSMutableArray alloc] init];   
+    for (int i = 0; i < panelNum; i++)
+    {
+        CGRect frame = CGRectMake(90.0+(568.0/(panelNum-1))*i, 
                                   50.0, 
                                   20.0, 
                                   20.0);
@@ -132,22 +156,22 @@
         [newb setBackgroundImage:inactiveImg forState:UIControlStateNormal];
         [newb setBackgroundImage:activeImg forState:UIControlStateHighlighted];
         newb.tag = i;
-        //indicate button is initially disabled (Green == disabled, Red == enabled)
         [newb setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
         [newb addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
         [butts addObject:newb];
         [_scrubberBar addSubview:newb];
     }
     _scrubberButtons = butts;
-    //show appropriate view
+
     int roundVal = roundf((float)_panelScrubber.value);
     [_contentScrollView switchToPanel:roundVal];
-    NSLog(@"Switching to panel %d", roundVal);
+    //reactivate selected buttons
+    for (NSNumber *n in active)
+    {
+        id butt = [_scrubberButtons objectAtIndex:[n integerValue]];
+        [self buttonPressed:butt];
+    }
 }
-
-
-#pragma mark -
-#pragma mark Panel Scrubber Control
 
 /**
  *  Event fired every time the scrubber is moved and changes value.
@@ -365,14 +389,38 @@
 #pragma mark -
 #pragma mark Rotation support
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    // Care should be taken since iPad has 2 more device orientations besides 4 UIInterface Orientation, FaceUp and FaceDown which are invalid in our case
+    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+    if(UIDeviceOrientationIsValidInterfaceOrientation(orientation)) 
+    {
+        UIInterfaceOrientation uiOrientation = (UIInterfaceOrientation)orientation;
+        [self handleInterfaceRotationForOrientation:uiOrientation];
+    }
+}
 
+/**
+ *  Handle all resizing of content.
+ */
+- (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation 
+{
+
+}
+
+/**
+ *  Internal orientation handlers.
+ */
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration 
+{
+    [self handleInterfaceRotationForOrientation:toInterfaceOrientation];
+}
 // Ensure that the view controller supports rotation and that the split view can therefore show in both portrait and landscape.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
+    [self handleInterfaceRotationForOrientation:interfaceOrientation];
     return YES;
 }
-
-
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
 	[self configureView];

@@ -7,6 +7,8 @@
 //
 
 #import "StackView.h"
+#import "ContentScrollView.h"
+#import "BandView.h"
 
 @implementation StackView
 
@@ -69,7 +71,7 @@
     self.hidden = NO;
     for (BandView *b in _bandViews) 
     {
-        [b unHide];
+//        [b unHide];
     }
 }
 
@@ -83,7 +85,7 @@
     self.hidden = YES;
     for (BandView *b in _bandViews)
     {
-        [b hide];
+//        [b hide];
     }
 }
 
@@ -99,7 +101,7 @@
         self.opaque = NO;
         for (BandView *b in _bandViews)
         {
-            [b toggleOverlay];
+//            [b toggleOverlay];
         }
     }
     else
@@ -109,7 +111,7 @@
         self.opaque = YES;
         for (BandView *b in _bandViews)
         {
-            [b toggleOverlay];
+//            [b toggleOverlay];
         }
     }
 }

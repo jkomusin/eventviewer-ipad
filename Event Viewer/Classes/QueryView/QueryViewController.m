@@ -1,6 +1,7 @@
 
 #import "QueryViewController.h"
-
+#import "ContentViewController.h"
+#import "QueryData.h"
 
 @implementation QueryViewController
 

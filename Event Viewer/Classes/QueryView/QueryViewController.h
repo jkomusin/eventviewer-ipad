@@ -1,7 +1,7 @@
 
 #import <UIKit/UIKit.h>
-#import "ContentViewController.h"
 
+@class MGSplitViewController;
 @class ContentViewController;
 
 /**

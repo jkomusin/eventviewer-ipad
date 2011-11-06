@@ -7,10 +7,13 @@
 //
 
 #import "ContentScrollView.h"
+#import "PanelView.h"
+#import "BandZoomView.h"
 
 @implementation ContentScrollView
 
 @synthesize currentPanel = _currentPanel;
+@synthesize bandZoomView = _bandZoomView;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -35,7 +38,11 @@
 {
     NSLog(@"Adding panel!");
     
-    NSMutableArray *mutablePanels = [_panelViews mutableCopy];
+    BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:stackNum BandNum:bandNum];
+    if (self.contentSize.width != zoomView.frame.size.width || self.contentSize.height != zoomView.frame.size.height)
+        self.contentSize = zoomView.frame.size;
+    
+/*    NSMutableArray *mutablePanels = [_panelViews mutableCopy];
     PanelView *newPanel = [[PanelView alloc] initWithStacks:(int)stackNum Bands:(int)bandNum];
     [mutablePanels addObject:newPanel];
     _panelViews = mutablePanels;
@@ -43,6 +50,7 @@
     if (self.contentSize.width != newPanel.frame.size.width || self.contentSize.height != newPanel.frame.size.height)
         self.contentSize = newPanel.frame.size;
     [self addSubview:newPanel];
+*/
 }
 
 /**
@@ -52,10 +60,11 @@
 {
     NSLog(@"Removing panel!");
     
-    NSMutableArray *mutablePanels = [_panelViews mutableCopy];
+/*    NSMutableArray *mutablePanels = [_panelViews mutableCopy];
     [[mutablePanels lastObject] removeFromSuperview];
     [mutablePanels removeLastObject];
     _panelViews = mutablePanels; 
+*/
 }
 
 /**
@@ -66,7 +75,7 @@
  */
 - (void)switchToPanel:(int)panelNum
 {
-    if (panelNum == _currentPanel || _panelViews.count < 1)
+/*    if (panelNum == _currentPanel || _panelViews.count < 1)
         return;
     
     if (_currentPanel >= 0)
@@ -78,7 +87,9 @@
     
     PanelView *newPan = [_panelViews objectAtIndex:panelNum];
     [newPan unHide];
+*/
     _currentPanel = panelNum;
+
 }
 
 /**

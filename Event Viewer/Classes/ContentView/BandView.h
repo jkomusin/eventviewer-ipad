@@ -7,17 +7,28 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ContentScrollView.h"
+
+@class QueryData;
+@class ContentScrollView;
+
+@protocol BandViewDelegate
+
+@optional
+- (QueryData *) bandsRequestQueryData;
+- (int) bandsRequestCurrentPanel;
+- (NSArray *) bandsRequestOverlays;
+
+@end
+
 
 @interface BandView : UIView
 {
-    BOOL _isStatic;     //whether or not band is overlayed
-    UIColor *_color;    //color of events
+    id<BandViewDelegate> delegate;
 }
 
-- (id)initWithBandNum:(int)bandNum OfColor:(UIColor *)color;
-- (void)unHide;
-- (void)hide;
-- (void)toggleOverlay;
+@property (nonatomic, strong) id<BandViewDelegate> delegate;
+
+//- (void)setDelegate:(id<BandViewDelegate>)delegate;
+- (id)initWithStackNum:(int)stackNum BandNum:(int)bandNum;
 
 @end

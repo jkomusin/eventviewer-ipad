@@ -7,8 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ContentScrollView.h"
-#import "BandView.h"
 
 @interface StackView : UIView
 {

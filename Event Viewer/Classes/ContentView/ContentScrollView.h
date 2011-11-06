@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "PanelView.h"
+
+@class BandZoomView;
 
 // Constants containing dimensions of bands in each device orientation.
 //  All other measurements of UI elements are based off of these dimensions.
@@ -22,6 +23,7 @@
 }
 
 @property (nonatomic, assign) int currentPanel;      // Index in the panelViews array of the panel currently selected by the scrubber's movable selector (0-indexed, -1 indicates no panes exist)
+@property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
 
 - (void)addPanelWithStacks:(int)stackNum Bands:(int)bandNum;
 - (void)removePanel;

@@ -7,6 +7,8 @@
 //
 
 #import "PanelView.h"
+#import "ContentScrollView.h"
+#import "StackView.h"
 
 @implementation PanelView
 
