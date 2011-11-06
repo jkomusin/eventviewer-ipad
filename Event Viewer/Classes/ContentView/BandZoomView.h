@@ -8,12 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@class BandView;
+@class BandDrawView;
 
 @interface BandZoomView : UIScrollView
 
-@property (nonatomic, strong) BandView *bandView;
+@property (nonatomic, strong) BandDrawView *bandDrawView;
 
-- (id)initWithStackNum:(int)stackNum BandNum:(int)bandNum;
+- (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
 @end

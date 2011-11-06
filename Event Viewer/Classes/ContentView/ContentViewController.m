@@ -3,6 +3,8 @@
 #import "QueryViewController.h"
 #import "QueryData.h"
 #import "ContentScrollView.h"
+#import "BandZoomView.h"
+#import "BandDrawView.h"
 
 @interface ContentViewController ()
 
@@ -92,11 +94,8 @@
     int oldPanelNum = oldValue.panelNum;
     if (newPanelNum > oldPanelNum)
     {
-        //add new panels
-        for (int i = 0; i < newPanelNum - oldPanelNum; i++)
-        {
-            [_contentScrollView addPanelWithStacks:TEST_STACKS Bands:TEST_BANDS];
-        }
+        [_contentScrollView addPanelWithStacks:_queryData.stackNum bands:_queryData.bandNum];
+        _contentScrollView.bandZoomView.bandDrawView.delegate = self;
     }
     else if (newPanelNum < oldPanelNum)
     {
@@ -122,7 +121,7 @@
 - (void)initScrubber
 {
     int panelNum = _queryData.panelNum;
-    _panelScrubber.maximumValue = (panelNum > 0 ? (float)panelNum - 1 : 0);
+    _panelScrubber.maximumValue = (panelNum > 0.0f ? (float)panelNum - 1.0f : 0.0f);
     if (_panelScrubber.value > _panelScrubber.maximumValue)
     {
         _panelScrubber.value = _panelScrubber.maximumValue;
@@ -147,10 +146,10 @@
     NSMutableArray *butts = [[NSMutableArray alloc] init];   
     for (int i = 0; i < panelNum; i++)
     {
-        CGRect frame = CGRectMake(90.0+(568.0/(panelNum-1))*i, 
-                                  50.0, 
-                                  20.0, 
-                                  20.0);
+        CGRect frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i, 
+                                  50.0f, 
+                                  20.0f, 
+                                  20.0f);
         UIButton *newb = [[UIButton alloc] initWithFrame:frame];
         newb.opaque = YES;
         [newb setBackgroundImage:inactiveImg forState:UIControlStateNormal];
@@ -182,6 +181,7 @@
 - (void)scrubberMoved:(id)sender
 {
     int roundVal = roundf((float)_panelScrubber.value);
+    
     if (_contentScrollView.currentPanel != roundVal)
     {
         [_contentScrollView switchToPanel:roundVal];
@@ -253,6 +253,35 @@
     NSLog(@"New number of panels: %d", newPanelNum);
     QueryData *newData = [[QueryData alloc] initTestWithPanels:newPanelNum];
     self.queryData = newData;
+}
+
+
+#pragma mark -
+#pragma mark BandDrawView delegation
+
+/**
+ *  Returns a COPY of the query data model, to keep things threadsafe.
+ */
+- (QueryData *) bandsRequestQueryData
+{
+    return [_queryData copy];
+}
+
+/**
+ *  Returns the currently viewed panel (0-indexed)
+ */
+- (int) bandsRequestCurrentPanel
+{
+    return _contentScrollView.currentPanel;
+}
+
+/**
+ *  Returns an array of indexes (0-indexed) of panels currently selected as overlays.
+ */
+- (NSArray *) bandsRequestOverlays
+{
+    NSArray *result = [[NSArray alloc] init];
+    return result;
 }
 
 

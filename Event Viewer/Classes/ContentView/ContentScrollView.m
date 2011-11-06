@@ -9,6 +9,7 @@
 #import "ContentScrollView.h"
 #import "PanelView.h"
 #import "BandZoomView.h"
+#import "BandDrawView.h"
 
 @implementation ContentScrollView
 
@@ -22,6 +23,9 @@
         NSArray *newArr = [[NSArray alloc] init];
         _panelViews = newArr;
         _currentPanel = -1;     // No panels exist yet
+        BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:0 bandNum:0];
+        [self addSubview:zoomView];
+        _bandZoomView = zoomView;
     }
     
     self.opaque = YES;
@@ -34,13 +38,19 @@
  *  stackNum contains the number of stacks in the panel (>0)
  *  bandNum contains the number of bands in each stack in the panel (>0)
  */
-- (void)addPanelWithStacks:(int)stackNum Bands:(int)bandNum
+- (void)addPanelWithStacks:(int)stackNum bands:(int)bandNum
 {
-    NSLog(@"Adding panel!");
+    if (_currentPanel == -1) _currentPanel = 0;
     
-    BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:stackNum BandNum:bandNum];
+    NSLog(@"Adding panel!");
+    [_bandZoomView removeFromSuperview];
+    
+    BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:stackNum bandNum:bandNum];
     if (self.contentSize.width != zoomView.frame.size.width || self.contentSize.height != zoomView.frame.size.height)
         self.contentSize = zoomView.frame.size;
+    _bandZoomView = zoomView;
+    
+    [self addSubview:zoomView];
     
 /*    NSMutableArray *mutablePanels = [_panelViews mutableCopy];
     PanelView *newPanel = [[PanelView alloc] initWithStacks:(int)stackNum Bands:(int)bandNum];
@@ -65,6 +75,7 @@
     [mutablePanels removeLastObject];
     _panelViews = mutablePanels; 
 */
+    //reset current panel, especially if removing all panels/last panel
 }
 
 /**
@@ -75,9 +86,9 @@
  */
 - (void)switchToPanel:(int)panelNum
 {
-/*    if (panelNum == _currentPanel || _panelViews.count < 1)
+    if (panelNum == _currentPanel)
         return;
-    
+/*    
     if (_currentPanel >= 0)
     {
         PanelView *oldPan = [_panelViews objectAtIndex:_currentPanel];
@@ -88,8 +99,9 @@
     PanelView *newPan = [_panelViews objectAtIndex:panelNum];
     [newPan unHide];
 */
-    _currentPanel = panelNum;
 
+    _currentPanel = panelNum;
+    [_bandZoomView.bandDrawView setNeedsDisplay];
 }
 
 /**

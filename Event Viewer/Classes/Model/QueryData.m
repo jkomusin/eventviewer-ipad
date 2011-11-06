@@ -1,10 +1,11 @@
 
 #import "QueryData.h"
+#import "Event.h"
 
 @implementation QueryData
 
 @synthesize selectedMetas = _selectedMetas;
-
+@synthesize eventArray = _eventArray;
 
 - (id) init
 {
@@ -20,14 +21,17 @@
         NSArray *bandArray = [NSArray arrayWithObjects:nil];
         [mutableMetas setObject:bandArray forKey:@"Bands"];
         
-        _selectedMetas = mutableMetas;        
+        _selectedMetas = mutableMetas;
+        
+        NSArray *emptyEvents = [[NSArray alloc] init];
+        _eventArray = emptyEvents;
     }
     
     return self;
 }
 
 /**
- *  Initializes the data model with a specified number of panels for stress-testing purposes
+ *  Initializes the data model with a specified number of panels for stress-testing purposes.
  *  
  *  panels is the number of panels to create
  */
@@ -53,7 +57,6 @@
             NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
             [mutableBands addObject:new];
         }
-        
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
         NSArray *panelArray = [NSArray arrayWithArray:mutablePanels];
         [mutableMetas setObject:panelArray forKey:@"Panels"];
@@ -63,6 +66,41 @@
         [mutableMetas setObject:bandArray forKey:@"Bands"];
         
         _selectedMetas = mutableMetas;
+        
+        //create Events with date arithmetic
+        NSDateComponents *components = [[NSDateComponents alloc] init];
+        [components setDay:5];  //add 5 days
+        NSCalendar *cal = [NSCalendar currentCalendar];
+        NSMutableArray *newEvents = [[NSMutableArray alloc] init];
+        for (int p = 0; p < panels; p++)
+        {
+            NSMutableArray *newPanels = [[NSMutableArray alloc] init];
+            for (int s = 0; s < TEST_STACKS; s++)
+            {
+                NSMutableArray *newStacks = [[NSMutableArray alloc] init];
+                for (int b = 0; b < TEST_BANDS; b++)
+                {
+                    NSMutableArray *newBands = [[NSMutableArray alloc] init];
+                    for (int i = 0; i < 3; i++)
+                    {
+                        int day = abs(arc4random() % 27) +1;
+                        int month = abs(arc4random() % 11) +1;
+                        NSString *startS = [NSString stringWithFormat:@"2000 %02d %02d", month, day];
+                        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+                        [dateFormatter setDateFormat:@"yyyy MM dd"];
+                        NSDate *startDate = [dateFormatter dateFromString:startS];
+                        NSDate *endDate = [cal dateByAddingComponents:components toDate:startDate options:0];
+                        
+                        Event *newE = [[Event alloc] initWithStartTime:startDate endTime:endDate];
+                        [newBands addObject:newE];
+                    }
+                    [newStacks addObject:newBands];
+                }
+                [newPanels addObject:newStacks];
+            }
+            [newEvents addObject:newPanels];
+        }
+        _eventArray = newEvents;
     }
 
     return self;
@@ -85,15 +123,17 @@
 }
 
 /**
- *  Overrriden copying protocol for the NSObject 'copy' internals.
+ *  Overridden copying protocol for the NSObject 'copy' internals.
  *  Required to store the object in a property with 'copy' descriptor, or to call 'copy' on an object.
  */
 - (id) copyWithZone:(NSZone *)zone
 {
     QueryData *copy = [[QueryData alloc] init];
     NSDictionary *newMetas = [[NSDictionary alloc] initWithDictionary:_selectedMetas copyItems:YES];
+    NSArray *newEvents = [[NSArray alloc] initWithArray:_eventArray copyItems:YES];
     
     copy.selectedMetas = newMetas;
+    copy.eventArray = newEvents;
     return copy;
 }
 

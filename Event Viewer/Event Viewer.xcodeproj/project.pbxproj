@@ -20,12 +20,13 @@
 		847D130C1454818D00B1DA76 /* ContentScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D130B1454818D00B1DA76 /* ContentScrollView.m */; };
 		847D131014548CA800B1DA76 /* PanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D130F14548CA800B1DA76 /* PanelView.m */; };
 		847D131314548CB500B1DA76 /* StackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D131214548CB500B1DA76 /* StackView.m */; };
-		847D131614548CC000B1DA76 /* BandView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D131514548CC000B1DA76 /* BandView.m */; };
+		847D131614548CC000B1DA76 /* BandDrawView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D131514548CC000B1DA76 /* BandDrawView.m */; };
 		849AA98C1450F78000F93059 /* MGSplitCornersView.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9871450F78000F93059 /* MGSplitCornersView.m */; };
 		849AA98D1450F78000F93059 /* MGSplitDividerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9891450F78000F93059 /* MGSplitDividerView.m */; };
 		849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA98B1450F78000F93059 /* MGSplitViewController.m */; };
 		849AA9911450F78900F93059 /* ContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9901450F78900F93059 /* ContentViewController.m */; };
 		849AA9941450F78F00F93059 /* QueryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9931450F78F00F93059 /* QueryViewController.m */; };
+		84A7E5D11466FF6B006A6022 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 84A7E5D01466FF6B006A6022 /* Event.m */; };
 		84BA23871452088B009566D9 /* scrubber.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BA23861452088A009566D9 /* scrubber.png */; };
 		84E626651451FC58007DDF98 /* QueryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 84E626641451FC58007DDF98 /* QueryData.m */; };
 /* End PBXBuildFile section */
@@ -51,8 +52,8 @@
 		847D130F14548CA800B1DA76 /* PanelView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PanelView.m; path = ContentView/PanelView.m; sourceTree = "<group>"; };
 		847D131114548CB500B1DA76 /* StackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StackView.h; path = ContentView/StackView.h; sourceTree = "<group>"; };
 		847D131214548CB500B1DA76 /* StackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = StackView.m; path = ContentView/StackView.m; sourceTree = "<group>"; };
-		847D131414548CC000B1DA76 /* BandView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BandView.h; path = ContentView/BandView.h; sourceTree = "<group>"; };
-		847D131514548CC000B1DA76 /* BandView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BandView.m; path = ContentView/BandView.m; sourceTree = "<group>"; };
+		847D131414548CC000B1DA76 /* BandDrawView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BandDrawView.h; path = ContentView/BandDrawView.h; sourceTree = "<group>"; };
+		847D131514548CC000B1DA76 /* BandDrawView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BandDrawView.m; path = ContentView/BandDrawView.m; sourceTree = "<group>"; };
 		849AA9861450F78000F93059 /* MGSplitCornersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MGSplitCornersView.h; path = MGSplitView/MGSplitCornersView.h; sourceTree = "<group>"; };
 		849AA9871450F78000F93059 /* MGSplitCornersView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MGSplitCornersView.m; path = MGSplitView/MGSplitCornersView.m; sourceTree = "<group>"; };
 		849AA9881450F78000F93059 /* MGSplitDividerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MGSplitDividerView.h; path = MGSplitView/MGSplitDividerView.h; sourceTree = "<group>"; };
@@ -63,6 +64,8 @@
 		849AA9901450F78900F93059 /* ContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContentViewController.m; path = ContentView/ContentViewController.m; sourceTree = "<group>"; };
 		849AA9921450F78F00F93059 /* QueryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryViewController.h; path = QueryView/QueryViewController.h; sourceTree = "<group>"; };
 		849AA9931450F78F00F93059 /* QueryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryViewController.m; path = QueryView/QueryViewController.m; sourceTree = "<group>"; };
+		84A7E5CF1466FF6B006A6022 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = Model/Event.h; sourceTree = "<group>"; };
+		84A7E5D01466FF6B006A6022 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Event.m; path = Model/Event.m; sourceTree = "<group>"; };
 		84BA23861452088A009566D9 /* scrubber.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scrubber.png; path = Images/scrubber.png; sourceTree = "<group>"; };
 		84E626631451FC58007DDF98 /* QueryData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryData.h; path = Model/QueryData.h; sourceTree = "<group>"; };
 		84E626641451FC58007DDF98 /* QueryData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryData.m; path = Model/QueryData.m; sourceTree = "<group>"; };
@@ -176,8 +179,8 @@
 				847D130B1454818D00B1DA76 /* ContentScrollView.m */,
 				844EB51F1466117D00711EC6 /* BandZoomView.h */,
 				844EB5201466117D00711EC6 /* BandZoomView.m */,
-				847D131414548CC000B1DA76 /* BandView.h */,
-				847D131514548CC000B1DA76 /* BandView.m */,
+				847D131414548CC000B1DA76 /* BandDrawView.h */,
+				847D131514548CC000B1DA76 /* BandDrawView.m */,
 				847D130E14548CA800B1DA76 /* PanelView.h */,
 				847D130F14548CA800B1DA76 /* PanelView.m */,
 				847D131114548CB500B1DA76 /* StackView.h */,
@@ -191,6 +194,8 @@
 			children = (
 				84E626631451FC58007DDF98 /* QueryData.h */,
 				84E626641451FC58007DDF98 /* QueryData.m */,
+				84A7E5CF1466FF6B006A6022 /* Event.h */,
+				84A7E5D01466FF6B006A6022 /* Event.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -287,8 +292,9 @@
 				847D130C1454818D00B1DA76 /* ContentScrollView.m in Sources */,
 				847D131014548CA800B1DA76 /* PanelView.m in Sources */,
 				847D131314548CB500B1DA76 /* StackView.m in Sources */,
-				847D131614548CC000B1DA76 /* BandView.m in Sources */,
+				847D131614548CC000B1DA76 /* BandDrawView.m in Sources */,
 				844EB5211466117D00711EC6 /* BandZoomView.m in Sources */,
+				84A7E5D11466FF6B006A6022 /* Event.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

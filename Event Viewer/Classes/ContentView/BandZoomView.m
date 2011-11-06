@@ -7,12 +7,12 @@
 //
 
 #import "BandZoomView.h"
-#import "BandView.h"
+#import "BandDrawView.h"
 #import "ContentScrollView.h"
 
 @implementation BandZoomView
 
-@synthesize bandView = _bandView;
+@synthesize bandDrawView = _bandDrawView;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -24,23 +24,23 @@
     return self;
 }
 
-- (id)initWithStackNum:(int)stackNum BandNum:(int)bandNum
+- (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum
 {
-    CGRect frame = CGRectMake((768.0 - BAND_WIDTH_P)*3/4, 
-                              0.0, 
-                              BAND_WIDTH_P, 
-                              (bandNum * (BAND_HEIGHT_P + 16.0) + 16.0) * stackNum);    
+    CGRect frame = CGRectMake((768.0 - BAND_WIDTH_P)*3/4,
+                              0.0,
+                              BAND_WIDTH_P,
+                              (bandNum * (BAND_HEIGHT_P + 16.0) + 16.0) * stackNum);
     if ((self = [super initWithFrame:frame]))
     {
         self.backgroundColor = [UIColor whiteColor];
         self.opaque = YES;
         
-        BandView *bandView = [[BandView alloc] initWithStackNum:stackNum BandNum:bandNum];
-        _bandView = bandView;
+        BandDrawView *bandView = [[BandDrawView alloc] initWithStackNum:stackNum bandNum:bandNum];
+        _bandDrawView = bandView;
         [self addSubview:bandView];
         self.contentSize = bandView.frame.size;
         
-        [_bandView setNeedsDisplay];
+        [_bandDrawView setNeedsDisplay];
     }
     
     return self;

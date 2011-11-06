@@ -1,10 +1,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MGSplitViewController.h"
-
-// Number of objects to create during stress testing
-#define TEST_STACKS 4   // Number of stacks in each panel
-#define TEST_BANDS 5    // Number of bands in each stack
+#import "BandDrawView.h"
 
 @class QueryViewController;
 @class QueryData;
@@ -15,7 +12,7 @@
  *
  *  Used in Event Viewer to display the results of a query.
  */
-@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate> 
+@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate, BandDrawViewDelegate> 
 {
     // MGUISplitViewController private properties
 	IBOutlet MGSplitViewController *splitController;
