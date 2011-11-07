@@ -29,7 +29,9 @@
     UISlider *_panelScrubber;               // Scrubber at the bottom of the results window that controls the display of overlaid panels
     UIView *_scrubberBar;                   // Frame for the panelScrubber
     NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
+    NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
     ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
+    int _currentPanel;                      // Currently selected panel
 }
 
 // MGUISplitViewController public properties
@@ -50,5 +52,6 @@
 - (void)initScrubber;
 - (void)buttonPressed:(id)sender;
 - (void)addNewPanel;
+- (void)resizeSubviews;
 
 @end

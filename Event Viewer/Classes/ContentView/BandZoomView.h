@@ -15,5 +15,6 @@
 @property (nonatomic, strong) BandDrawView *bandDrawView;
 
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
+- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 
 @end

@@ -48,22 +48,46 @@
 {
     NSLog(@"DRAW RECT!!!");
     
-    QueryData *data = [self.delegate bandsRequestQueryData];
+    QueryData *data = [delegate bandsRequestQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
     
-    //resize view
+    //resize view if necessary and notify controller of resizing
     CGRect frame = CGRectMake(0.0f, 
                               0.0f, 
                               BAND_WIDTH_P, 
                               (data.bandNum * (BAND_HEIGHT_P + 16.0) + 16.0) * data.stackNum);
-    self.frame = frame;
+    if (self.frame.size.width != frame.size.width || self.frame.size.height != frame.size.height)
+    {
+        self.frame = frame;
+        //[self.delegate bandsHaveResized];
+    }
     
     [self drawFramesWithData:data inContext:context];
-    [self drawEventsWithArray:data.eventArray inContext:context];
+    
+    int currentPanel = [delegate bandsRequestCurrentPanel];
+    BOOL currentPanelIsOverlaid = NO;
+    //draw all overlaid panels
+    NSArray *overlays = [delegate bandsRequestOverlays];
+    for (NSNumber *i in overlays)
+    {
+        [self drawEventsForPanel:[i intValue] fromArray:data.eventArray inContext:context];
+        if ([i intValue] == currentPanel) 
+        {
+            currentPanelIsOverlaid = YES;
+        }
+    }
+    if (!currentPanelIsOverlaid && currentPanel != -1)
+    {
+        [self drawEventsForPanel:currentPanel fromArray:data.eventArray inContext:context];
+    }
+    
 }
 
 /**
  *  Draw all outlines around stacks and bands.
+ *
+ *  data is a copy of the current QueryData object
+ *  context is the current drawing context reference
  */
 - (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context
 {
@@ -93,12 +117,15 @@
 }
 
 /**
- *  Draw all events in the given array
+ *  Draw all events for a specific panel.
+ *
+ *  panel is the index of the panel whose events are being drawn (0-indexed)
+ *  eArray is the 4-dimensional array of events stored in the current QueryData object
+ *  context is the current drawing context reference
  */
-- (void)drawEventsWithArray:(NSArray *)eArray inContext:(CGContextRef)context
+- (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eArray inContext:(CGContextRef)context
 {
-    int currentPanel = [self.delegate bandsRequestCurrentPanel];
-    UIColor *eColor = [self getColorForPanel:currentPanel];
+    UIColor *eColor = [self getColorForPanel:panel];
     int stackNum = [[eArray lastObject] count];
     int bandNum = [[[eArray lastObject] lastObject] count];
     float stackHeight = (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f);
@@ -110,7 +137,7 @@
         {
             float bandY = (j * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
             [eColor setFill];
-            NSArray *bandEArray = [[[eArray objectAtIndex:currentPanel] objectAtIndex:i] objectAtIndex:j];
+            NSArray *bandEArray = [[[eArray objectAtIndex:panel] objectAtIndex:i] objectAtIndex:j];
             for (Event *e in bandEArray)
             {
                 NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:e.start];

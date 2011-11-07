@@ -57,15 +57,22 @@
     NSArray *tmp = [[NSArray alloc] init];
     _scrubberButtons = tmp;
     
+    //initialize empty overlay array
+    NSArray *overlays = [[NSArray alloc] init];
+    _panelOverlays = overlays;
+    
     //create scroll view for content
     CGRect csvFrame = CGRectMake(0.0, 44.0, 768.0, 880.0);
     ContentScrollView *csv = [[ContentScrollView alloc] initWithFrame:csvFrame];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
+    _contentScrollView.bandZoomView.bandDrawView.delegate = self;
     
     //create QueryData model
     QueryData *qdata = [[QueryData alloc] init];
     self.queryData = qdata;
+    
+    _currentPanel = -1;
 }
 
 
@@ -91,6 +98,14 @@
     
     //update display with new data
     int newPanelNum = _queryData.panelNum;
+    if (newPanelNum > 0)
+        _currentPanel = 0;
+    else
+        _currentPanel = -1;
+    
+//    [self resizeSubviews];
+//    [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
+    
     int oldPanelNum = oldValue.panelNum;
     if (newPanelNum > oldPanelNum)
     {
@@ -99,15 +114,18 @@
     }
     else if (newPanelNum < oldPanelNum)
     {
-        //remove excess panels
-        for (int i = 0; i < oldPanelNum - newPanelNum; i++)
-        {
-            [_contentScrollView removePanel];
-        }
+        //update display
+        [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
     }
     
     //updated scrubber
     [self initScrubber];
+}
+
+- (void)resizeSubviews
+{
+    [_contentScrollView resizeForStackNum:_queryData.stackNum bandNum:_queryData.bandNum];
+    _contentScrollView.bandZoomView.bandDrawView.delegate = self;
 }
 
 
@@ -124,7 +142,7 @@
     _panelScrubber.maximumValue = (panelNum > 0.0f ? (float)panelNum - 1.0f : 0.0f);
     if (_panelScrubber.value > _panelScrubber.maximumValue)
     {
-        _panelScrubber.value = _panelScrubber.maximumValue;
+        [_panelScrubber setValue:_panelScrubber.maximumValue animated:YES];
     }
     //remove all buttons, noting active ones
     NSMutableArray *active = [[NSMutableArray alloc] init];
@@ -146,10 +164,18 @@
     NSMutableArray *butts = [[NSMutableArray alloc] init];   
     for (int i = 0; i < panelNum; i++)
     {
-        CGRect frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i, 
+        CGRect frame;
+        if (panelNum == 1)
+            frame = CGRectMake(90.0f+(568.0f/2.0f), 
                                   50.0f, 
                                   20.0f, 
                                   20.0f);
+        else
+            frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i, 
+                               50.0f, 
+                               20.0f, 
+                               20.0f);
+        
         UIButton *newb = [[UIButton alloc] initWithFrame:frame];
         newb.opaque = YES;
         [newb setBackgroundImage:inactiveImg forState:UIControlStateNormal];
@@ -182,8 +208,9 @@
 {
     int roundVal = roundf((float)_panelScrubber.value);
     
-    if (_contentScrollView.currentPanel != roundVal)
+    if (_currentPanel != roundVal)
     {
+        _currentPanel = roundVal;
         [_contentScrollView switchToPanel:roundVal];
         NSLog(@"Switching to panel %d", roundVal);
     }
@@ -215,19 +242,27 @@
 {
     UIButton *b = (UIButton *)sender;
     if ([b titleColorForState:UIControlStateNormal] == [UIColor greenColor])
-    {
+    {   //enable overlay
         UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
         [b setBackgroundImage:activeImg forState:UIControlStateNormal];
         [b setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        
+        NSMutableArray *overlays = [_panelOverlays mutableCopy];
+        [overlays addObject:[NSNumber numberWithInt:b.tag]];
+        _panelOverlays = overlays;
     }
     else
-    {
+    {   //disable overlay
         UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
         [b setBackgroundImage:inactiveImg forState:UIControlStateNormal];
         [b setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
+        
+        NSMutableArray *overlays = [_panelOverlays mutableCopy];
+        [overlays removeObjectIdenticalTo:[NSNumber numberWithInt:b.tag]];
+        _panelOverlays = overlays;
     }
 
-    [_contentScrollView toggleOverlayPanel:b.tag];
+    [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
 }
 
 
@@ -272,16 +307,24 @@
  */
 - (int) bandsRequestCurrentPanel
 {
-    return _contentScrollView.currentPanel;
+    return _currentPanel;
 }
 
 /**
- *  Returns an array of indexes (0-indexed) of panels currently selected as overlays.
+ *  Returns a COPY of the array of indexes (0-indexed) of panels currently selected as overlays.
  */
 - (NSArray *) bandsRequestOverlays
 {
-    NSArray *result = [[NSArray alloc] init];
-    return result;
+    return [_panelOverlays copy];
+}
+
+/**
+ *  Bands have resized due to differring stack and band count.
+ *  Notifies all related views to resize, through a chain of each subview notifying its subviews.
+ */
+- (void)bandsHaveResized
+{
+    [_contentScrollView resizeForStackNum:_queryData.stackNum bandNum:_queryData.bandNum];
 }
 
 

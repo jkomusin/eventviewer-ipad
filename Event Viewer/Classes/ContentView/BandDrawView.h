@@ -14,9 +14,10 @@
 @protocol BandDrawViewDelegate
 
 @optional
-- (QueryData *) bandsRequestQueryData;
-- (int) bandsRequestCurrentPanel;
-- (NSArray *) bandsRequestOverlays;
+- (QueryData *)bandsRequestQueryData;
+- (int)bandsRequestCurrentPanel;
+- (NSArray *)bandsRequestOverlays;
+- (void)bandsHaveResized;
 
 @end
 
@@ -32,7 +33,7 @@
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
 - (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context;
-- (void)drawEventsWithArray:(NSArray *)eArray inContext:(CGContextRef)context;
+- (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eArray inContext:(CGContextRef)context;
 - (UIColor *)getColorForPanel:(int)panelNum;
 
 @end

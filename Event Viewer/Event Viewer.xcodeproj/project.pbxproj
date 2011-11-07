@@ -18,8 +18,6 @@
 		84211F251454DDF700B6616F /* x_inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 84211F241454DDF700B6616F /* x_inactive.png */; };
 		844EB5211466117D00711EC6 /* BandZoomView.m in Sources */ = {isa = PBXBuildFile; fileRef = 844EB5201466117D00711EC6 /* BandZoomView.m */; };
 		847D130C1454818D00B1DA76 /* ContentScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D130B1454818D00B1DA76 /* ContentScrollView.m */; };
-		847D131014548CA800B1DA76 /* PanelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D130F14548CA800B1DA76 /* PanelView.m */; };
-		847D131314548CB500B1DA76 /* StackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D131214548CB500B1DA76 /* StackView.m */; };
 		847D131614548CC000B1DA76 /* BandDrawView.m in Sources */ = {isa = PBXBuildFile; fileRef = 847D131514548CC000B1DA76 /* BandDrawView.m */; };
 		849AA98C1450F78000F93059 /* MGSplitCornersView.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9871450F78000F93059 /* MGSplitCornersView.m */; };
 		849AA98D1450F78000F93059 /* MGSplitDividerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9891450F78000F93059 /* MGSplitDividerView.m */; };
@@ -48,10 +46,6 @@
 		844EB5201466117D00711EC6 /* BandZoomView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BandZoomView.m; path = ContentView/BandZoomView.m; sourceTree = "<group>"; };
 		847D130A1454818D00B1DA76 /* ContentScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContentScrollView.h; path = ContentView/ContentScrollView.h; sourceTree = "<group>"; };
 		847D130B1454818D00B1DA76 /* ContentScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContentScrollView.m; path = ContentView/ContentScrollView.m; sourceTree = "<group>"; };
-		847D130E14548CA800B1DA76 /* PanelView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PanelView.h; path = ContentView/PanelView.h; sourceTree = "<group>"; };
-		847D130F14548CA800B1DA76 /* PanelView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PanelView.m; path = ContentView/PanelView.m; sourceTree = "<group>"; };
-		847D131114548CB500B1DA76 /* StackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StackView.h; path = ContentView/StackView.h; sourceTree = "<group>"; };
-		847D131214548CB500B1DA76 /* StackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = StackView.m; path = ContentView/StackView.m; sourceTree = "<group>"; };
 		847D131414548CC000B1DA76 /* BandDrawView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BandDrawView.h; path = ContentView/BandDrawView.h; sourceTree = "<group>"; };
 		847D131514548CC000B1DA76 /* BandDrawView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BandDrawView.m; path = ContentView/BandDrawView.m; sourceTree = "<group>"; };
 		849AA9861450F78000F93059 /* MGSplitCornersView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MGSplitCornersView.h; path = MGSplitView/MGSplitCornersView.h; sourceTree = "<group>"; };
@@ -181,10 +175,6 @@
 				844EB5201466117D00711EC6 /* BandZoomView.m */,
 				847D131414548CC000B1DA76 /* BandDrawView.h */,
 				847D131514548CC000B1DA76 /* BandDrawView.m */,
-				847D130E14548CA800B1DA76 /* PanelView.h */,
-				847D130F14548CA800B1DA76 /* PanelView.m */,
-				847D131114548CB500B1DA76 /* StackView.h */,
-				847D131214548CB500B1DA76 /* StackView.m */,
 			);
 			name = ContentView;
 			sourceTree = "<group>";
@@ -290,8 +280,6 @@
 				849AA9941450F78F00F93059 /* QueryViewController.m in Sources */,
 				84E626651451FC58007DDF98 /* QueryData.m in Sources */,
 				847D130C1454818D00B1DA76 /* ContentScrollView.m in Sources */,
-				847D131014548CA800B1DA76 /* PanelView.m in Sources */,
-				847D131314548CB500B1DA76 /* StackView.m in Sources */,
 				847D131614548CC000B1DA76 /* BandDrawView.m in Sources */,
 				844EB5211466117D00711EC6 /* BandZoomView.m in Sources */,
 				84A7E5D11466FF6B006A6022 /* Event.m in Sources */,

@@ -46,6 +46,16 @@
     return self;
 }
 
+- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
+{
+    CGRect frame = CGRectMake((768.0 - BAND_WIDTH_P)*3/4,
+                              0.0,
+                              BAND_WIDTH_P,
+                              (bandNum * (BAND_HEIGHT_P + 16.0) + 16.0) * stackNum);
+    self.frame = frame;
+    self.contentSize = _bandDrawView.frame.size;
+}
+
 /*
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.
