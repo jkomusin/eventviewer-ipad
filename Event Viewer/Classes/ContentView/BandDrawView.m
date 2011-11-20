@@ -44,24 +44,26 @@
     return self;
 }
 
+- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
+{
+    CGRect frame = CGRectMake(0.0f, 
+                              0.0f, 
+                              BAND_WIDTH_P, 
+                              (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f) * stackNum);
+    self.frame = frame;
+}
+
+
+#pragma mark -
+#pragma mark Drawing
+
 - (void)drawRect:(CGRect)rect 
 {
     NSLog(@"DRAW RECT!!!");
     
     QueryData *data = [delegate bandsRequestQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    //resize view if necessary and notify controller of resizing
-    CGRect frame = CGRectMake(0.0f, 
-                              0.0f, 
-                              BAND_WIDTH_P, 
-                              (data.bandNum * (BAND_HEIGHT_P + 16.0) + 16.0) * data.stackNum);
-    if (self.frame.size.width != frame.size.width || self.frame.size.height != frame.size.height)
-    {
-        self.frame = frame;
-        //[self.delegate bandsHaveResized];
-    }
-    
+ 
     [self drawFramesWithData:data inContext:context];
     
     int currentPanel = [delegate bandsRequestCurrentPanel];
@@ -116,6 +118,7 @@
     CGContextStrokePath(context);
 }
 
+
 /**
  *  Draw all events for a specific panel.
  *
@@ -126,11 +129,33 @@
 - (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eArray inContext:(CGContextRef)context
 {
     UIColor *eColor = [self getColorForPanel:panel];
-    int stackNum = [[eArray lastObject] count];
+    [eColor setFill];
     int bandNum = [[[eArray lastObject] lastObject] count];
     float stackHeight = (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f);
 
-    for (int i = 0; i < stackNum; i++)
+    int stackCount = 0;
+    for (NSArray *stackArr in [eArray objectAtIndex:panel])
+    {
+        float stackY = stackHeight * stackCount++;
+        int bandCount = 0;
+        for (NSArray *bandArr in stackArr)
+        {
+            float bandY = (bandCount++ * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
+            for (Event *e in bandArr)
+            {
+                float x = e.x;
+                float width = e.width;
+                CGRect eRect = CGRectMake(x, 
+                                          bandY, 
+                                          width, 
+                                          BAND_HEIGHT_P);
+                CGContextFillRect(context, eRect);
+
+            }
+        }
+    }
+    
+/*    for (int i = 0; i < stackNum; i++)
     {
         float stackY = stackHeight * i;
         for (int j = 0; j < bandNum; j++)
@@ -155,7 +180,41 @@
             }            
         }
     }
+*/
 }
+
+
+- (void)drawEventsForPanel:(int)panel fromData:(QueryData *)data inContext:(CGContextRef)context
+{
+    NSArray *eArray = data.eventArray;
+    UIColor *eColor = [self getColorForPanel:panel];
+    int stackNum = [[eArray lastObject] count];
+    int bandNum = [[[eArray lastObject] lastObject] count];
+    float stackHeight = (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f);
+    
+    for (int i = 0; i < stackNum; i++)
+    {
+        float stackY = stackHeight * i;
+        for (int j = 0; j < bandNum; j++)
+        {
+            float bandY = (j * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
+            [eColor setFill];
+            int eCount = [[[[eArray objectAtIndex:panel] objectAtIndex:i] objectAtIndex:j] count];
+            for (int k = 0; k < eCount; k++)
+            {
+//                float x = data.eventFloats[panel][i][j][k*2];
+//                float width = data.eventFloats[panel][i][j][(k*2)+1];
+//                NSLog(@"floats: [%d][%d][%d][%d]\nx: %f\nwidth: %f",panel, i, j, k*2, x, width);
+//                CGRect eRect = CGRectMake(x, 
+//                                          bandY, 
+//                                          width, 
+//                                          BAND_HEIGHT_P);
+//                CGContextFillRect(context, eRect);
+            }            
+        }
+    }
+}
+
 
 /**
  *  Retrieve color for events of a specified panel.

@@ -34,32 +34,11 @@
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
 {
     [_bandZoomView resizeForStackNum:stackNum bandNum:bandNum];
-    if (self.contentSize.width != _bandZoomView.frame.size.width || self.contentSize.height != _bandZoomView.frame.size.height)
+    if (self.contentSize.height != _bandZoomView.frame.size.height || self.contentSize.width != _bandZoomView.frame.size.width)
     {
         NSLog(@"Resizing CSV");
         self.contentSize = _bandZoomView.frame.size;
     }
-}
-
-/**
- *  Add a single panel to the current display
- *
- *  stackNum contains the number of stacks in the panel (>0)
- *  bandNum contains the number of bands in each stack in the panel (>0)
- */
-- (void)addPanelWithStacks:(int)stackNum bands:(int)bandNum
-{
-    if (_currentPanel == -1) _currentPanel = 0;
-    
-    NSLog(@"Adding panel!");
-    [_bandZoomView removeFromSuperview];
-    
-    BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:stackNum bandNum:bandNum];
-    if (self.contentSize.width != zoomView.frame.size.width || self.contentSize.height != zoomView.frame.size.height)
-        self.contentSize = zoomView.frame.size;
-    _bandZoomView = zoomView;
-    
-    [self addSubview:zoomView];
 }
 
 /**

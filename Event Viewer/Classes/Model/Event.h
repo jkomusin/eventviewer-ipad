@@ -12,6 +12,8 @@
 
 @property (nonatomic, strong) NSDate *start;
 @property (nonatomic, strong) NSDate *end;
+@property (nonatomic, assign) float x;
+@property (nonatomic, assign) float width;
 
 - (id) initWithStartTime:(NSDate *)start endTime:(NSDate *)end;
 

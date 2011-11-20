@@ -1,11 +1,17 @@
 
 #import "QueryData.h"
 #import "Event.h"
+#import "ContentScrollView.h"
+
+#define MY_MALLOC(x)    my_malloc( #x, x )
+#define MY_FREE(x)      my_free(x)
 
 @implementation QueryData
 
 @synthesize selectedMetas = _selectedMetas;
 @synthesize eventArray = _eventArray;
+//@synthesize eventFloats = _eventFloats;
+
 
 - (id) init
 {
@@ -25,6 +31,8 @@
         
         NSArray *emptyEvents = [[NSArray alloc] init];
         _eventArray = emptyEvents;
+        
+        //_eventFloats = create4D(2, 2, 2, 2);
     }
     
     return self;
@@ -91,7 +99,19 @@
                         NSDate *startDate = [dateFormatter dateFromString:startS];
                         NSDate *endDate = [cal dateByAddingComponents:components toDate:startDate options:0];
                         
+                        //                NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:e.start];
+                        //                NSInteger day = [components day];    
+                        //                NSInteger month = [components month];
+                        
                         Event *newE = [[Event alloc] initWithStartTime:startDate endTime:endDate];
+                        //calcualte normalized posisitions
+                        float x = (month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (day - 1.0f)*(BAND_WIDTH_P / 356.0f);
+                        float width = 25.0f;
+                        //fix erroneous widths
+                        if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
+                        newE.x = x;
+                        newE.width = width;
+                        
                         [newBands addObject:newE];
                     }
                     [newStacks addObject:newBands];
@@ -101,6 +121,38 @@
             [newEvents addObject:newPanels];
         }
         _eventArray = newEvents;
+    
+    
+    
+        //create array of floats for each band's events
+/*        float ****floats = create4D(panels, TEST_STACKS, TEST_BANDS, 6);
+        for (int i = 0; i < panels; i++)
+        {
+            for (int j = 0; j < TEST_STACKS; j++)
+            {
+                for (int k = 0; k < TEST_BANDS; k++)
+                {
+                    NSArray *bandEArray = [[[_eventArray objectAtIndex:i] objectAtIndex:j] objectAtIndex:k];
+                    for (int l = 0; l < [bandEArray count]; l++)
+                    {
+                        Event *e = [bandEArray objectAtIndex:l];
+                        NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:e.start];
+                        NSInteger day = [components day];    
+                        NSInteger month = [components month];
+                        float x = (month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (day - 1.0f)*(BAND_WIDTH_P / 356.0f);
+                        float width = 25.0f;
+                        //fix erroneous widths
+                        if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
+                        
+                        //add to float array
+                        floats[i][j][k][l*2] = x;
+                        floats[i][j][k][(l*2)+1] = width;
+                    }            
+                }
+            }
+        }
+        NSLog(@"Test float[0][0][0][0]: %f", floats[0][0][0][0]);
+*/
     }
 
     return self;
@@ -122,6 +174,49 @@
     return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
 }
 
+
+#pragma mark -
+#pragma mark C-style Arrays
+
+// Cusom malloc
+void *my_malloc ( char *expr, size_t size )
+{
+    void *result = malloc( size );
+    printf( "Malloc(%s) is size %lu, returning %p\n", expr, (unsigned long)size, result );
+    return result;
+}
+// Custom free
+void my_free( void *ptr )
+{
+    printf( "Free(%p)\n", ptr );
+    free( ptr );
+}
+/**
+ *  Create 4-dimensional arrat of floats [x][y][r][c]
+ */
+float ****create4D ( int max_x, int max_y, int max_r, int max_c )
+{
+    float ****all_x = MY_MALLOC( max_x * sizeof *all_x );
+    float  ***all_y = MY_MALLOC( max_x * max_y * sizeof *all_y );
+    float   **all_r = MY_MALLOC( max_x * max_y * max_r * sizeof *all_r );
+    float    *all_c = MY_MALLOC( max_x * max_y * max_r * max_c * sizeof *all_c );
+    float ****result = all_x;
+    int x, y, r;
+    
+    for ( x = 0 ; x < max_x ; x++, all_y += max_y ) {
+        result[x] = all_y;
+        for ( y = 0 ; y < max_y ; y++, all_r += max_r ) {
+            result[x][y] = all_r;
+            for ( r = 0 ; r < max_r ; r++, all_c += max_c ) {
+                result[x][y][r] = all_c;
+            }
+        }
+    }
+    
+    return result;
+}
+
+
 /**
  *  Overridden copying protocol for the NSObject 'copy' internals.
  *  Required to store the object in a property with 'copy' descriptor, or to call 'copy' on an object.
@@ -134,8 +229,17 @@
     
     copy.selectedMetas = newMetas;
     copy.eventArray = newEvents;
+//    copy.eventFloats = _eventFloats;
     return copy;
 }
+
+/*- (void)dealloc
+{
+    MY_FREE( _eventFloats[0][0][0] );
+    MY_FREE( _eventFloats[0][0] );
+    MY_FREE( _eventFloats[0] );
+    MY_FREE( _eventFloats );
+}*/
 
 
 @end

@@ -20,11 +20,20 @@
  *  - [][][x][] specifies the band number
  *  - [][][][x] specifies the event number
  */
-@property (nonatomic, copy) NSArray *eventArray;    
+@property (nonatomic, copy) NSArray *eventArray;   
+/**
+ *  4-dimensional array similar to eventArray's mapping.
+ *  Instead contains two floats for each event as normalized drawing dimensions for event rects.
+ */
+//@property () float ****eventFloats;
 
 - (id) initTestWithPanels:(int)panels;
 - (int)panelNum;
 - (int)stackNum;
 - (int)bandNum;
+
+float ****create4D ( int max_x, int max_y, int max_r, int max_c );
+void my_free( void *ptr );
+void *my_malloc ( char *expr, size_t size );
 
 @end

@@ -12,6 +12,8 @@
 
 @synthesize start = _start;
 @synthesize end = _end;
+@synthesize x = _x;
+@synthesize width = _width;
 
 - (id) initWithStartTime:(NSDate *)start endTime:(NSDate *)end
 {

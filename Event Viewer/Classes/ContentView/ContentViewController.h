@@ -31,7 +31,6 @@
     NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
     NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
     ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
-    int _currentPanel;                      // Currently selected panel
 }
 
 // MGUISplitViewController public properties
@@ -46,6 +45,7 @@
 ///////
 
 @property (nonatomic, copy) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
+@property (nonatomic, assign) int currentPanel;     // Currently selected panel
 
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer;

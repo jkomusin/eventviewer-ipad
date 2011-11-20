@@ -26,7 +26,6 @@
 @property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
 
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
-- (void)addPanelWithStacks:(int)stackNum bands:(int)bandNum;
 - (void)removePanel;
 - (void)switchToPanel:(int)panelNum;
 

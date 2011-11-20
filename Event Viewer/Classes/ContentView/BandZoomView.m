@@ -53,6 +53,7 @@
                               BAND_WIDTH_P,
                               (bandNum * (BAND_HEIGHT_P + 16.0) + 16.0) * stackNum);
     self.frame = frame;
+    [_bandDrawView resizeForStackNum:stackNum bandNum:bandNum];
     self.contentSize = _bandDrawView.frame.size;
 }
 

@@ -19,6 +19,7 @@
 
 @synthesize toolbar, popoverController, detailItem, _detailDescriptionLabel;
 @synthesize queryData = _queryData;
+@synthesize currentPanel = _currentPanel;
 
 
 /**
@@ -72,7 +73,7 @@
     QueryData *qdata = [[QueryData alloc] init];
     self.queryData = qdata;
     
-    _currentPanel = -1;
+    self.currentPanel = -1;
 }
 
 
@@ -92,45 +93,44 @@
     {
         return;
     }
-    QueryData *oldValue = _queryData;
+//    QueryData *oldValue = _queryData;
     _queryData = [queryData copy];
     ///////
     
     //update display with new data
     int newPanelNum = _queryData.panelNum;
     if (newPanelNum > 0)
-        _currentPanel = 0;
+        self.currentPanel = 0;
     else
-        _currentPanel = -1;
+        self.currentPanel = -1;
     
-//    [self resizeSubviews];
-//    [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
-    
-    int oldPanelNum = oldValue.panelNum;
-    if (newPanelNum > oldPanelNum)
-    {
-        [_contentScrollView addPanelWithStacks:_queryData.stackNum bands:_queryData.bandNum];
-        _contentScrollView.bandZoomView.bandDrawView.delegate = self;
-    }
-    else if (newPanelNum < oldPanelNum)
-    {
-        //update display
-        [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
-    }
+    [self resizeSubviews];
+    [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
     
     //updated scrubber
     [self initScrubber];
 }
 
+
+#pragma mark -
+#pragma mark View Sizing
+
 - (void)resizeSubviews
 {
     [_contentScrollView resizeForStackNum:_queryData.stackNum bandNum:_queryData.bandNum];
-    _contentScrollView.bandZoomView.bandDrawView.delegate = self;
+    //_contentScrollView.bandZoomView.bandDrawView.delegate = self;
 }
 
 
 #pragma mark -
-#pragma mark Panel Scrubber Control
+#pragma mark Panel Control
+
+- (void)setCurrentPanel:(int)panelNum
+{
+    _currentPanel = panelNum;
+    [_panelScrubber setValue:(float)panelNum animated:YES];
+    [_contentScrollView switchToPanel:panelNum];
+}
 
 /**
  *  Initialize/re-initialize scrubber with the current data model.
@@ -144,20 +144,17 @@
     {
         [_panelScrubber setValue:_panelScrubber.maximumValue animated:YES];
     }
-    //remove all buttons, noting active ones
-    NSMutableArray *active = [[NSMutableArray alloc] init];
+    //remove all buttons
     if (_scrubberButtons.count != panelNum)
     {
         for (UIButton *b in _scrubberButtons)
         {
-            if ([b titleColorForState:UIControlStateNormal] == [UIColor redColor])
-            {
-                [self buttonPressed:b];
-                [active addObject:[NSNumber numberWithInt:[_scrubberButtons indexOfObject:b]]];
-            }
             [b removeFromSuperview];
         }
     }
+    //remove all overlays
+    NSArray *emptyOverlays = [[NSArray alloc] init];
+    _panelOverlays = emptyOverlays;
     //add new buttons
     UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
     UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
@@ -190,12 +187,6 @@
 
     int roundVal = roundf((float)_panelScrubber.value);
     [_contentScrollView switchToPanel:roundVal];
-    //reactivate selected buttons
-    for (NSNumber *n in active)
-    {
-        id butt = [_scrubberButtons objectAtIndex:[n integerValue]];
-        [self buttonPressed:butt];
-    }
 }
 
 /**
@@ -210,8 +201,7 @@
     
     if (_currentPanel != roundVal)
     {
-        _currentPanel = roundVal;
-        [_contentScrollView switchToPanel:roundVal];
+        self.currentPanel = roundVal;
         NSLog(@"Switching to panel %d", roundVal);
     }
 }
@@ -316,15 +306,6 @@
 - (NSArray *) bandsRequestOverlays
 {
     return [_panelOverlays copy];
-}
-
-/**
- *  Bands have resized due to differring stack and band count.
- *  Notifies all related views to resize, through a chain of each subview notifying its subviews.
- */
-- (void)bandsHaveResized
-{
-    [_contentScrollView resizeForStackNum:_queryData.stackNum bandNum:_queryData.bandNum];
 }
 
 
