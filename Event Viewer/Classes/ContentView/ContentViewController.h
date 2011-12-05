@@ -2,6 +2,7 @@
 #import <UIKit/UIKit.h>
 #import "MGSplitViewController.h"
 #import "BandDrawView.h"
+#import "ContentScrollView.h"
 
 @class QueryViewController;
 @class QueryData;
@@ -12,26 +13,7 @@
  *
  *  Used in Event Viewer to display the results of a query.
  */
-@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate, BandDrawViewDelegate> 
-{
-    // MGUISplitViewController private properties
-	IBOutlet MGSplitViewController *splitController;
-	IBOutlet UIBarButtonItem *toggleItem;
-	IBOutlet UIBarButtonItem *verticalItem;
-	IBOutlet UIBarButtonItem *dividerStyleItem;
-	IBOutlet UIBarButtonItem *masterBeforeDetailItem;
-    UIPopoverController *popoverController;
-    UIToolbar *toolbar;
-    id detailItem;
-    UILabel *_detailDescriptionLabel;
-    ///////
-    
-    UISlider *_panelScrubber;               // Scrubber at the bottom of the results window that controls the display of overlaid panels
-    UIView *_scrubberBar;                   // Frame for the panelScrubber
-    NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
-    NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
-    ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
-}
+@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate, BandDrawViewDelegate, ContentViewDelegate> 
 
 // MGUISplitViewController public properties
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;

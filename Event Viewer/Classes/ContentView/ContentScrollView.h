@@ -9,24 +9,32 @@
 #import <UIKit/UIKit.h>
 
 @class BandZoomView;
+@class QueryData;
 
 // Constants containing dimensions of bands in each device orientation.
 //  All other measurements of UI elements are based off of these dimensions.
-#define BAND_HEIGHT_P 64.0
-#define BAND_HEIGHT_L 48.0
-#define BAND_WIDTH_P 512.0
-#define BAND_WIDTH_L 369.0
+#define BAND_HEIGHT_P 64.0f
+#define BAND_HEIGHT_L 48.0f
+#define BAND_WIDTH_P 529.0f
+#define BAND_WIDTH_L 369.0f
+#define BAND_SPACING 8.0f
+#define STACK_SPACING 32.0f
+
+@protocol ContentViewDelegate
+
+@optional
+- (QueryData *)contentViewRequestQueryData;
+
+@end
 
 @interface ContentScrollView : UIScrollView
-{
-    NSArray *_panelViews;   // Static array of all PanelViews
-}
 
+@property (nonatomic, strong) id<ContentViewDelegate> dataDelegate;
 @property (nonatomic, assign) int currentPanel;      // Index in the panelViews array of the panel currently selected by the scrubber's movable selector (0-indexed, -1 indicates no panes exist)
 @property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
 
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
-- (void)removePanel;
+- (void)createLabels;
 - (void)switchToPanel:(int)panelNum;
 
 @end

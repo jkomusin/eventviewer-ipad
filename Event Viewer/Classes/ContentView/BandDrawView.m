@@ -12,8 +12,19 @@
 #import "Event.h"
 
 @implementation BandDrawView
+{
+    id<BandDrawViewDelegate> delegate;
+    NSArray *_colorArray;
+	
+	float zoomScale;
+	float originalWidth;
+}
 
 @synthesize delegate;
+
+// Static array containing labels for timeline drawing.
+static NSArray *EVMonthLabels = nil;
++ (void)initialize { if(!EVMonthLabels) {EVMonthLabels = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil]; } }
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -30,7 +41,7 @@
     CGRect frame = CGRectMake(0.0f, 
                               0.0f, 
                               BAND_WIDTH_P, 
-                              (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f) * stackNum);   
+                              (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);   
     
     if ((self = [super initWithFrame:frame]))
     {
@@ -39,6 +50,9 @@
         
         NSArray *newColors = [[NSArray alloc] init];
         _colorArray = newColors;
+		
+		originalWidth = frame.size.width;
+		zoomScale = 1.0f;
     }
     
     return self;
@@ -49,7 +63,7 @@
     CGRect frame = CGRectMake(0.0f, 
                               0.0f, 
                               BAND_WIDTH_P, 
-                              (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f) * stackNum);
+                              (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
     self.frame = frame;
 }
 
@@ -57,18 +71,41 @@
 #pragma mark -
 #pragma mark Drawing
 
+/**
+ *	Set the size of the frame manually, and notify the BandViews and TimelineView of the change
+ */
+- (void)setTransform:(CGAffineTransform)newValue;
+{                
+	zoomScale = newValue.a;
+	if (zoomScale < 1.0)
+		zoomScale = 1.0;
+	NSLog(@"New transform value: %f", zoomScale);
+	
+	//modify the innverview's frame
+	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, originalWidth * zoomScale, self.frame.size.height);
+}
+
 - (void)drawRect:(CGRect)rect 
 {
     NSLog(@"DRAW RECT!!!");
     
     QueryData *data = [delegate bandsRequestQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
- 
-    [self drawFramesWithData:data inContext:context];
-    
+	CGContextSetLineWidth(context, 1.0f);
+	
+	int wInt = self.frame.size.width/12.0f;
+	float monthWidth = (float)wInt;
+	
+	CGContextSetRGBStrokeColor(context, 0.75f, 0.75f, 0.75f, 1.0f);
+	[self drawTimelinesForData:data inContext:context withMonthWidth:monthWidth];
+	
+	CGContextSetRGBStrokeColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
+	CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
+    [self drawFramesWithData:data inContext:context withMonthWidth:monthWidth];
+	
     int currentPanel = [delegate bandsRequestCurrentPanel];
     BOOL currentPanelIsOverlaid = NO;
-    //draw all overlaid panels
+    // Overlaid panels
     NSArray *overlays = [delegate bandsRequestOverlays];
     for (NSNumber *i in overlays)
     {
@@ -91,33 +128,71 @@
  *  data is a copy of the current QueryData object
  *  context is the current drawing context reference
  */
-- (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context
-{
-	CGContextSetLineWidth(context, 2.0f);
-	CGContextSetRGBStrokeColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
-    
-    float stackHeight = (data.bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f);
+- (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
+{    
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
     for (int i = 0; i < data.stackNum; i++)
     {
         float stackY = stackHeight * i;
-        CGContextBeginPath(context);
-        CGContextMoveToPoint(context, 0.0f, stackY);
-        CGContextAddLineToPoint(context, BAND_WIDTH_P, stackY);
-        CGContextStrokePath(context);
         for (int j = 0; j < data.bandNum; j++)
         {
-            float bandY = (j * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
-            CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
-            CGContextStrokeRect(context, bandF);
+//            float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+//            CGRect bandF = CGRectMake(0.0f, bandY, self.frame.size.width, BAND_HEIGHT_P);
+//			bandF = CGRectInset(bandF, 0.5f, -0.5f);
+//			CGContextFillRect(context, bandF);
+//			CGContextStrokeRect(context, bandF);
+			float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+            CGRect bandF = CGRectMake(0.0f, bandY, width*12.0f, BAND_HEIGHT_P);
+			bandF = CGRectInset(bandF, 0.5f, -0.5f);
+			CGContextFillRect(context, bandF);
+			CGContextStrokeRect(context, bandF);
+
         }
     }
-    //draw end stack line
-    CGContextBeginPath(context);
-    CGContextMoveToPoint(context, 0.0f, self.frame.size.height);
-    CGContextAddLineToPoint(context, BAND_WIDTH_P, self.frame.size.height);
-    CGContextStrokePath(context);
 }
 
+/**
+ *	Draw all timelines for each stack.
+ *
+ *	data is a copy of the current QueryData object
+ */
+- (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
+{
+	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+	
+	if (data.timeScale == 1)
+	{
+		for (int m = 0; m < 12; m++)
+		{
+			// Containing rectangles
+//			CGRect monthF = CGRectMake(m*((BAND_WIDTH_P-13.0f)/12.0f+1.0f)+1.0f, 0.0f, (BAND_WIDTH_P-13.0f)/12.0f, self.frame.size.height);
+//			monthF = CGRectInset(monthF, -0.5f, 0.5f);
+//			CGContextStrokeRect(context, monthF);
+			int xInt = m * (int)width;
+			float x = xInt + 0.5f;
+			CGRect monthF = CGRectMake(x, 0.0f, width, self.frame.size.height);
+			monthF = CGRectInset(monthF, -0.5f, 0.5f);
+			CGContextStrokeRect(context, monthF);
+			
+			// Labels
+			for (int i = 0; i <= data.stackNum; i++)
+			{
+//				float stackY = stackHeight * i;
+//				NSString *blah = [EVMonthLabels objectAtIndex:m];
+//				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, (BAND_WIDTH_P-13.0f)/12.0f, 32.0f);
+//				[blah drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:14.0f] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
+				float stackY = stackHeight * i;
+				NSString *month = [EVMonthLabels objectAtIndex:m];
+				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, width, 32.0f);
+				[month drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:14.0f] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
+			}
+		}
+	}
+	else
+	{
+		NSLog(@"ERROR: Undefined timescale: %d", data.timeScale);
+	}
+}
 
 /**
  *  Draw all events for a specific panel.
@@ -131,7 +206,7 @@
     UIColor *eColor = [self getColorForPanel:panel];
     [eColor setFill];
     int bandNum = [[[eArray lastObject] lastObject] count];
-    float stackHeight = (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f);
+    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
 
     int stackCount = 0;
     for (NSArray *stackArr in [eArray objectAtIndex:panel])
@@ -140,77 +215,19 @@
         int bandCount = 0;
         for (NSArray *bandArr in stackArr)
         {
-            float bandY = (bandCount++ * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
+            float bandY = bandCount++ * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
             for (Event *e in bandArr)
             {
-                float x = e.x;
-                float width = e.width;
+                int intX = (int)(e.x * zoomScale);
+				float x = (float)intX + 0.5f;
+                int intW = (int)(e.width * zoomScale);
+				float width = (float)intW;
                 CGRect eRect = CGRectMake(x, 
                                           bandY, 
                                           width, 
                                           BAND_HEIGHT_P);
                 CGContextFillRect(context, eRect);
-
             }
-        }
-    }
-    
-/*    for (int i = 0; i < stackNum; i++)
-    {
-        float stackY = stackHeight * i;
-        for (int j = 0; j < bandNum; j++)
-        {
-            float bandY = (j * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
-            [eColor setFill];
-            NSArray *bandEArray = [[[eArray objectAtIndex:panel] objectAtIndex:i] objectAtIndex:j];
-            for (Event *e in bandEArray)
-            {
-                NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:e.start];
-                NSInteger day = [components day];    
-                NSInteger month = [components month];
-                float x = (month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (day - 1.0f)*(BAND_WIDTH_P / 356.0f);
-                float width = 25.0f;
-                //fix erroneous widths
-                if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
-                CGRect eRect = CGRectMake(x, 
-                                          bandY, 
-                                          width, 
-                                          BAND_HEIGHT_P);
-                CGContextFillRect(context, eRect);
-            }            
-        }
-    }
-*/
-}
-
-
-- (void)drawEventsForPanel:(int)panel fromData:(QueryData *)data inContext:(CGContextRef)context
-{
-    NSArray *eArray = data.eventArray;
-    UIColor *eColor = [self getColorForPanel:panel];
-    int stackNum = [[eArray lastObject] count];
-    int bandNum = [[[eArray lastObject] lastObject] count];
-    float stackHeight = (bandNum * (BAND_HEIGHT_P + 16.0f) + 16.0f);
-    
-    for (int i = 0; i < stackNum; i++)
-    {
-        float stackY = stackHeight * i;
-        for (int j = 0; j < bandNum; j++)
-        {
-            float bandY = (j * (BAND_HEIGHT_P + 16.0f) + 16.0f) + stackY;
-            [eColor setFill];
-            int eCount = [[[[eArray objectAtIndex:panel] objectAtIndex:i] objectAtIndex:j] count];
-            for (int k = 0; k < eCount; k++)
-            {
-//                float x = data.eventFloats[panel][i][j][k*2];
-//                float width = data.eventFloats[panel][i][j][(k*2)+1];
-//                NSLog(@"floats: [%d][%d][%d][%d]\nx: %f\nwidth: %f",panel, i, j, k*2, x, width);
-//                CGRect eRect = CGRectMake(x, 
-//                                          bandY, 
-//                                          width, 
-//                                          BAND_HEIGHT_P);
-//                CGContextFillRect(context, eRect);
-            }            
         }
     }
 }

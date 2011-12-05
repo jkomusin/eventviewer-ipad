@@ -16,6 +16,25 @@
 
 
 @implementation ContentViewController
+{
+    // MGUISplitViewController private properties
+	IBOutlet MGSplitViewController *splitController;
+	IBOutlet UIBarButtonItem *toggleItem;
+	IBOutlet UIBarButtonItem *verticalItem;
+	IBOutlet UIBarButtonItem *dividerStyleItem;
+	IBOutlet UIBarButtonItem *masterBeforeDetailItem;
+    UIPopoverController *popoverController;
+    UIToolbar *toolbar;
+    id detailItem;
+    UILabel *_detailDescriptionLabel;
+    ///////
+    
+    UISlider *_panelScrubber;               // Scrubber at the bottom of the results window that controls the display of overlaid panels
+    UIView *_scrubberBar;                   // Frame for the panelScrubber
+    NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
+    NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
+    ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
+}
 
 @synthesize toolbar, popoverController, detailItem, _detailDescriptionLabel;
 @synthesize queryData = _queryData;
@@ -31,7 +50,7 @@
 {
     [super viewDidLoad];
     
-    //create panelScrubber to navigate between panel overlays 
+    // panelScrubber
     CGRect scrubberBarFrame = CGRectMake(0.0, 924.0, 768.0, 100.0);
     UIView *scrubberBar = [[UIView alloc] initWithFrame:scrubberBarFrame];
     _scrubberBar = scrubberBar;
@@ -54,22 +73,23 @@
     [_scrubberBar addSubview:_panelScrubber];
     [self.view addSubview:_scrubberBar];
     
-    //initialize empty button array
+    // Button array
     NSArray *tmp = [[NSArray alloc] init];
     _scrubberButtons = tmp;
     
-    //initialize empty overlay array
+    // Overlay array
     NSArray *overlays = [[NSArray alloc] init];
     _panelOverlays = overlays;
     
-    //create scroll view for content
+    // Scroll view for content
     CGRect csvFrame = CGRectMake(0.0, 44.0, 768.0, 880.0);
     ContentScrollView *csv = [[ContentScrollView alloc] initWithFrame:csvFrame];
+	[csv setDataDelegate:self];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
     _contentScrollView.bandZoomView.bandDrawView.delegate = self;
     
-    //create QueryData model
+    // QueryData model
     QueryData *qdata = [[QueryData alloc] init];
     self.queryData = qdata;
     
@@ -97,7 +117,7 @@
     _queryData = [queryData copy];
     ///////
     
-    //update display with new data
+    // Update display with new data
     int newPanelNum = _queryData.panelNum;
     if (newPanelNum > 0)
         self.currentPanel = 0;
@@ -107,7 +127,7 @@
     [self resizeSubviews];
     [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
     
-    //updated scrubber
+    // Re-initialize scrubber
     [self initScrubber];
 }
 
@@ -144,7 +164,7 @@
     {
         [_panelScrubber setValue:_panelScrubber.maximumValue animated:YES];
     }
-    //remove all buttons
+    // Remove all buttons
     if (_scrubberButtons.count != panelNum)
     {
         for (UIButton *b in _scrubberButtons)
@@ -152,10 +172,10 @@
             [b removeFromSuperview];
         }
     }
-    //remove all overlays
+    // Remove all overlays
     NSArray *emptyOverlays = [[NSArray alloc] init];
     _panelOverlays = emptyOverlays;
-    //add new buttons
+    // New buttons
     UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
     UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
     NSMutableArray *butts = [[NSMutableArray alloc] init];   
@@ -165,13 +185,13 @@
         if (panelNum == 1)
             frame = CGRectMake(90.0f+(568.0f/2.0f), 
                                   50.0f, 
-                                  20.0f, 
-                                  20.0f);
+                                  40.0f, 
+                                  40.0f);
         else
             frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i, 
                                50.0f, 
-                               20.0f, 
-                               20.0f);
+                               40.0f, 
+                               40.0f);
         
         UIButton *newb = [[UIButton alloc] initWithFrame:frame];
         newb.opaque = YES;
@@ -232,7 +252,7 @@
 {
     UIButton *b = (UIButton *)sender;
     if ([b titleColorForState:UIControlStateNormal] == [UIColor greenColor])
-    {   //enable overlay
+    {   // Enable overlay
         UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
         [b setBackgroundImage:activeImg forState:UIControlStateNormal];
         [b setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
@@ -242,7 +262,7 @@
         _panelOverlays = overlays;
     }
     else
-    {   //disable overlay
+    {   // Disable overlay
         UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
         [b setBackgroundImage:inactiveImg forState:UIControlStateNormal];
         [b setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
@@ -308,6 +328,14 @@
     return [_panelOverlays copy];
 }
 
+#pragma mark -
+#pragma mark ContentView delegation
+
+- (QueryData *)contentViewRequestQueryData
+{
+	return [_queryData copy];
+}
+
 
 
 // MGUISplitViewController functions
@@ -321,7 +349,7 @@
     if (detailItem != newDetailItem) {
         detailItem = newDetailItem;
         
-        // Update the view.
+        // Update the view
         [self configureView];
     }
 	
@@ -354,7 +382,7 @@
 	//NSLog(@"%@", NSStringFromSelector(_cmd));
 	
 	if (barButtonItem) {
-		barButtonItem.title = @"Popover";
+		barButtonItem.title = @"Query";
 		NSMutableArray *items = [[toolbar items] mutableCopy];
 		[items insertObject:barButtonItem atIndex:0];
 		[toolbar setItems:items animated:YES];

@@ -22,19 +22,15 @@
 
 
 @interface BandDrawView : UIView
-{
-    id<BandDrawViewDelegate> delegate;
-    NSArray *_colorArray;
-}
 
 @property (nonatomic, strong) id<BandDrawViewDelegate> delegate;
 
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 
-- (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context;
+- (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
+- (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eArray inContext:(CGContextRef)context;
-- (void)drawEventsForPanel:(int)panel fromData:(QueryData *)data inContext:(CGContextRef)context;
 - (UIColor *)getColorForPanel:(int)panelNum;
 
 @end

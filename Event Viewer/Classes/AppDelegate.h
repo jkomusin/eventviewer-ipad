@@ -8,12 +8,7 @@
 @class ContentViewController;
 @class MGSplitViewController;
 
-@interface AppDelegate : NSObject <UIApplicationDelegate> {
-    UIWindow *window;
-    MGSplitViewController *splitViewController;
-    QueryViewController *rootViewController;
-    ContentViewController *detailViewController;
-}
+@interface AppDelegate : NSObject <UIApplicationDelegate> 
 
 @property (nonatomic, strong) IBOutlet UIWindow *window;
 

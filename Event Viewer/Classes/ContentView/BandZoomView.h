@@ -10,7 +10,7 @@
 
 @class BandDrawView;
 
-@interface BandZoomView : UIScrollView
+@interface BandZoomView : UIScrollView <UIScrollViewDelegate>
 
 @property (nonatomic, strong) BandDrawView *bandDrawView;
 

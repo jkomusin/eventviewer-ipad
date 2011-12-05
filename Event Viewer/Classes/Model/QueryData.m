@@ -11,6 +11,7 @@
 @synthesize selectedMetas = _selectedMetas;
 @synthesize eventArray = _eventArray;
 //@synthesize eventFloats = _eventFloats;
+@synthesize timeScale = _timeScale;
 
 
 - (id) init
@@ -33,6 +34,8 @@
         _eventArray = emptyEvents;
         
         //_eventFloats = create4D(2, 2, 2, 2);
+		
+		_timeScale = -1;
     }
     
     return self;
@@ -50,19 +53,19 @@
         NSMutableArray *mutablePanels = [[NSMutableArray alloc] init];
         for (char c = 'A'; c < ('A' + panels); c++)
         {
-            NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
+            NSString *new = [[NSString alloc] initWithFormat:@"Panel %c", c];
             [mutablePanels addObject:new];
         }
         NSMutableArray *mutableStacks = [[NSMutableArray alloc] init];
         for (char c = 'A'; c < ('A' + TEST_STACKS); c++)
         {
-            NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
+            NSString *new = [[NSString alloc] initWithFormat:@"Stack %c", c];
             [mutableStacks addObject:new];
         }
         NSMutableArray *mutableBands = [[NSMutableArray alloc] init];
         for (char c = 'A'; c < ('A' + TEST_BANDS); c++)
         {
-            NSString *new = [[NSString alloc] initWithFormat:@"%c", c];
+            NSString *new = [[NSString alloc] initWithFormat:@"Band %c", c];
             [mutableBands addObject:new];
         }
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
@@ -106,6 +109,9 @@
                         Event *newE = [[Event alloc] initWithStartTime:startDate endTime:endDate];
                         //calcualte normalized posisitions
                         float x = (month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (day - 1.0f)*(BAND_WIDTH_P / 356.0f);
+						//round to nearest 0.5 for sharpness of drawing
+						int xInt = (int)x;
+						x = xInt + 0.5f;
                         float width = 25.0f;
                         //fix erroneous widths
                         if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
@@ -122,7 +128,7 @@
         }
         _eventArray = newEvents;
     
-    
+		_timeScale = 1;
     
         //create array of floats for each band's events
 /*        float ****floats = create4D(panels, TEST_STACKS, TEST_BANDS, 6);
@@ -230,6 +236,7 @@ float ****create4D ( int max_x, int max_y, int max_r, int max_c )
     copy.selectedMetas = newMetas;
     copy.eventArray = newEvents;
 //    copy.eventFloats = _eventFloats;
+	copy.timeScale = _timeScale;
     return copy;
 }
 

@@ -4,7 +4,12 @@
 #import "QueryData.h"
 
 @implementation QueryViewController
-
+{
+    MGSplitViewController *splitViewController;     // Master MGUISplitViewController
+    ContentViewController *detailViewController;    // ViewController displayed in the "primary" view of the MGUISplitViewController
+    
+    UITableViewCell *draggingCell;                  // Table cell currently being dragged, used as visually moving cell
+}
 
 @synthesize splitViewController = _splitViewController;
 @synthesize detailViewController = _detailViewController;
@@ -25,6 +30,7 @@
         [dragGesture setMaximumNumberOfTouches:2];
         [dragGesture setMinimumNumberOfTouches:2];
         [self.view addGestureRecognizer:dragGesture];
+		self.title = @"Select constraints:";
     }
     
     return self;

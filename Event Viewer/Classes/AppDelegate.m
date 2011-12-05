@@ -2,7 +2,12 @@
 #import "AppDelegate.h"
 
 @implementation AppDelegate
-
+{
+    UIWindow *window;
+    MGSplitViewController *splitViewController;
+    QueryViewController *rootViewController;
+    ContentViewController *detailViewController;
+}
 
 @synthesize window, splitViewController, rootViewController, detailViewController;
 

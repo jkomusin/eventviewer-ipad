@@ -26,6 +26,16 @@
  *  Instead contains two floats for each event as normalized drawing dimensions for event rects.
  */
 //@property () float ****eventFloats;
+/**
+ *	Smallest unit of time in the current query, determines scale of timelines.
+ *	Value must be an integer from -1 - 3, where:
+ *	   -1 = undefined
+ *		0 = database length
+ *		1 = year
+ *		2 = month
+ *		3 = day
+ */
+@property (nonatomic, assign) int timeScale;
 
 - (id) initTestWithPanels:(int)panels;
 - (int)panelNum;
