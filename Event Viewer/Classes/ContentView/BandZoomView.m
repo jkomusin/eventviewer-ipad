@@ -39,6 +39,8 @@
 		
 		self.maximumZoomScale = 10.0f;
 		self.minimumZoomScale = 1.0f;
+        self.bouncesZoom = NO;
+        
 		self.delegate = self;
         
         BandDrawView *bandView = [[BandDrawView alloc] initWithStackNum:stackNum bandNum:bandNum];
