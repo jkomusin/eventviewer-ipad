@@ -7,26 +7,20 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @class QueryData;
 @class ContentScrollView;
-
-@protocol BandDrawViewDelegate
-
-@optional
-- (QueryData *)bandsRequestQueryData;
-- (int)bandsRequestCurrentPanel;
-- (NSArray *)bandsRequestOverlays;
-
-@end
+@protocol DataDelegate;
 
 
 @interface BandDrawView : UIView
 
-@property (nonatomic, strong) id<BandDrawViewDelegate> delegate;
+@property (nonatomic, strong) id<DataDelegate> dataDelegate;
 
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
+- (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
 - (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;

@@ -14,6 +14,10 @@
 
 @synthesize bandDrawView = _bandDrawView;
 
+
+#pragma mark -
+#pragma mark Initialization
+
 - (id)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) 

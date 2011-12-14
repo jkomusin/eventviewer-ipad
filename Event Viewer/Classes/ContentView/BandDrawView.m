@@ -6,25 +6,33 @@
 //  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
 //
 
-#import "BandDrawView.h"
+#import "ContentViewController.h"
 #import "ContentScrollView.h"
+#import "BandDrawView.h"
 #import "QueryData.h"
 #import "Event.h"
 
+
 @implementation BandDrawView
 {
-    id<BandDrawViewDelegate> delegate;
+    id<DataDelegate> dataDelegate;
     NSArray *_colorArray;
 	
-	float zoomScale;
-	float originalWidth;
+	float _zoomScale;
+	float _originalWidth;
+    
+    NSArray *_layerArray;
 }
 
-@synthesize delegate;
+@synthesize dataDelegate = _dataDelegate;
 
 // Static array containing labels for timeline drawing.
 static NSArray *EVMonthLabels = nil;
 + (void)initialize { if(!EVMonthLabels) {EVMonthLabels = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil]; } }
+
+
+#pragma mark -
+#pragma mark Initialization
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -51,8 +59,10 @@ static NSArray *EVMonthLabels = nil;
         NSArray *newColors = [[NSArray alloc] init];
         _colorArray = newColors;
 		
-		originalWidth = frame.size.width;
-		zoomScale = 1.0f;
+		_originalWidth = frame.size.width;
+		_zoomScale = 1.0f;
+        
+        [self initLayersWithStackNum:stackNum bandNum:bandNum];
     }
     
     return self;
@@ -65,6 +75,19 @@ static NSArray *EVMonthLabels = nil;
                               BAND_WIDTH_P, 
                               (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
     self.frame = frame;
+    
+    [self initLayersWithStackNum:stackNum bandNum:bandNum];
+}
+
+- (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum
+{
+    NSMutableArray *newLayers = [[NSMutableArray alloc] initWithCapacity:stackNum];
+    for (int i = 0; i < stackNum; i++)
+    {
+        NSMutableArray *bandLayers = [[NSMutableArray alloc] initWithCapacity:bandNum];
+        [newLayers addObject:(NSArray *)bandLayers];
+    }
+    _layerArray = (NSArray *)newLayers;
 }
 
 
@@ -76,20 +99,20 @@ static NSArray *EVMonthLabels = nil;
  */
 - (void)setTransform:(CGAffineTransform)newValue;
 {                
-	zoomScale = newValue.a;
-	if (zoomScale < 1.0)
-		zoomScale = 1.0;
-	NSLog(@"New transform value: %f", zoomScale);
+	_zoomScale = newValue.a;
+	if (_zoomScale < 1.0)
+		_zoomScale = 1.0;
+	NSLog(@"New transform value: %f", _zoomScale);
 	
 	//modify the innverview's frame
-	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, originalWidth * zoomScale, self.frame.size.height);
+	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _zoomScale, self.frame.size.height);
 }
 
 - (void)drawRect:(CGRect)rect 
 {
     NSLog(@"DRAW RECT!!!");
     
-    QueryData *data = [delegate bandsRequestQueryData];
+    QueryData *data = [_dataDelegate delegateRequestsQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSetLineWidth(context, 1.0f);
 	
@@ -103,10 +126,10 @@ static NSArray *EVMonthLabels = nil;
 	CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
     [self drawFramesWithData:data inContext:context withMonthWidth:monthWidth];
 	
-    int currentPanel = [delegate bandsRequestCurrentPanel];
+    int currentPanel = [_dataDelegate delegateRequestsCurrentPanel];
     BOOL currentPanelIsOverlaid = NO;
     // Overlaid panels
-    NSArray *overlays = [delegate bandsRequestOverlays];
+    NSArray *overlays = [_dataDelegate delegateRequestsOverlays];
     for (NSNumber *i in overlays)
     {
         [self drawEventsForPanel:[i intValue] fromArray:data.eventArray inContext:context];
@@ -133,20 +156,18 @@ static NSArray *EVMonthLabels = nil;
     float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
     for (int i = 0; i < data.stackNum; i++)
     {
+        NSArray *stackLayerArray = [_layerArray objectAtIndex:i];
         float stackY = stackHeight * i;
         for (int j = 0; j < data.bandNum; j++)
         {
-//            float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
-//            CGRect bandF = CGRectMake(0.0f, bandY, self.frame.size.width, BAND_HEIGHT_P);
-//			bandF = CGRectInset(bandF, 0.5f, -0.5f);
-//			CGContextFillRect(context, bandF);
-//			CGContextStrokeRect(context, bandF);
 			float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
             CGRect bandF = CGRectMake(0.0f, bandY, width*12.0f, BAND_HEIGHT_P);
 			bandF = CGRectInset(bandF, 0.5f, -0.5f);
 			CGContextFillRect(context, bandF);
 			CGContextStrokeRect(context, bandF);
 
+            CALayer *bandLayer = [CALayer layer];
+            
         }
     }
 }
@@ -218,9 +239,9 @@ static NSArray *EVMonthLabels = nil;
             float bandY = bandCount++ * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
             for (Event *e in bandArr)
             {
-                int intX = (int)(e.x * zoomScale);
+                int intX = (int)(e.x * _zoomScale);
 				float x = (float)intX + 0.5f;
-                int intW = (int)(e.width * zoomScale);
+                int intW = (int)(e.width * _zoomScale);
 				float width = (float)intW;
                 CGRect eRect = CGRectMake(x, 
                                           bandY, 

@@ -6,6 +6,7 @@
 //  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
 //
 
+#import "ContentViewController.h"
 #import "ContentScrollView.h"
 #import "BandZoomView.h"
 #import "BandDrawView.h"
@@ -13,13 +14,17 @@
 
 @implementation ContentScrollView
 {
-	id<ContentViewDelegate> dataDelegate;
+	id<DataDelegate> dataDelegate;
     NSArray *_panelViews;   // Static array of all PanelViews
 }
 
-@synthesize dataDelegate;
+@synthesize dataDelegate = _dataDelegate;
 @synthesize currentPanel = _currentPanel;
 @synthesize bandZoomView = _bandZoomView;
+
+
+#pragma mark -
+#pragma mark Initialization
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -71,7 +76,7 @@
 
 - (void)createLabels
 {
-	QueryData *data = [dataDelegate contentViewRequestQueryData];
+	QueryData *data = [_dataDelegate delegateRequestsQueryData];
 	
 	// Remove old labels
 	for (UIView *sub in self.subviews)

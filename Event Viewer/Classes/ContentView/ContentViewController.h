@@ -8,12 +8,23 @@
 @class QueryData;
 @class ContentScrollView;
 
+@protocol DataDelegate
+
+@optional
+- (QueryData *)delegateRequestsQueryData;
+- (int)delegateRequestsCurrentPanel;
+- (NSArray *)delegateRequestsOverlays;
+- (int)delegateRequestsTimescale;
+
+@end
+
+
 /**
  *  "Primary" ViewController displayed in the MGUISplitViewController
  *
  *  Used in Event Viewer to display the results of a query.
  */
-@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate, BandDrawViewDelegate, ContentViewDelegate> 
+@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate, DataDelegate> 
 
 // MGUISplitViewController public properties
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;

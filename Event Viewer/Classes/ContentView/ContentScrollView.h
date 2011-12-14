@@ -10,6 +10,7 @@
 
 @class BandZoomView;
 @class QueryData;
+@protocol DataDelegate;
 
 // Constants containing dimensions of bands in each device orientation.
 //  All other measurements of UI elements are based off of these dimensions.
@@ -20,16 +21,10 @@
 #define BAND_SPACING 8.0f
 #define STACK_SPACING 32.0f
 
-@protocol ContentViewDelegate
-
-@optional
-- (QueryData *)contentViewRequestQueryData;
-
-@end
 
 @interface ContentScrollView : UIScrollView
 
-@property (nonatomic, strong) id<ContentViewDelegate> dataDelegate;
+@property (nonatomic, strong) id<DataDelegate> dataDelegate;
 @property (nonatomic, assign) int currentPanel;      // Index in the panelViews array of the panel currently selected by the scrubber's movable selector (0-indexed, -1 indicates no panes exist)
 @property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
 

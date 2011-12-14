@@ -27,6 +27,8 @@
 		84A7E5D11466FF6B006A6022 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 84A7E5D01466FF6B006A6022 /* Event.m */; };
 		84BA23871452088B009566D9 /* scrubber.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BA23861452088A009566D9 /* scrubber.png */; };
 		84E626651451FC58007DDF98 /* QueryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 84E626641451FC58007DDF98 /* QueryData.m */; };
+		CA191096149840E6004C8C4B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA191095149840E6004C8C4B /* QuartzCore.framework */; };
+		CA1910C914984471004C8C4B /* BandLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CA1910C814984471004C8C4B /* BandLayer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +67,9 @@
 		84E626641451FC58007DDF98 /* QueryData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryData.m; path = Model/QueryData.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Event Viewer-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Event Viewer-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		C9CDF7A211FDA7890016C1C5 /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.markdown; sourceTree = "<group>"; };
+		CA191095149840E6004C8C4B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		CA1910C714984471004C8C4B /* BandLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BandLayer.h; path = ContentView/BandLayer.h; sourceTree = "<group>"; };
+		CA1910C814984471004C8C4B /* BandLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BandLayer.m; path = ContentView/BandLayer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA191096149840E6004C8C4B /* QuartzCore.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				2892E4100DC94CBA00A64D0F /* CoreGraphics.framework in Frameworks */,
@@ -140,6 +146,7 @@
 			children = (
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				CA191095149840E6004C8C4B /* QuartzCore.framework */,
 				2892E40F0DC94CBA00A64D0F /* CoreGraphics.framework */,
 			);
 			name = Frameworks;
@@ -175,6 +182,8 @@
 				844EB5201466117D00711EC6 /* BandZoomView.m */,
 				847D131414548CC000B1DA76 /* BandDrawView.h */,
 				847D131514548CC000B1DA76 /* BandDrawView.m */,
+				CA1910C714984471004C8C4B /* BandLayer.h */,
+				CA1910C814984471004C8C4B /* BandLayer.m */,
 			);
 			name = ContentView;
 			sourceTree = "<group>";
@@ -283,6 +292,7 @@
 				847D131614548CC000B1DA76 /* BandDrawView.m in Sources */,
 				844EB5211466117D00711EC6 /* BandZoomView.m in Sources */,
 				84A7E5D11466FF6B006A6022 /* Event.m in Sources */,
+				CA1910C914984471004C8C4B /* BandLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

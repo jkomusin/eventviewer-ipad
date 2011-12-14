@@ -41,6 +41,9 @@
 @synthesize currentPanel = _currentPanel;
 
 
+#pragma mark -
+#pragma mark Initialization
+
 /**
  *  We may initiaize here, as the view is always loaded into memory
  *
@@ -87,7 +90,7 @@
 	[csv setDataDelegate:self];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
-    _contentScrollView.bandZoomView.bandDrawView.delegate = self;
+    _contentScrollView.bandZoomView.bandDrawView.dataDelegate = self;
     
     // QueryData model
     QueryData *qdata = [[QueryData alloc] init];
@@ -302,12 +305,12 @@
 
 
 #pragma mark -
-#pragma mark BandDrawView delegation
+#pragma mark Data delegation
 
 /**
  *  Returns a COPY of the query data model, to keep things threadsafe.
  */
-- (QueryData *) bandsRequestQueryData
+- (QueryData *)delegateRequestsQueryData
 {
     return [_queryData copy];
 }
@@ -315,7 +318,7 @@
 /**
  *  Returns the currently viewed panel (0-indexed)
  */
-- (int) bandsRequestCurrentPanel
+- (int)delegateRequestsCurrentPanel
 {
     return _currentPanel;
 }
@@ -323,17 +326,17 @@
 /**
  *  Returns a COPY of the array of indexes (0-indexed) of panels currently selected as overlays.
  */
-- (NSArray *) bandsRequestOverlays
+- (NSArray *)delegateRequestsOverlays
 {
     return [_panelOverlays copy];
 }
 
-#pragma mark -
-#pragma mark ContentView delegation
-
-- (QueryData *)contentViewRequestQueryData
+/**
+ *  Returns the current timescale of stacks
+ */
+- (int)delegateRequestsTimescale
 {
-	return [_queryData copy];
+    return _queryData.timeScale;
 }
 
 
