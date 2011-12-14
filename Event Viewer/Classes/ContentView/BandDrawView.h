@@ -10,18 +10,21 @@
 #import <QuartzCore/QuartzCore.h>
 
 @class QueryData;
+@class BandLayer;
 @class ContentScrollView;
 @protocol DataDelegate;
 
-@protocol ZoomDelegate
+@protocol DrawDelegate
 
 @required
 - (float)delegateRequestsZoomscale;
 - (UIColor *)getColorForPanel:(int)panelNum;
+- (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
+- (CALayer *)getStackLayerForStack:(int)stackNum;
 
 @end
 
-@interface BandDrawView : UIView <ZoomDelegate>
+@interface BandDrawView : UIView <DrawDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
 

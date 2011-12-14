@@ -22,7 +22,10 @@
 	float _zoomScale;
 	float _originalWidth;
     
-    NSArray *_layerArray;
+    NSArray *_stackLayerArray;  // Array of all stack layers (superlayers to their respective band layers)
+    NSArray *_bandLayerArray;   // 2-dimensions array of band layers where for array[i][j], 
+                                //  i = 0-based index of stack
+                                //  j = 0-based index of band
 }
 
 @synthesize dataDelegate = _dataDelegate;
@@ -35,16 +38,12 @@ static NSArray *EVMonthLabels = nil;
 #pragma mark -
 #pragma mark Initialization
 
-- (id)initWithFrame:(CGRect)frame
-{
-    if ((self = [super initWithFrame:frame]))
-    {
-        // Initialization code
-    }
-    
-    return self;
-}
-
+/**
+ *  Initialize the drawing view's size based on the number of stacks and panels in the current query.
+ *
+ *  stackNum is the number of stacks in the current query (min of 0)
+ *  bandNum is the number of bands in the current query (min of 0)
+ */
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum
 {
     CGRect frame = CGRectMake(0.0f, 
@@ -69,6 +68,13 @@ static NSArray *EVMonthLabels = nil;
     return self;
 }
 
+/**
+ *  Re-initializes the drawing view's size based on the number of stack and panels in the current query.
+ *  Should be called whenever the number of stacks or bands change (ex: in the event of a re-query).
+ *
+ *  stackNum is the number of stacks in the current query (min of 0)
+ *  bandNum is the number of bands in the current query (min of 0)
+ */
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
 {
     CGRect frame = CGRectMake(0.0f, 
@@ -80,56 +86,127 @@ static NSArray *EVMonthLabels = nil;
     [self initLayersWithStackNum:stackNum bandNum:bandNum];
 }
 
+/**
+ *  Initializes the draw view with the layers where drawing of events will take place.
+ *
+ *  stackNum is the number of stacks in the current query (min of 0)
+ *  bandNum is the number of bands in the current query (min of 0)
+ */
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum
-{
-    // Remove all old layers
-//    if (_layerArray)
-//    {
-//        for (CALayer *c in _layerArray)
-//        {
-//            [c removeFromSuperlayer];
-//        }
-//    }
+{    
+    // Release old layers
+    if (_stackLayerArray)
+    {
+        for (CALayer *s in [_stackLayerArray mutableCopy])
+        {
+            for (BandLayer *b in [[s sublayers] mutableCopy])
+            {
+                [b removeFromSuperlayer];
+            }
+            [s removeFromSuperlayer];
+        }
+    }
     
-    // Create new stack layers
-    NSMutableArray *newLayers = [[NSMutableArray alloc] initWithCapacity:stackNum];
+    NSMutableArray *newStackLayers = [[NSMutableArray alloc] init];
+    NSMutableArray *newBandLayers = [[NSMutableArray alloc] init];
     float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    
+    // Create new stack layers as superlayers
     for (int i = 0; i < stackNum; i++)
     {
         CALayer *stackLayer = [CALayer layer];
-        float stackY = stackHeight * i;
+        float stackY = stackHeight * i + STACK_SPACING;
         CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH_P, stackHeight);
         stackLayer.frame = stackF;
         stackLayer.delegate = stackLayer;
-        // Create new band layers
-//        NSMutableArray *bandLayers = [[NSMutableArray alloc] initWithCapacity:bandNum];
+        NSMutableArray *currentBandLayers = [[NSMutableArray alloc] init];
+        
+        // Create new band layers as sublayers of stack layers
         for (int j = 0; j < bandNum; j++)
         {
             BandLayer *bandLayer = [BandLayer layer];
-            float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+            float bandY = j * (BAND_HEIGHT_P + BAND_SPACING);
             CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
+            NSLog(@"Creating band with dimensions (%f, %f, %f, %f)", bandF.origin.x, bandF.origin.y, bandF.size.width, bandF.size.height);
             bandLayer.frame = bandF;
+            bandLayer.opaque = YES;
             bandLayer.delegate = bandLayer;
 			bandLayer.dataDelegate = _dataDelegate;
 			bandLayer.zoomDelegate = self;
+            bandLayer.stackNumber = i;
+            bandLayer.bandNumber = j;
             [stackLayer addSublayer:bandLayer];
+            [currentBandLayers addObject:bandLayer];
         }
+        
         [self.layer addSublayer:stackLayer];
-        [newLayers addObject:stackLayer];
+        [newStackLayers addObject:stackLayer];
+        [newBandLayers addObject:(NSArray *)currentBandLayers];
     }
-    _layerArray = (NSArray *)newLayers;
+    _stackLayerArray = (NSArray *)newStackLayers;
+    _bandLayerArray = (NSArray *)newBandLayers;
 }
 
 
 #pragma mark -
-#pragma mark Delegation
+#pragma mark Drawing delegation
 
+/**
+ *  Returns the current zoomScale of the display to the requester.
+ */
 - (float)delegateRequestsZoomscale
 {
-	NSLog(@"Returning zoomScale of: %f", _zoomScale);
     return _zoomScale;
 }
 
+/**
+ *  Retrieve color for events of a specified panel.
+ *  If no color has been created for the panel, create one and add it to the array.
+ */
+- (UIColor *)getColorForPanel:(int)panelNum
+{
+    UIColor *eColor;
+    
+    if ([_colorArray count] < panelNum+1)
+    {
+        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
+        eColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
+        NSMutableArray *mutableColors = [_colorArray mutableCopy];
+        [mutableColors addObject:eColor];
+        _colorArray = mutableColors;
+    }
+    else
+    {
+        eColor = [_colorArray objectAtIndex:panelNum];
+    }
+    
+    return eColor;
+}
+
+/**
+ *  Returns the specified layer for band drawing.
+ *
+ *  stacknNum is the 0-based index for the stack containing the band
+ *  bandNum is the 0-based index for the stack containing the band
+ */
+- (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum
+{
+    NSLog(@"Finding band layer");
+    return [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
+}
+
+/**
+ *  Returns the specified layer for containing band layers.
+ *
+ *  stackNum is the 0-based index for the stack containing the band
+ */
+- (CALayer *)getStackLayerForStack:(int)stackNum
+{
+    NSLog(@"Finding stack layer");
+    return [_stackLayerArray objectAtIndex:stackNum];
+}
 
 #pragma mark -
 #pragma mark Drawing
@@ -142,9 +219,18 @@ static NSArray *EVMonthLabels = nil;
 	_zoomScale = newValue.a;
 	if (_zoomScale < 1.0)
 		_zoomScale = 1.0;
-	NSLog(@"New transform value: %f", _zoomScale);
 	
 	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _zoomScale, self.frame.size.height);
+    
+    for (CALayer *s in _stackLayerArray)
+    {
+        for (BandLayer *b in [s sublayers])
+        {
+            CGRect bandF = b.frame;
+            bandF.size.width = BAND_WIDTH_P * _zoomScale;
+            b.frame = bandF;
+        }
+    }
 }
 
 - (void)drawRect:(CGRect)rect 
@@ -160,35 +246,9 @@ static NSArray *EVMonthLabels = nil;
 	
 	CGContextSetRGBStrokeColor(context, 0.75f, 0.75f, 0.75f, 1.0f);
 	[self drawTimelinesForData:data inContext:context withMonthWidth:monthWidth];
-
-/*
-	CGContextSetRGBStrokeColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
-	CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
-    [self drawFramesWithData:data inContext:context withMonthWidth:monthWidth];
-	
-    int currentPanel = [_dataDelegate delegateRequestsCurrentPanel];
-    BOOL currentPanelIsOverlaid = NO;
-    // Overlaid panels
-    NSArray *overlays = [_dataDelegate delegateRequestsOverlays];
-    for (NSNumber *i in overlays)
-    {
-        [self drawEventsForPanel:[i intValue] fromArray:data.eventArray inContext:context];
-        if ([i intValue] == currentPanel) 
-        {
-            currentPanelIsOverlaid = YES;
-        }
-    }
-    if (!currentPanelIsOverlaid && currentPanel != -1)
-    {
-        [self drawEventsForPanel:currentPanel fromArray:data.eventArray inContext:context];
-    }
- */
-
-//    [self.layer setNeedsDisplay];
     
-    for (CALayer *s in _layerArray)
+    for (CALayer *s in _stackLayerArray)
     {
-        NSLog(@"Calling setNeedsDisplay on stack");
         for (BandLayer *b in [s sublayers])
         {
             [b setNeedsDisplay];
@@ -304,31 +364,5 @@ static NSArray *EVMonthLabels = nil;
     }
 }
 
-
-/**
- *  Retrieve color for events of a specified panel.
- *  If no color has been created for the panel, create one and add it to the array.
- */
-- (UIColor *)getColorForPanel:(int)panelNum
-{
-    UIColor *eColor;
-
-    if ([_colorArray count] < panelNum+1)
-    {
-        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
-        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
-        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
-        eColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
-        NSMutableArray *mutableColors = [_colorArray mutableCopy];
-        [mutableColors addObject:eColor];
-        _colorArray = mutableColors;
-    }
-    else
-    {
-        eColor = [_colorArray objectAtIndex:panelNum];
-    }
-    
-    return eColor;
-}
 
 @end

@@ -10,15 +10,26 @@
 #import "ContentScrollView.h"
 #import "BandZoomView.h"
 #import "BandDrawView.h"
+#import "BandLayer.h"
 #import "QueryData.h"
 
 @implementation ContentScrollView
 {
 	id<DataDelegate> dataDelegate;
+    id<DrawDelegate> drawDelegate;
     NSArray *_panelViews;   // Static array of all PanelViews
+    
+    UILabel *_draggingLabel;        // Label currently being dragged
+    CALayer *_draggingStackLayer;   // Stack layer currently being dragged
+    BandLayer *_draggingBandLayer;  // Band layer currently being dragged
+    NSArray *_stackLabelArray;      // Array of labels for each stack
+    NSArray *_bandLabelArray;       // 2-dimensional array of labels for each band (indexed by stack then by band)
+    
+    float _draggingY;               // Previous y-coordinate of dragging gesture
 }
 
 @synthesize dataDelegate = _dataDelegate;
+@synthesize drawDelegate = _drawDelegate;
 @synthesize currentPanel = _currentPanel;
 @synthesize bandZoomView = _bandZoomView;
 
@@ -30,18 +41,25 @@
 {
     if ((self = [super initWithFrame:frame])) 
     {
+        [self createLabels];
+        
         NSArray *newArr = [[NSArray alloc] init];
         _panelViews = newArr;
         _currentPanel = -1;
         BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:0 bandNum:0];
         [self addSubview:zoomView];
         _bandZoomView = zoomView;
+        _drawDelegate = zoomView.bandDrawView;
         self.opaque = YES;
 		self.showsVerticalScrollIndicator = NO;
 		self.showsHorizontalScrollIndicator = NO;
 		[self setBackgroundColor:[UIColor whiteColor]];
-		
-		[self createLabels];
+        
+        UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+        [dragGesture setNumberOfTouchesRequired:1];
+        [self addGestureRecognizer:dragGesture];
+        
+        _draggingY = 0.0f;
     }
     
     return self;
@@ -87,6 +105,8 @@
 	
 	// Create new labels
 	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    NSMutableArray *newStackLabels = [[NSMutableArray alloc] init];
+    NSMutableArray *newBandLabels = [[NSMutableArray alloc] init];
     for (int i = 0; i < data.stackNum; i++)
     {
         float stackY = stackHeight * i;
@@ -97,18 +117,171 @@
 		NSString *stackM = [(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i];
 		[stackL setText:stackM];
 		[self addSubview:stackL];
+        [newStackLabels addObject:stackL];
 		
+        NSMutableArray *currentBandLabels = [[NSMutableArray alloc] init];
 		for (int j = 0; j < data.bandNum; j++)
         {
 			float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
             labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT_P);
-			UILabel *metaL = [[UILabel alloc] initWithFrame:labelF];
-			[metaL setTextAlignment:UITextAlignmentRight];
+			UILabel *bandL = [[UILabel alloc] initWithFrame:labelF];
+			[bandL setTextAlignment:UITextAlignmentRight];
 			NSString *meta = [(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j];
-			[metaL setText:meta];
-			[self addSubview:metaL];
+			[bandL setText:meta];
+			[self addSubview:bandL];
+            [self insertSubview:bandL belowSubview:_bandZoomView];
+            [currentBandLabels addObject:bandL];
+        }
+        [newBandLabels addObject:(NSArray *)currentBandLabels];
+    }
+    
+    _stackLabelArray = (NSArray *)newStackLabels;
+    _bandLabelArray = (NSArray *)newBandLabels;
+}
+
+
+#pragma mark -
+#pragma mark Drag-and-drop Handling
+
+/**
+ *  Initial entry point for a drag-and-drop gesture.
+ *  Deals with all actions occurring inside the LongPressGestureRecognizer.
+ *
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
+ */
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    switch ([gestureRecognizer state]) 
+    {
+        case UIGestureRecognizerStateBegan:
+            [self startDragging:gestureRecognizer];
+            break;
+        case UIGestureRecognizerStateChanged:
+            [self doDrag:gestureRecognizer];
+            break;
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+            [self stopDragging:gestureRecognizer];
+            break;
+        default:
+            break;
+    }
+}
+
+/**
+ *  Initialize the label and layer for dragging
+ *
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
+ */
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    CGPoint point = [gestureRecognizer locationInView:self];
+    _draggingY = point.y;
+    
+    // Find label and related layer
+    for (int i = 0; i < [_stackLabelArray count]; i++)
+    {
+        UILabel *s = [_stackLabelArray objectAtIndex:i];
+        if (CGRectContainsPoint(s.frame, point))
+        {
+            _draggingLabel = s;
+            [self insertSubview:s aboveSubview:_bandZoomView];
+            _draggingStackLayer = [drawDelegate getStackLayerForStack:i];
+            break;
         }
     }
+    if (!_draggingLabel)
+    {
+        for (int i = 0; i < [_bandLabelArray count]; i++)
+        {   
+            BOOL found = NO;
+            NSArray *bandArray = [_bandLabelArray objectAtIndex:i];
+            for (int j = 0; j < [bandArray count]; j++)
+            {
+                UILabel *b = [bandArray objectAtIndex:j];
+                if (CGRectContainsPoint(b.frame, point))
+                {
+                    _draggingLabel = b;
+                    _draggingBandLayer = [drawDelegate getBandLayerForStack:i band:j];
+                    found = YES;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+    }
+}
+
+/**
+ *  Initialize the temporary cell to be visually dragged across the screen.
+ *
+ *  cell is the table cell in the table view that has begun to be dragged.
+ *  origin is the point representing the absolute origin of the point in the MGUISplitViewController.
+ */
+- (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)origin
+{
+//    if(draggingCell != nil)
+//    {
+//        [draggingCell removeFromSuperview];
+//        draggingCell = nil;
+//    }
+//    
+//    CGRect frame = CGRectMake(origin.x, origin.y, cell.frame.size.width, cell.frame.size.height);
+//    
+//    draggingCell = [[UITableViewCell alloc] init];
+//    draggingCell.selectionStyle = UITableViewCellSelectionStyleBlue;
+//    draggingCell.textLabel.text = cell.textLabel.text;
+//    draggingCell.textLabel.textColor = cell.textLabel.textColor;
+//    draggingCell.highlighted = YES;
+//    draggingCell.frame = frame;
+//    draggingCell.alpha = 0.8;
+//    
+//    [_detailViewController.view addSubview:draggingCell];
+}
+
+/**
+ *  Move the temporary draggingCell to the new location specified by the gesture recognizer's new point.
+ *
+ *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ */
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    if (_draggingLabel)
+    {
+        CGPoint point = [gestureRecognizer locationInView:self];
+        [_draggingLabel setCenter:point];
+        
+        float yDiff = point.y - _draggingY;
+        _draggingY = point.y;
+        
+        if (_draggingBandLayer)
+        {
+            CGPoint pos = CGPointMake(_draggingBandLayer.position.x, 
+                                      _draggingBandLayer.position.y + yDiff);
+            [_draggingBandLayer setPosition:pos];
+        }
+        else if (_draggingStackLayer)
+        {
+            CGPoint pos = CGPointMake(_draggingStackLayer.position.x, 
+                                      _draggingStackLayer.position.y + yDiff);
+            [_draggingStackLayer setPosition:pos];
+        }
+        else
+            NSLog(@"ERROR! -- No layer associated with label");
+    }
+}
+
+/**
+ *  Handle the resulting location of the dragged table cell, depending on where hit-tests register.
+ *
+ *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ */
+- (void)stopDragging:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    _draggingLabel = nil;
+    _draggingStackLayer = nil;
+    _draggingBandLayer = nil;
 }
 
 /*

@@ -9,12 +9,12 @@
 #import <QuartzCore/QuartzCore.h>
 
 @protocol DataDelegate;
-@protocol ZoomDelegate;
+@protocol DrawDelegate;
 
 @interface BandLayer : CALayer
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
-@property (nonatomic, strong) id<ZoomDelegate> zoomDelegate;
+@property (nonatomic, strong) id<DrawDelegate> zoomDelegate;
 
 /**
  *  0-based indices specifying the location of the band in the data model

@@ -11,6 +11,7 @@
 @class BandZoomView;
 @class QueryData;
 @protocol DataDelegate;
+@protocol DrawDelegate;
 
 // Constants containing dimensions of bands in each device orientation.
 //  All other measurements of UI elements are based off of these dimensions.
@@ -25,11 +26,17 @@
 @interface ContentScrollView : UIScrollView
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
+@property (nonatomic, strong) id<DrawDelegate> drawDelegate;
 @property (nonatomic, assign) int currentPanel;      // Index in the panelViews array of the panel currently selected by the scrubber's movable selector (0-indexed, -1 indicates no panes exist)
 @property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
 
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)createLabels;
 - (void)switchToPanel:(int)panelNum;
+
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)point;
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
 @end
