@@ -27,13 +27,23 @@
 - (void)drawInContext:(CGContextRef)context
 {
     NSLog(@"BandLayer is drawing on frame (%f, %f, %f, %f)", self.frame.origin.x, self.frame.origin.y, self.frame.size.width, self.frame.size.height);
-    
+//      
+//    CGFloat components[4] = {1.0f,0.0f,0.0f,1.0f};
+//    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+//    CGColorRef color = CGColorCreate(colorSpace, components);
+//    CGColorSpaceRelease(colorSpace);
+//	self.backgroundColor = [UIColor redColor].CGColor;
+//	CGColorRelease(color);
+	self.opaque = YES;
+	
     QueryData *data = [dataDelegate delegateRequestsQueryData];
     float zoomScale = [zoomDelegate delegateRequestsZoomscale];
+	NSLog(@"Zoomscale: %f", zoomScale);
+//	zoomScale = 1.0f;
     
     // Draw frame
     CGContextSetRGBStrokeColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
-    CGContextSetRGBFillColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
+    CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
     CGRect bandF = CGRectMake(0.0f, 0.0f, self.bounds.size.width * zoomScale, self.bounds.size.height * zoomScale);
     bandF = CGRectInset(bandF, 0.5f, 0.5f);
     CGContextFillRect(context, bandF);

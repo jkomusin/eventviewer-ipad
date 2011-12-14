@@ -13,8 +13,15 @@
 @class ContentScrollView;
 @protocol DataDelegate;
 
+@protocol ZoomDelegate
 
-@interface BandDrawView : UIView
+@required
+- (float)delegateRequestsZoomscale;
+- (UIColor *)getColorForPanel:(int)panelNum;
+
+@end
+
+@interface BandDrawView : UIView <ZoomDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
 
@@ -30,10 +37,3 @@
 @end
 
 
-@protocol ZoomDelegate
-
-@required
-- (float)delegateRequestsZoomscale;
-- (UIColor *)getColorForPanel:(int)panelNum;
-
-@end

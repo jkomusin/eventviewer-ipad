@@ -83,13 +83,13 @@ static NSArray *EVMonthLabels = nil;
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum
 {
     // Remove all old layers
-    if (_layerArray)
-    {
-        for (CALayer *c in _layerArray)
-        {
-            [c removeFromSuperlayer];
-        }
-    }
+//    if (_layerArray)
+//    {
+//        for (CALayer *c in _layerArray)
+//        {
+//            [c removeFromSuperlayer];
+//        }
+//    }
     
     // Create new stack layers
     NSMutableArray *newLayers = [[NSMutableArray alloc] initWithCapacity:stackNum];
@@ -110,6 +110,8 @@ static NSArray *EVMonthLabels = nil;
             CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
             bandLayer.frame = bandF;
             bandLayer.delegate = bandLayer;
+			bandLayer.dataDelegate = _dataDelegate;
+			bandLayer.zoomDelegate = self;
             [stackLayer addSublayer:bandLayer];
         }
         [self.layer addSublayer:stackLayer];
@@ -124,6 +126,7 @@ static NSArray *EVMonthLabels = nil;
 
 - (float)delegateRequestsZoomscale
 {
+	NSLog(@"Returning zoomScale of: %f", _zoomScale);
     return _zoomScale;
 }
 
