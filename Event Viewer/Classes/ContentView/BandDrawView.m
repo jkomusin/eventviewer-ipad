@@ -9,6 +9,7 @@
 #import "ContentViewController.h"
 #import "ContentScrollView.h"
 #import "BandDrawView.h"
+#import "BandLayer.h"
 #import "QueryData.h"
 #import "Event.h"
 
@@ -81,13 +82,49 @@ static NSArray *EVMonthLabels = nil;
 
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum
 {
+    // Remove all old layers
+    if (_layerArray)
+    {
+        for (CALayer *c in _layerArray)
+        {
+            [c removeFromSuperlayer];
+        }
+    }
+    
+    // Create new stack layers
     NSMutableArray *newLayers = [[NSMutableArray alloc] initWithCapacity:stackNum];
+    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
     for (int i = 0; i < stackNum; i++)
     {
-        NSMutableArray *bandLayers = [[NSMutableArray alloc] initWithCapacity:bandNum];
-        [newLayers addObject:(NSArray *)bandLayers];
+        CALayer *stackLayer = [CALayer layer];
+        float stackY = stackHeight * i;
+        CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH_P, stackHeight);
+        stackLayer.frame = stackF;
+        stackLayer.delegate = stackLayer;
+        // Create new band layers
+//        NSMutableArray *bandLayers = [[NSMutableArray alloc] initWithCapacity:bandNum];
+        for (int j = 0; j < bandNum; j++)
+        {
+            BandLayer *bandLayer = [BandLayer layer];
+            float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+            CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
+            bandLayer.frame = bandF;
+            bandLayer.delegate = bandLayer;
+            [stackLayer addSublayer:bandLayer];
+        }
+        [self.layer addSublayer:stackLayer];
+        [newLayers addObject:stackLayer];
     }
     _layerArray = (NSArray *)newLayers;
+}
+
+
+#pragma mark -
+#pragma mark Delegation
+
+- (float)delegateRequestsZoomscale
+{
+    return _zoomScale;
 }
 
 
@@ -104,7 +141,6 @@ static NSArray *EVMonthLabels = nil;
 		_zoomScale = 1.0;
 	NSLog(@"New transform value: %f", _zoomScale);
 	
-	//modify the innverview's frame
 	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _zoomScale, self.frame.size.height);
 }
 
@@ -121,7 +157,8 @@ static NSArray *EVMonthLabels = nil;
 	
 	CGContextSetRGBStrokeColor(context, 0.75f, 0.75f, 0.75f, 1.0f);
 	[self drawTimelinesForData:data inContext:context withMonthWidth:monthWidth];
-	
+
+/*
 	CGContextSetRGBStrokeColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
 	CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
     [self drawFramesWithData:data inContext:context withMonthWidth:monthWidth];
@@ -142,7 +179,18 @@ static NSArray *EVMonthLabels = nil;
     {
         [self drawEventsForPanel:currentPanel fromArray:data.eventArray inContext:context];
     }
+ */
+
+//    [self.layer setNeedsDisplay];
     
+    for (CALayer *s in _layerArray)
+    {
+        NSLog(@"Calling setNeedsDisplay on stack");
+        for (BandLayer *b in [s sublayers])
+        {
+            [b setNeedsDisplay];
+        }
+    }
 }
 
 /**
@@ -156,7 +204,7 @@ static NSArray *EVMonthLabels = nil;
     float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
     for (int i = 0; i < data.stackNum; i++)
     {
-        NSArray *stackLayerArray = [_layerArray objectAtIndex:i];
+//        NSArray *stackLayerArray = [_layerArray objectAtIndex:i];
         float stackY = stackHeight * i;
         for (int j = 0; j < data.bandNum; j++)
         {
@@ -166,7 +214,7 @@ static NSArray *EVMonthLabels = nil;
 			CGContextFillRect(context, bandF);
 			CGContextStrokeRect(context, bandF);
 
-            CALayer *bandLayer = [CALayer layer];
+//            CALayer *bandLayer = [CALayer layer];
             
         }
     }

@@ -34,6 +34,8 @@
     NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
     NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
     ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
+    
+    float _zoomScale;
 }
 
 @synthesize toolbar, popoverController, detailItem, _detailDescriptionLabel;
@@ -97,6 +99,8 @@
     self.queryData = qdata;
     
     self.currentPanel = -1;
+    
+    _zoomScale = 1.0f;
 }
 
 
@@ -338,7 +342,6 @@
 {
     return _queryData.timeScale;
 }
-
 
 
 // MGUISplitViewController functions

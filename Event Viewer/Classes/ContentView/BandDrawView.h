@@ -28,3 +28,12 @@
 - (UIColor *)getColorForPanel:(int)panelNum;
 
 @end
+
+
+@protocol ZoomDelegate
+
+@required
+- (float)delegateRequestsZoomscale;
+- (UIColor *)getColorForPanel:(int)panelNum;
+
+@end

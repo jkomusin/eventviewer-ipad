@@ -10,7 +10,7 @@
 
 @protocol DataDelegate
 
-@optional
+@required
 - (QueryData *)delegateRequestsQueryData;
 - (int)delegateRequestsCurrentPanel;
 - (NSArray *)delegateRequestsOverlays;
