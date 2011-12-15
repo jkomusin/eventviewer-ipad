@@ -183,29 +183,33 @@
     NSArray *emptyOverlays = [[NSArray alloc] init];
     _panelOverlays = emptyOverlays;
     // New buttons
-    UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
-    UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
+    UIImage* inactiveImg = [UIImage imageNamed:@"grey.png"];
+    UIImage* activeImg = [UIImage imageNamed:@"blue.png"];
     NSMutableArray *butts = [[NSMutableArray alloc] init];   
     for (int i = 0; i < panelNum; i++)
     {
         CGRect frame;
         if (panelNum == 1)
-            frame = CGRectMake(90.0f+(568.0f/2.0f), 
+            frame = CGRectMake(90.0f+(568.0f/2.0f)-50.0f, 
                                   50.0f, 
-                                  40.0f, 
-                                  40.0f);
+                                  100.0f, 
+                                  20.0f);
         else
-            frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i, 
+            frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i-50.0f, 
                                50.0f, 
-                               40.0f, 
-                               40.0f);
+                               100.0f, 
+                               20.0f);
         
         UIButton *newb = [[UIButton alloc] initWithFrame:frame];
         newb.opaque = YES;
         [newb setBackgroundImage:inactiveImg forState:UIControlStateNormal];
         [newb setBackgroundImage:activeImg forState:UIControlStateHighlighted];
+        
+        NSString *panelM = [(NSArray *)[_queryData.selectedMetas objectForKey:@"Panels"] objectAtIndex:i];
+        [newb setTitle:panelM forState:UIControlStateNormal];
+        
         newb.tag = i;
-        [newb setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
+        [newb setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [newb addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
         [butts addObject:newb];
         [_scrubberBar addSubview:newb];
@@ -258,11 +262,11 @@
 - (void)buttonPressed:(id)sender
 {
     UIButton *b = (UIButton *)sender;
-    if ([b titleColorForState:UIControlStateNormal] == [UIColor greenColor])
+    if ([b titleColorForState:UIControlStateNormal] == [UIColor blackColor])
     {   // Enable overlay
-        UIImage* activeImg = [UIImage imageNamed:@"x_active.png"];
+        UIImage* activeImg = [UIImage imageNamed:@"blue.png"];
         [b setBackgroundImage:activeImg forState:UIControlStateNormal];
-        [b setTitleColor:[UIColor redColor] forState:UIControlStateNormal];
+        [b setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         
         NSMutableArray *overlays = [_panelOverlays mutableCopy];
         [overlays addObject:[NSNumber numberWithInt:b.tag]];
@@ -270,9 +274,9 @@
     }
     else
     {   // Disable overlay
-        UIImage* inactiveImg = [UIImage imageNamed:@"x_inactive.png"];
+        UIImage* inactiveImg = [UIImage imageNamed:@"grey.png"];
         [b setBackgroundImage:inactiveImg forState:UIControlStateNormal];
-        [b setTitleColor:[UIColor greenColor] forState:UIControlStateNormal];
+        [b setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         
         NSMutableArray *overlays = [_panelOverlays mutableCopy];
         [overlays removeObjectIdenticalTo:[NSNumber numberWithInt:b.tag]];

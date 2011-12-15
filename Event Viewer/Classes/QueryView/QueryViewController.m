@@ -205,7 +205,7 @@
     }
     
     // Configure the cell.
-    cell.textLabel.text = [NSString stringWithFormat:@"Row %d", indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"%d Panels", indexPath.row];
     
     return cell;
 }

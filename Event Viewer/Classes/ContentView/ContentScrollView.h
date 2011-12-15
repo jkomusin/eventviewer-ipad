@@ -31,11 +31,13 @@
 @property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
 
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
+
 - (void)createLabels;
+- (void)swapAllBandLabels:(int)draggingIndex and:(int)otherIndex;
+
 - (void)switchToPanel:(int)panelNum;
 
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)point;
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 

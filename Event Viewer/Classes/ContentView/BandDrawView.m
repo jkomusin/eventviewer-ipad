@@ -127,7 +127,6 @@ static NSArray *EVMonthLabels = nil;
             BandLayer *bandLayer = [BandLayer layer];
             float bandY = j * (BAND_HEIGHT_P + BAND_SPACING);
             CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
-            NSLog(@"Creating band with dimensions (%f, %f, %f, %f)", bandF.origin.x, bandF.origin.y, bandF.size.width, bandF.size.height);
             bandLayer.frame = bandF;
             bandLayer.opaque = YES;
             bandLayer.delegate = bandLayer;
@@ -194,7 +193,8 @@ static NSArray *EVMonthLabels = nil;
 - (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum
 {
     NSLog(@"Finding band layer");
-    return [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
+    BandLayer *result = [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
+    return result;
 }
 
 /**
@@ -205,8 +205,90 @@ static NSArray *EVMonthLabels = nil;
 - (CALayer *)getStackLayerForStack:(int)stackNum
 {
     NSLog(@"Finding stack layer");
-    return [_stackLayerArray objectAtIndex:stackNum];
+    CALayer *result = [_stackLayerArray objectAtIndex:stackNum];
+    return result;
 }
+
+/**
+ *  Reorders all bands in a stack around the band currently being dragged.
+ *
+ *  bandNum is the original 0-based index of the band being dragged
+ *  stackNum is the 0-based index of the stack the bands are in
+ *  index is the new 0-based index of the band being dragged
+ *
+ *  Returns the new index of the band being dragged
+ */
+- (int)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index
+{
+    if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return bandNum;
+    if (bandNum >= [[_bandLayerArray objectAtIndex:stackNum] count]) return bandNum-1;
+    
+    NSMutableArray *bandLayerMutable = [_bandLayerArray mutableCopy];
+    for (int i = 0; i < [bandLayerMutable count]; i++)
+    {
+        NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
+        
+        BandLayer *oldBand = [bandArray objectAtIndex:index];
+        if (bandNum < index)    // Move old band up
+        {
+            CGPoint pos = oldBand.position;
+            pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+            oldBand.position = pos;
+        }
+        else if (bandNum > index)   // Move old band down
+        {
+            CGPoint pos = oldBand.position;
+            pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+            oldBand.position = pos;
+        }
+        else
+            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
+        
+        BandLayer *draggingBand = [bandArray objectAtIndex:bandNum];
+        if (i != stackNum)
+        {
+            if (bandNum < index)    // Move new band down
+            {
+                CGPoint pos = draggingBand.position;
+                pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+                draggingBand.position = pos;
+            }
+            else if (bandNum > index)   // Move new band up
+            {
+                CGPoint pos = draggingBand.position;
+                pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+                draggingBand.position = pos;
+            }
+            else
+                NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
+        }
+        
+        // Reposition layers within array
+        [bandArray replaceObjectAtIndex:index withObject:draggingBand];
+        [bandArray replaceObjectAtIndex:bandNum withObject:oldBand];
+                
+        [bandLayerMutable replaceObjectAtIndex:i withObject:(NSArray *)bandArray];        
+    }
+    
+    _bandLayerArray = (NSArray *)bandLayerMutable;
+        
+    return index;
+}
+
+/**
+ *  Reset specified band to it's proper position.
+ *
+ *  bandNum is the 0-based index of the band
+ */
+- (void)moveBandToRestWithIndex:(int)bandNum inStack:(int)stackNum
+{
+    BandLayer *b = [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
+    
+    CGPoint pos = b.position;
+    pos.y = bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING;
+    b.position = pos;
+}
+
 
 #pragma mark -
 #pragma mark Drawing
