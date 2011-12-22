@@ -18,19 +18,15 @@
 #pragma mark -
 #pragma mark Initialization
 
-- (id)initWithFrame:(CGRect)frame
-{
-    if ((self = [super initWithFrame:frame])) 
-    {
-
-    }
-    
-    return self;
-}
-
+/**
+ *  Custom initializer to resize the view to fit the required number of stacks and bands.
+ *
+ *  stackNum is the number of stacks being fit
+ *  bandNum is the number of bands being fit
+ */
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum
 {
-    CGRect frame = CGRectMake(192.0f,//(768.0 - BAND_WIDTH_P)*3/4,
+    CGRect frame = CGRectMake((int)(768.0 - BAND_WIDTH_P)*3/4,  // Has to be rounded to an integer to truncate the trailing floating-point errors that reuslt for the calculation, otherwise drawing will not be exact in iOS's drawing coordinates (in order to offset them by precisely 0.5 units)
                               0.0f,
                               BAND_WIDTH_P,
                               (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
@@ -58,9 +54,15 @@
     return self;
 }
 
+/**
+ *  Resizes the view to the correct dimensions to fit the specified number of stacks and bands, typically for a newly submitted query.
+ *
+ *  stackNum is the number of stacks being fit
+ *  bandNum is the number of bands being fit
+ */
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
 {
-    CGRect frame = CGRectMake(192.0f,//(768.0 - BAND_WIDTH_P)*3/4,
+    CGRect frame = CGRectMake((int)(768.0 - BAND_WIDTH_P)*3/4,  // See above explanation on integer cast
                               0.0f,
                               BAND_WIDTH_P,
                               (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
@@ -69,14 +71,17 @@
     self.contentSize = _bandDrawView.frame.size;
 }
 
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
-{	
-	return _bandDrawView;
-}
-
+/**
+ *  Overridden so that re-drawing only occurs when zooming has completed, to allow for smooth zooming (redrawing is costly if done on ever minute update).
+ */
 - (void)scrollViewDidEndZooming:(BandZoomView *)scrollView withView:(UIView *)view atScale:(float)scale
 {
 	[scrollView.bandDrawView setNeedsDisplay];
+}
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
+{	
+	return _bandDrawView;
 }
 
 /*

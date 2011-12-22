@@ -11,6 +11,11 @@
 @protocol DataDelegate;
 @protocol DrawDelegate;
 
+
+/**
+ *  Layers that contain all events and are resized along with the BandDrawView.
+ *  Are all sublayers of the BandDrawView.
+ */
 @interface BandLayer : CALayer
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;

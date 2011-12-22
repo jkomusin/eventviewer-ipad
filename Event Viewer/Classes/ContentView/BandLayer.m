@@ -57,6 +57,13 @@
     CGContextStrokeRect(context, bandDrawF);
 }
 
+/**
+ *  Draw all events for a specific panel.
+ *
+ *  panel is the index of the panel whose events are being drawn (0-indexed)
+ *  eArray is the 4-dimensional array of events stored in the current QueryData object
+ *  context is the current drawing context reference
+ */
 - (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eventArray inContext:(CGContextRef)context
 {
     NSArray *eArr = [[[eventArray objectAtIndex:panel] objectAtIndex:_stackNumber] objectAtIndex:_bandNumber];

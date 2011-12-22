@@ -23,6 +23,9 @@
 #define STACK_SPACING 32.0f
 
 
+/**
+ *  ScrollView containing all content in the currently displayed query results. Is the superview to all others, and the ContentViewController's priary view.
+ */
 @interface ContentScrollView : UIScrollView
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;

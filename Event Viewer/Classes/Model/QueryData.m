@@ -102,6 +102,7 @@
                         NSDate *startDate = [dateFormatter dateFromString:startS];
                         NSDate *endDate = [cal dateByAddingComponents:components toDate:startDate options:0];
                         
+                        //(Legacy) Previously used conversion from dates to numeric representations. Proved to be incredibly slow.
                         //                NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:e.start];
                         //                NSInteger day = [components day];    
                         //                NSInteger month = [components month];
@@ -130,6 +131,7 @@
     
 		_timeScale = 1;
     
+        //(Experimental) Pure C float stlye storage for the pure-C 4-dimensional array
         //create array of floats for each band's events
 /*        float ****floats = create4D(panels, TEST_STACKS, TEST_BANDS, 6);
         for (int i = 0; i < panels; i++)
@@ -182,7 +184,7 @@
 
 
 #pragma mark -
-#pragma mark C-style Arrays
+#pragma mark (Experimental) C-style Arrays
 
 // Cusom malloc
 void *my_malloc ( char *expr, size_t size )
@@ -222,6 +224,17 @@ float ****create4D ( int max_x, int max_y, int max_r, int max_c )
     return result;
 }
 
+/*- (void)dealloc
+ {
+ MY_FREE( _eventFloats[0][0][0] );
+ MY_FREE( _eventFloats[0][0] );
+ MY_FREE( _eventFloats[0] );
+ MY_FREE( _eventFloats );
+ }*/
+
+
+#pragma mark -
+#pragma mark Copy protocol
 
 /**
  *  Overridden copying protocol for the NSObject 'copy' internals.
@@ -240,13 +253,6 @@ float ****create4D ( int max_x, int max_y, int max_r, int max_c )
     return copy;
 }
 
-/*- (void)dealloc
-{
-    MY_FREE( _eventFloats[0][0][0] );
-    MY_FREE( _eventFloats[0][0] );
-    MY_FREE( _eventFloats[0] );
-    MY_FREE( _eventFloats );
-}*/
 
 
 @end

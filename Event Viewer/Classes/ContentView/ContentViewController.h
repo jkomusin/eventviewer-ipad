@@ -8,8 +8,10 @@
 @class QueryData;
 @class ContentScrollView;
 
+/**
+ *  Delegate protocol to provide access to the data model to outside objects.
+ */
 @protocol DataDelegate
-
 @required
 - (QueryData *)delegateRequestsQueryData;
 - (int)delegateRequestsCurrentPanel;

@@ -5,6 +5,11 @@
 #define TEST_STACKS 4   // Number of stacks in each panel
 #define TEST_BANDS 5    // Number of bands in each stack
 
+
+/**
+ *  Data model containing all meta categories that have been selected in the currently submitted query, along with all events returned by the query.
+ *  Handles all interfacing with the database and the parsing of the returned events.
+ */
 @interface QueryData : NSObject
 
 /**
@@ -42,6 +47,7 @@
 - (int)stackNum;
 - (int)bandNum;
 
+// (Experimental) Pure C implementation of a 4-dimensional array (to attempt a speed-up of C-style for-loop iterations)
 float ****create4D ( int max_x, int max_y, int max_r, int max_c );
 void my_free( void *ptr );
 void *my_malloc ( char *expr, size_t size );

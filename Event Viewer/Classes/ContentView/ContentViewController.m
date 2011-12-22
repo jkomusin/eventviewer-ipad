@@ -8,7 +8,7 @@
 
 @interface ContentViewController ()
 
-@property (nonatomic, strong) UIPopoverController *popoverController;
+@property (nonatomic, strong) UIPopoverController *popoverController;   // Controller of the query popover, implemented as part of the MGSplitViewController
 - (void)configureView;
 
 @end
@@ -108,7 +108,7 @@
 #pragma mark QueryData
 
 /**
- *  Overridden setter for the static query data model, so that necessary updates may be performed when a new query is created.
+ *  Overridden setter for the static query data model, so that necessary updates may be performed when a new query is submitted.
  *  Implements the 'copy' property descriptor for thread-safety.
  *
  *  queryData is the new data model object
@@ -142,16 +142,22 @@
 #pragma mark -
 #pragma mark View Sizing
 
+/**
+ *  Called whenever a new query is submitted, to resize all of the content-displying subviews to their proper sizes.
+ */
 - (void)resizeSubviews
 {
     [_contentScrollView resizeForStackNum:_queryData.stackNum bandNum:_queryData.bandNum];
-    //_contentScrollView.bandZoomView.bandDrawView.delegate = self;
 }
 
 
 #pragma mark -
 #pragma mark Panel Control
 
+/**
+ *  Custom setter for _currentPanel.
+ *  Overridden to update the panel scrubber slider and to inform the scroll view and all subviews to redraw the new panel.
+ */
 - (void)setCurrentPanel:(int)panelNum
 {
     _currentPanel = panelNum;

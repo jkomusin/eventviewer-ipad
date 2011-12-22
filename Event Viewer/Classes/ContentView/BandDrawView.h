@@ -14,8 +14,10 @@
 @class ContentScrollView;
 @protocol DataDelegate;
 
+/**
+ *  Delegation for all drawing-related information needed by other objects
+ */
 @protocol DrawDelegate
-
 @required
 - (float)delegateRequestsZoomscale;
 - (UIColor *)getColorForPanel:(int)panelNum;
@@ -27,6 +29,11 @@
 
 @end
 
+
+/**
+ *  The static View in which all drawing of bands and their events is done.
+ *  Contains all BandLayers and is zoomed by the BandZoomView.
+ */
 @interface BandDrawView : UIView <DrawDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
@@ -35,9 +42,7 @@
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
-- (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
-- (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eArray inContext:(CGContextRef)context;
 - (UIColor *)getColorForPanel:(int)panelNum;
 
 @end

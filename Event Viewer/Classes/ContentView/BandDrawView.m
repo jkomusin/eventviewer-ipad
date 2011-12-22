@@ -19,8 +19,8 @@
     id<DataDelegate> dataDelegate;
     NSArray *_colorArray;
 	
-	float _zoomScale;
-	float _originalWidth;
+	float _zoomScale;           // Current scale of the events and bands specified by the BandZoomView, for use in re-drawing at appropriate sizes
+	float _originalWidth;       // Original width of the view (a little superficial given that this width is specified by BAND_WIDTH_P/L, but included for added robustness)
     
     NSArray *_stackLayerArray;  // Array of all stack layers (superlayers to their respective band layers)
     NSArray *_bandLayerArray;   // 2-dimensions array of band layers where for array[i][j], 
@@ -33,6 +33,7 @@
 // Static array containing labels for timeline drawing.
 static NSArray *EVMonthLabels = nil;
 + (void)initialize { if(!EVMonthLabels) {EVMonthLabels = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil]; } }
+///////
 
 
 #pragma mark -
@@ -294,7 +295,8 @@ static NSArray *EVMonthLabels = nil;
 #pragma mark Drawing
 
 /**
- *	Set the size of the frame manually, and notify the BandViews and TimelineView of the change
+ *	Set the size of the frame manually during all transformations (which occur when zooming).
+ *  This is what enables the View to zoom ONLY horizontally, and not verically
  */
 - (void)setTransform:(CGAffineTransform)newValue;
 {                
@@ -302,8 +304,10 @@ static NSArray *EVMonthLabels = nil;
 	if (_zoomScale < 1.0)
 		_zoomScale = 1.0;
 	
+    // Resize self
 	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _zoomScale, self.frame.size.height);
     
+    // Resize all BandLayers
     for (CALayer *s in _stackLayerArray)
     {
         for (BandLayer *b in [s sublayers])
@@ -317,8 +321,6 @@ static NSArray *EVMonthLabels = nil;
 
 - (void)drawRect:(CGRect)rect 
 {
-    NSLog(@"DRAW RECT!!!");
-    
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSetLineWidth(context, 1.0f);
@@ -339,34 +341,7 @@ static NSArray *EVMonthLabels = nil;
 }
 
 /**
- *  Draw all outlines around stacks and bands.
- *
- *  data is a copy of the current QueryData object
- *  context is the current drawing context reference
- */
-- (void)drawFramesWithData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
-{    
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
-    for (int i = 0; i < data.stackNum; i++)
-    {
-//        NSArray *stackLayerArray = [_layerArray objectAtIndex:i];
-        float stackY = stackHeight * i;
-        for (int j = 0; j < data.bandNum; j++)
-        {
-			float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
-            CGRect bandF = CGRectMake(0.0f, bandY, width*12.0f, BAND_HEIGHT_P);
-			bandF = CGRectInset(bandF, 0.5f, -0.5f);
-			CGContextFillRect(context, bandF);
-			CGContextStrokeRect(context, bandF);
-
-//            CALayer *bandLayer = [CALayer layer];
-            
-        }
-    }
-}
-
-/**
- *	Draw all timelines for each stack.
+ *	Draw all timelines behind all stacks on the BandDrawView itself.
  *
  *	data is a copy of the current QueryData object
  */
@@ -408,43 +383,6 @@ static NSArray *EVMonthLabels = nil;
 	}
 }
 
-/**
- *  Draw all events for a specific panel.
- *
- *  panel is the index of the panel whose events are being drawn (0-indexed)
- *  eArray is the 4-dimensional array of events stored in the current QueryData object
- *  context is the current drawing context reference
- */
-- (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eArray inContext:(CGContextRef)context
-{
-    UIColor *eColor = [self getColorForPanel:panel];
-    [eColor setFill];
-    int bandNum = [[[eArray lastObject] lastObject] count];
-    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
-
-    int stackCount = 0;
-    for (NSArray *stackArr in [eArray objectAtIndex:panel])
-    {
-        float stackY = stackHeight * stackCount++;
-        int bandCount = 0;
-        for (NSArray *bandArr in stackArr)
-        {
-            float bandY = bandCount++ * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
-            for (Event *e in bandArr)
-            {
-                int intX = (int)(e.x * _zoomScale);
-				float x = (float)intX + 0.5f;
-                int intW = (int)(e.width * _zoomScale);
-				float width = (float)intW;
-                CGRect eRect = CGRectMake(x, 
-                                          bandY, 
-                                          width, 
-                                          BAND_HEIGHT_P);
-                CGContextFillRect(context, eRect);
-            }
-        }
-    }
-}
 
 
 @end

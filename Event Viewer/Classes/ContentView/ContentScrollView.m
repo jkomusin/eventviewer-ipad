@@ -17,7 +17,7 @@
 {
 	id<DataDelegate> dataDelegate;
     id<DrawDelegate> drawDelegate;
-    NSArray *_panelViews;   // Static array of all PanelViews
+    NSArray *_panelViews;           // Static array of all PanelViews
     
     UILabel *_draggingLabel;        // Label currently being dragged
     CALayer *_draggingStackLayer;   // Stack layer currently being dragged
@@ -63,12 +63,18 @@
     return self;
 }
 
+/**
+ *  Resize this view to fit the specified number of stacks and bands.
+ *  Should also inform all subviews to do the same.
+ *
+ *  stackNum is the number of stacks in the new query
+ *  bandNum is the number of bands in the new query
+ */
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
 {
     [_bandZoomView resizeForStackNum:stackNum bandNum:bandNum];
     if (self.contentSize.height != _bandZoomView.frame.size.height || self.contentSize.width != _bandZoomView.frame.size.width)
     {
-        NSLog(@"Resizing CSV");
         self.contentSize = _bandZoomView.frame.size;
     }
 	
@@ -94,6 +100,9 @@
 #pragma mark -
 #pragma mark Label management
 
+/**
+ *  Create and displays all labels for the individual bands and stacks
+ */
 - (void)createLabels
 {
 	QueryData *data = [_dataDelegate delegateRequestsQueryData];
@@ -129,6 +138,7 @@
             labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT_P);
 			UILabel *bandL = [[UILabel alloc] initWithFrame:labelF];
 			[bandL setTextAlignment:UITextAlignmentRight];
+            [bandL setFont:[UIFont fontWithName:@"Helvetica" size:16.0f]];
 			NSString *meta = [(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j];
 			[bandL setText:meta];
 			[self addSubview:bandL];
@@ -159,6 +169,7 @@
         float stackY = stack * stackHeight;
         NSMutableArray *arrMutable = [bandLabelsMutable objectAtIndex:i];
         
+        // Move all labels corresponding to the label currently being dragged
         UILabel *draggingLabel = [arrMutable objectAtIndex:draggingIndex];
         if (_draggingStackIndex != stack)
         {
@@ -168,6 +179,7 @@
             draggingLabel.frame = draggingF;
         }
         
+        // Move labels correspondind to the label not being dragged that is being swapped
         UILabel *otherLabel = [arrMutable objectAtIndex:otherIndex];
         float otherY = draggingIndex * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
         CGRect otherF = otherLabel.frame;
@@ -197,6 +209,8 @@
  */
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
+    NSLog(@"Handling long-press");
+    
     switch ([gestureRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:
@@ -231,6 +245,7 @@
         if (CGRectContainsPoint(s.frame, point))
         {
             _draggingLabel = s;
+            [_draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:24.0f]];
             _draggingStackLayer = [_drawDelegate getStackLayerForStack:i];
             _draggingStackIndex = i;
             break;
@@ -248,6 +263,7 @@
                 if (CGRectContainsPoint(b.frame, point))
                 {
                     _draggingLabel = b;
+                    [_draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:20.0f]];
                     _draggingBandLayer = [_drawDelegate getBandLayerForStack:i band:j];
                     _draggingBandIndex = j;
                     _draggingStackIndex = i;
@@ -267,10 +283,13 @@
 /**
  *  Move the temporary draggingCell to the new location specified by the gesture recognizer's new point.
  *
- *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
 {
+    int i = [gestureRecognizer numberOfTouches];
+    NSLog(@"Number of touches: %d", i);
+    
     if (_draggingLabel)
     {
         CGPoint point = [gestureRecognizer locationInView:self];
@@ -314,9 +333,9 @@
 /**
  *  Handle the resulting location of the dragged table cell, depending on where hit-tests register.
  *
- *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)stopDragging:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     _draggingLabel.opaque = YES;
     _draggingLabel.backgroundColor = [UIColor whiteColor];
@@ -334,6 +353,7 @@
         CGRect labelF = _draggingLabel.frame;
         labelF.origin.y = bandY;
         _draggingLabel.frame = labelF;
+        [_draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:16.0f]];
     }
     else if (_draggingStackLayer)
     {
