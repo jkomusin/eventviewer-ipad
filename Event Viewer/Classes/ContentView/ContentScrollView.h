@@ -26,7 +26,7 @@
 /**
  *  ScrollView containing all content in the currently displayed query results. Is the superview to all others, and the ContentViewController's priary view.
  */
-@interface ContentScrollView : UIScrollView
+@interface ContentScrollView : UIScrollView <UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
 @property (nonatomic, strong) id<DrawDelegate> drawDelegate;

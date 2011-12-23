@@ -56,6 +56,7 @@
 		[self setBackgroundColor:[UIColor whiteColor]];
         
         UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+        dragGesture.delegate = self;
         [dragGesture setNumberOfTouchesRequired:1];
         [self addGestureRecognizer:dragGesture];
     }
@@ -209,8 +210,6 @@
  */
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    NSLog(@"Handling long-press");
-    
     switch ([gestureRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:
@@ -286,10 +285,7 @@
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
-{
-    int i = [gestureRecognizer numberOfTouches];
-    NSLog(@"Number of touches: %d", i);
-    
+{    
     if (_draggingLabel)
     {
         CGPoint point = [gestureRecognizer locationInView:self];
@@ -365,6 +361,21 @@
     _draggingLabel = nil;
     _draggingStackLayer = nil;
     _draggingBandLayer = nil;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{        
+    if ([gestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]] &&
+        [otherGestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]] &&
+        [gestureRecognizer view] == [otherGestureRecognizer view])
+    {
+        if (gestureRecognizer == otherGestureRecognizer) NSLog(@"Gesture recognizers are equal");
+        return YES;
+    }
+    else
+    {
+        return NO;
+    }
 }
 
 /*

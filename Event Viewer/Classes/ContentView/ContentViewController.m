@@ -110,12 +110,13 @@
 
 /**
  *  Overridden setter for the static query data model, so that necessary updates may be performed when a new query is submitted.
- *  Implements the 'copy' property descriptor for thread-safety.
+ *  (Legacy, replaced by delegation)Implements the 'copy' property descriptor for thread-safety.
  *
  *  queryData is the new data model object
  */
 - (void)setQueryData:(QueryData *)queryData
 {
+/*
     // Copy protocol
     if (_queryData == queryData)
     {
@@ -124,6 +125,8 @@
 //    QueryData *oldValue = _queryData;
     _queryData = [queryData copy];
     ///////
+*/
+    _queryData = queryData;
     
     // Update display with new data
     int newPanelNum = _queryData.panelNum;
@@ -352,6 +355,25 @@
 - (int)delegateRequestsTimescale
 {
     return _queryData.timeScale;
+}
+
+/**
+ *  Swap the arrangement of bands in the data model when they are rearranged visually
+ */
+- (void)swapBand:(int)i withBand:(int)j
+{
+    for (int p = 0; p < _queryData.panelNum; p++)
+    {
+        for (int s = 0; s < _queryData.stackNum; s++)
+        {
+            NSMutableArray *mutableBands = [[[_queryData.eventArray objectAtIndex:p] objectAtIndex:s] mutableCopy];
+            NSArray *tempBand = [mutableBands objectAtIndex:i];
+            [mutableBands replaceObjectAtIndex:i withObject:[mutableBands objectAtIndex:j]];
+            [mutableBands replaceObjectAtIndex:j withObject:tempBand];
+            
+            [[_queryData.eventArray objectAtIndex:p] replaceObjectAtIndex:s withObject:(NSArray *)mutableBands];
+        }
+    }
 }
 
 

@@ -17,6 +17,7 @@
 - (int)delegateRequestsCurrentPanel;
 - (NSArray *)delegateRequestsOverlays;
 - (int)delegateRequestsTimescale;
+- (void)swapBand:(int)i withBand:(int)j;
 
 @end
 

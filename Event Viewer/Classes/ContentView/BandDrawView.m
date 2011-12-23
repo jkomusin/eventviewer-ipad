@@ -278,6 +278,9 @@ static NSArray *EVMonthLabels = nil;
     }
     
     _bandLayerArray = (NSArray *)bandLayerMutable;
+    
+    // Inform data delegate that reordering is needed
+    [_dataDelegate swapBand:bandNum withBand:index];
         
     return index;
 }
@@ -360,7 +363,7 @@ static NSArray *EVMonthLabels = nil;
             bFrame.origin.y = bFrame.origin.y + [b superlayer].frame.origin.y;
             
             if (CGRectContainsPoint(bFrame, location))
-            {
+            {                
                 // We've found the layer, now find the Event(s) in the current panel and each overlay
                 QueryData *data = [_dataDelegate delegateRequestsQueryData];
                 NSMutableArray *overlays = [[_dataDelegate delegateRequestsOverlays] mutableCopy];
@@ -374,7 +377,7 @@ static NSArray *EVMonthLabels = nil;
                     NSArray *eArr = [[[data.eventArray objectAtIndex:[o intValue]] objectAtIndex:i] objectAtIndex:j];
                     for (Event *e in eArr)
                     {
-                        if (e.x <= location.x && (e.x + e.width) >= location.x)
+                        if ((e.x * _zoomScale) <= location.x && (e.x + e.width) * _zoomScale >= location.x)
                         {
                             [results addObject:e];
                         }

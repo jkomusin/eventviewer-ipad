@@ -175,10 +175,12 @@
 }
 - (int)stackNum
 {
+    if ([self panelNum] == 0) return 0;
     return [(NSArray *)[_selectedMetas objectForKey:@"Stacks"] count];
 }
 - (int)bandNum
 {
+    if ([self panelNum] == 0) return 0;
     return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
 }
 
