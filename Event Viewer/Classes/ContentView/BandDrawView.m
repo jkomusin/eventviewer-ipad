@@ -11,6 +11,7 @@
 #import "BandDrawView.h"
 #import "BandLayer.h"
 #import "QueryData.h"
+#import "EventInfo.h"
 #import "Event.h"
 
 
@@ -29,6 +30,7 @@
 }
 
 @synthesize dataDelegate = _dataDelegate;
+@synthesize infoPopup = _infoPopup;
 
 // Static array containing labels for timeline drawing.
 static NSArray *EVMonthLabels = nil;
@@ -62,6 +64,10 @@ static NSArray *EVMonthLabels = nil;
 		
 		_originalWidth = frame.size.width;
 		_zoomScale = 1.0f;
+        
+        // Handler for event details
+        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+        [self addGestureRecognizer:longPressRecognizer]; 
         
         [self initLayersWithStackNum:stackNum bandNum:bandNum];
     }
@@ -290,6 +296,121 @@ static NSArray *EVMonthLabels = nil;
     b.position = pos;
 }
 
+
+#pragma mark -
+#pragma mark Long-press handling
+
+/**
+ *  Handling of long-press gestures in regards to displaying specifics on the event that has been pressed.
+ */
+-(void)handleLongPress:(UILongPressGestureRecognizer *)longPressRecognizer 
+{
+    switch ([longPressRecognizer state]) 
+    {
+        case UIGestureRecognizerStateBegan:
+            [self startLongPress:longPressRecognizer];
+            break;
+        case UIGestureRecognizerStateChanged:
+            break;
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+            [self stopLongPress:longPressRecognizer];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    [self becomeFirstResponder];
+    CGPoint location = [gestureRecognizer locationInView:self];
+    NSArray *pressedEvents = [self findEventsAtPoint:location];
+    
+    if ([pressedEvents count] == 0) return;
+    
+    EventInfo *eInfo = [[EventInfo alloc] initWithEventArray:pressedEvents];
+    _infoPopup = [[UIPopoverController alloc] initWithContentViewController:eInfo];
+    CGRect eRect = CGRectMake(location.x, location.y, 1.0f, 1.0f);
+    [_infoPopup presentPopoverFromRect:eRect inView:self permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+}
+
+- (void)stopLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+}
+
+/**
+ *  Find and return an array of all events underneath the specified point.
+ *  Includes events in all currently printed panels.
+ *
+ *  location is the point under which we are looking for events
+ */
+- (NSArray *)findEventsAtPoint:(CGPoint)location
+{
+    NSMutableArray *results = [[NSMutableArray alloc] init];
+    for (int i = 0; i < [_bandLayerArray count]; i++)
+    {
+        NSArray *layersInStack = [_bandLayerArray objectAtIndex:i];
+        for (int j = 0; j < [layersInStack count]; j++)
+        {
+            BandLayer *b = [layersInStack objectAtIndex:j];
+            // Bands' frame are relative to their superlayers (the stack layers), so normalize accordingly
+            CGRect bFrame = b.frame;
+            bFrame.origin.y = bFrame.origin.y + [b superlayer].frame.origin.y;
+            
+            if (CGRectContainsPoint(bFrame, location))
+            {
+                // We've found the layer, now find the Event(s) in the current panel and each overlay
+                QueryData *data = [_dataDelegate delegateRequestsQueryData];
+                NSMutableArray *overlays = [[_dataDelegate delegateRequestsOverlays] mutableCopy];
+                int current = [_dataDelegate delegateRequestsCurrentPanel];
+                [overlays addObject:[NSNumber numberWithInt:current]];
+                BOOL currentOverlaid = NO;
+                for (NSNumber *o in overlays)
+                {
+                    if ([o intValue] == current && currentOverlaid) continue;   // Need to skip the current panel we added if it was returned as an overlay
+                    
+                    NSArray *eArr = [[[data.eventArray objectAtIndex:[o intValue]] objectAtIndex:i] objectAtIndex:j];
+                    for (Event *e in eArr)
+                    {
+                        if (e.x <= location.x && (e.x + e.width) >= location.x)
+                        {
+                            [results addObject:e];
+                        }
+                    }
+                    
+                    if ([o intValue] == current) currentOverlaid = YES; // Again, skipping current panel if overlaid
+                }
+                
+            }
+        }
+    }
+    
+    return results;
+}
+
+/**
+ *  Set as the targed of the displayed event detail popup
+ */
+- (void) eventDetailsClicked:(id)sender 
+{
+    NSLog(@"Details clicked!");
+}
+
+- (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
+{
+    _infoPopup = nil;
+    return YES;
+}
+
+/**
+ *  Must be set in order for the long-press event details to be displayed
+ */
+//- (BOOL)canBecomeFirstResponder
+//{
+//    return YES;
+//}
 
 #pragma mark -
 #pragma mark Drawing

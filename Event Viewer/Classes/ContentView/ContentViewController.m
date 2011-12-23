@@ -33,6 +33,7 @@
     UIView *_scrubberBar;                   // Frame for the panelScrubber
     NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
     NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
+                                            //  NOTE: This includes the current panel if it is overlaid!
     ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
     
     float _zoomScale;

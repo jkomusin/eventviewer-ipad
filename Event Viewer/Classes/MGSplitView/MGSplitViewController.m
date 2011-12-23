@@ -127,7 +127,7 @@
 	_viewControllers = [[NSMutableArray alloc] initWithObjects:[NSNull null], [NSNull null], nil];
 	_splitWidth = MG_DEFAULT_SPLIT_WIDTH;
 	_showsMasterInPortrait = NO;
-	_showsMasterInLandscape = YES;
+	_showsMasterInLandscape = NO;
 	_reconfigurePopup = NO;
 	_vertical = YES;
 	_masterBeforeDetail = YES;

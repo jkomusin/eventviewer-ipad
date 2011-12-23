@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
+@class Event;
 @class QueryData;
 @class BandLayer;
 @class ContentScrollView;
@@ -34,9 +35,10 @@
  *  The static View in which all drawing of bands and their events is done.
  *  Contains all BandLayers and is zoomed by the BandZoomView.
  */
-@interface BandDrawView : UIView <DrawDelegate>
+@interface BandDrawView : UIView <DrawDelegate, UIPopoverControllerDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
+@property (nonatomic, strong) UIPopoverController *infoPopup;
 
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
@@ -44,6 +46,10 @@
 
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (UIColor *)getColorForPanel:(int)panelNum;
+
+- (NSArray *)findEventsAtPoint:(CGPoint)location;
+- (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)stopLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
 
 @end
 
