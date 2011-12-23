@@ -47,6 +47,9 @@
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (UIColor *)getColorForPanel:(int)panelNum;
 
+- (void)setNewZoomScale:(float)scale;
+- (void)doneZooming;
+
 - (NSArray *)findEventsAtPoint:(CGPoint)location;
 - (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;

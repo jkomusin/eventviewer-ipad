@@ -39,7 +39,7 @@
 		
 		self.maximumZoomScale = 10.0f;
 		self.minimumZoomScale = 1.0f;
-        self.bouncesZoom = NO;
+        self.bouncesZoom = YES;
         
 		self.delegate = self;
         
@@ -72,10 +72,19 @@
 }
 
 /**
+ *  Overridden to manually zoom drawing view
+ */
+//- (void)scrollViewDidZoom:(BandZoomView *)scrollView
+//{
+//    [scrollView.bandDrawView setNewZoomScale:[scrollView zoomScale]];
+//}
+
+/**
  *  Overridden so that re-drawing only occurs when zooming has completed, to allow for smooth zooming (redrawing is costly if done on ever minute update).
  */
 - (void)scrollViewDidEndZooming:(BandZoomView *)scrollView withView:(UIView *)view atScale:(float)scale
 {
+    [scrollView.bandDrawView doneZooming];
 	[scrollView.bandDrawView setNeedsDisplay];
 }
 

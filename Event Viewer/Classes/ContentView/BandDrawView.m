@@ -21,7 +21,9 @@
     NSArray *_colorArray;
 	
 	float _zoomScale;           // Current scale of the events and bands specified by the BandZoomView, for use in re-drawing at appropriate sizes
+    float _newZoomScale;        // Zoom scale to be used during zooming, due to the manual management of transforms
 	float _originalWidth;       // Original width of the view (a little superficial given that this width is specified by BAND_WIDTH_P/L, but included for added robustness)
+    float _currentWidth;        // Current width of the view for use in manual zooming
     
     NSArray *_stackLayerArray;  // Array of all stack layers (superlayers to their respective band layers)
     NSArray *_bandLayerArray;   // 2-dimensions array of band layers where for array[i][j], 
@@ -63,7 +65,9 @@ static NSArray *EVMonthLabels = nil;
         _colorArray = newColors;
 		
 		_originalWidth = frame.size.width;
+        _currentWidth = frame.size.width;
 		_zoomScale = 1.0f;
+        _newZoomScale = 1.0f;
         
         // Handler for event details
         UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
@@ -89,6 +93,11 @@ static NSArray *EVMonthLabels = nil;
                               BAND_WIDTH_P, 
                               (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
     self.frame = frame;
+    
+    _originalWidth = frame.size.width;
+    _currentWidth = frame.size.width;
+    _zoomScale = 1.0f;
+    _newZoomScale = 1.0f;
     
     [self initLayersWithStackNum:stackNum bandNum:bandNum];
 }
@@ -423,24 +432,67 @@ static NSArray *EVMonthLabels = nil;
  *  This is what enables the View to zoom ONLY horizontally, and not verically
  */
 - (void)setTransform:(CGAffineTransform)newValue;
-{                
-	_zoomScale = newValue.a;
-	if (_zoomScale < 1.0)
-		_zoomScale = 1.0;
+{   
+    // The 'a' value of the transform is the transform's new scale of the view, which is reset after the zooming action completes
+	_newZoomScale = _zoomScale * newValue.a;
+//    NSLog(@"Transform:\n\t a: %f\n\t b: %f\n\t c: %f\n\t d: %f\n\t tx: %f\n\t ty: %f",
+//          newValue.a,
+//          newValue.b,
+//          newValue.c,
+//          newValue.d,
+//          newValue.tx,
+//          newValue.ty);
+	if (_newZoomScale < 1.0)
+		_newZoomScale = 1.0;
 	
     // Resize self
-	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _zoomScale, self.frame.size.height);
+	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _newZoomScale, self.frame.size.height);
     
     // Resize all BandLayers
+    [CATransaction begin];
+    [CATransaction setDisableActions: YES];
     for (CALayer *s in _stackLayerArray)
     {
         for (BandLayer *b in [s sublayers])
         {
             CGRect bandF = b.frame;
-            bandF.size.width = BAND_WIDTH_P * _zoomScale;
+            bandF.size.width = BAND_WIDTH_P * _newZoomScale;
+            
             b.frame = bandF;
+            
         }
     }
+    [CATransaction commit];
+}
+
+//- (void)setNewZoomScale:(float)scale
+//{
+//    
+//    if (scale < 1.0f)
+//    {
+//        _newZoomScale = scale;
+//        if (_newZoomScale < 1.0)
+//            _newZoomScale = 1.0;
+//        
+//        // Resize self
+//        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _newZoomScale, self.frame.size.height);
+//        
+//        // Resize all BandLayers
+//        for (CALayer *s in _stackLayerArray)
+//        {
+//            for (BandLayer *b in [s sublayers])
+//            {
+//                CGRect bandF = b.frame;
+//                bandF.size.width = BAND_WIDTH_P * _newZoomScale;
+//                b.frame = bandF;
+//            }
+//        }
+//    }
+//}
+
+- (void)doneZooming
+{
+    _zoomScale = _newZoomScale;
 }
 
 - (void)drawRect:(CGRect)rect 
