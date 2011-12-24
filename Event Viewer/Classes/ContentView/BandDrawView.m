@@ -236,7 +236,7 @@ static NSArray *EVMonthLabels = nil;
  *
  *  Returns YES if the reordering occured, else NO
  */
-- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index
+- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index areBothDragging:(BOOL)bothDragging
 {
     // Check to make sure we need to reorder (we may be outside the bounds of the stack)
     if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
@@ -248,21 +248,24 @@ static NSArray *EVMonthLabels = nil;
         NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
         
         BandLayer *oldBand = [bandArray objectAtIndex:index];
-        if (bandNum < index)    // Move old band up
+        if (!bothDragging || i != stackNum)
         {
-            CGPoint pos = oldBand.position;
-            pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
-            oldBand.position = pos;
+            if (bandNum < index)    // Move old band up
+            {
+                CGPoint pos = oldBand.position;
+                pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+                oldBand.position = pos;
+            }
+            else if (bandNum > index)   // Move old band down
+            {
+                CGPoint pos = oldBand.position;
+                pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+                oldBand.position = pos;
+            }
+            else
+                NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
         }
-        else if (bandNum > index)   // Move old band down
-        {
-            CGPoint pos = oldBand.position;
-            pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
-            oldBand.position = pos;
-        }
-        else
-            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
-        
+            
         BandLayer *draggingBand = [bandArray objectAtIndex:bandNum];
         if (i != stackNum)  // Skip band ayer currently being dragged
         {

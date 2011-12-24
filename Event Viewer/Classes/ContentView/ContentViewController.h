@@ -15,6 +15,7 @@
 @required
 - (QueryData *)delegateRequestsQueryData;
 - (int)delegateRequestsCurrentPanel;
+- (int)delegateRequestsNumberOfBands;
 - (NSArray *)delegateRequestsOverlays;
 - (int)delegateRequestsTimescale;
 - (void)swapBand:(int)i withBand:(int)j;

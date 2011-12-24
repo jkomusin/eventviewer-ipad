@@ -344,6 +344,14 @@
 }
 
 /**
+ *  Returns number of bands in current query
+ */
+- (int)delegateRequestsNumberOfBands
+{
+    return _queryData.bandNum; 
+}
+
+/**
  *  Returns a COPY of the array of indexes (0-indexed) of panels currently selected as overlays.
  */
 - (NSArray *)delegateRequestsOverlays

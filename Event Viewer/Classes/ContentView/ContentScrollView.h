@@ -35,9 +35,6 @@
 
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 
-- (void)createLabels;
-- (void)swapAllBandLabels:(int)draggingIndex and:(int)otherIndex;
-
 - (void)switchToPanel:(int)panelNum;
 
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
