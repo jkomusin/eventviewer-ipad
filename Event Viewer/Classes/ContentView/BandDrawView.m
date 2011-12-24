@@ -321,6 +321,8 @@ static NSArray *EVMonthLabels = nil;
 
 /**
  *  Handling of long-press gestures in regards to displaying specifics on the event that has been pressed.
+ *  NOTE: We do not care about any other events related to the long-press other than it's initial recognization,
+ *  as dismissal of the popover is handled by the popover's delegate (us in popoverControllerShouldDismissPopover).
  */
 -(void)handleLongPress:(UILongPressGestureRecognizer *)longPressRecognizer 
 {
@@ -330,17 +332,18 @@ static NSArray *EVMonthLabels = nil;
             [self startLongPress:longPressRecognizer];
             break;
         case UIGestureRecognizerStateChanged:
-            break;
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
-            [self stopLongPress:longPressRecognizer];
             break;
         default:
             break;
     }
 }
 
+/**
+ *  Initiate the popup of the event details pane, as the long-press gesture has been recognized
+ */
 - (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     [self becomeFirstResponder];
@@ -353,10 +356,6 @@ static NSArray *EVMonthLabels = nil;
     _infoPopup = [[UIPopoverController alloc] initWithContentViewController:eInfo];
     CGRect eRect = CGRectMake(location.x, location.y, 1.0f, 1.0f);
     [_infoPopup presentPopoverFromRect:eRect inView:self permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-}
-
-- (void)stopLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
-{
 }
 
 /**
@@ -410,26 +409,14 @@ static NSArray *EVMonthLabels = nil;
 }
 
 /**
- *  Set as the targed of the displayed event detail popup
+ *  De-reference (release) the popover when asked due to the user touching outside it.
  */
-- (void) eventDetailsClicked:(id)sender 
-{
-    NSLog(@"Details clicked!");
-}
-
 - (BOOL)popoverControllerShouldDismissPopover:(UIPopoverController *)popoverController
 {
     _infoPopup = nil;
     return YES;
 }
 
-/**
- *  Must be set in order for the long-press event details to be displayed
- */
-//- (BOOL)canBecomeFirstResponder
-//{
-//    return YES;
-//}
 
 #pragma mark -
 #pragma mark Drawing
@@ -441,14 +428,9 @@ static NSArray *EVMonthLabels = nil;
 - (void)setTransform:(CGAffineTransform)newValue;
 {   
     // The 'a' value of the transform is the transform's new scale of the view, which is reset after the zooming action completes
+    //  newZoomScale should therefore be kept while zooming, and then zoomScale should be updated upon completion
 	_newZoomScale = _zoomScale * newValue.a;
-//    NSLog(@"Transform:\n\t a: %f\n\t b: %f\n\t c: %f\n\t d: %f\n\t tx: %f\n\t ty: %f",
-//          newValue.a,
-//          newValue.b,
-//          newValue.c,
-//          newValue.d,
-//          newValue.tx,
-//          newValue.ty);
+
 	if (_newZoomScale < 1.0)
 		_newZoomScale = 1.0;
 	
@@ -472,31 +454,11 @@ static NSArray *EVMonthLabels = nil;
     [CATransaction commit];
 }
 
-//- (void)setNewZoomScale:(float)scale
-//{
-//    
-//    if (scale < 1.0f)
-//    {
-//        _newZoomScale = scale;
-//        if (_newZoomScale < 1.0)
-//            _newZoomScale = 1.0;
-//        
-//        // Resize self
-//        self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _newZoomScale, self.frame.size.height);
-//        
-//        // Resize all BandLayers
-//        for (CALayer *s in _stackLayerArray)
-//        {
-//            for (BandLayer *b in [s sublayers])
-//            {
-//                CGRect bandF = b.frame;
-//                bandF.size.width = BAND_WIDTH_P * _newZoomScale;
-//                b.frame = bandF;
-//            }
-//        }
-//    }
-//}
-
+/**
+ *  Inform the view that zooming has ceased, and therefore the next transforms will have their own reset frame of reference
+ *  (i.e. they will begin at 1.0 again, rather than resuming where they left off at the end of zooming)
+ *  To do so, simply set the current zoomScale to the previously modified newZoomScale
+ */
 - (void)doneZooming
 {
     _zoomScale = _newZoomScale;
@@ -507,6 +469,9 @@ static NSArray *EVMonthLabels = nil;
     return [CATiledLayer class];
 }
 
+/**
+ *  Typical override of drawing code to initiate redrawing of results
+ */
 - (void)drawRect:(CGRect)rect 
 {
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
@@ -524,7 +489,6 @@ static NSArray *EVMonthLabels = nil;
     {
         for (BandLayer *b in [s sublayers])
         {
-//            b.contents = nil;
             [b setNeedsDisplay];
         }
     }
@@ -543,10 +507,6 @@ static NSArray *EVMonthLabels = nil;
 	{
 		for (int m = 0; m < 12; m++)
 		{
-			// Containing rectangles
-//			CGRect monthF = CGRectMake(m*((BAND_WIDTH_P-13.0f)/12.0f+1.0f)+1.0f, 0.0f, (BAND_WIDTH_P-13.0f)/12.0f, self.frame.size.height);
-//			monthF = CGRectInset(monthF, -0.5f, 0.5f);
-//			CGContextStrokeRect(context, monthF);
 			int xInt = m * (int)width;
 			float x = xInt + 0.5f;
 			CGRect monthF = CGRectMake(x, 0.0f, width, self.frame.size.height);
@@ -556,10 +516,6 @@ static NSArray *EVMonthLabels = nil;
 			// Labels
 			for (int i = 0; i <= data.stackNum; i++)
 			{
-//				float stackY = stackHeight * i;
-//				NSString *blah = [EVMonthLabels objectAtIndex:m];
-//				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, (BAND_WIDTH_P-13.0f)/12.0f, 32.0f);
-//				[blah drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:14.0f] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
 				float stackY = stackHeight * i;
 				NSString *month = [EVMonthLabels objectAtIndex:m];
 				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, width, 32.0f);

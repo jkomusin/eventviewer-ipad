@@ -72,14 +72,6 @@
 }
 
 /**
- *  Overridden to manually zoom drawing view
- */
-//- (void)scrollViewDidZoom:(BandZoomView *)scrollView
-//{
-//    [scrollView.bandDrawView setNewZoomScale:[scrollView zoomScale]];
-//}
-
-/**
  *  Overridden so that re-drawing only occurs when zooming has completed, to allow for smooth zooming (redrawing is costly if done on ever minute update).
  */
 - (void)scrollViewDidEndZooming:(BandZoomView *)scrollView withView:(UIView *)view atScale:(float)scale
@@ -89,13 +81,8 @@
 }
 
 /**
- *  Overrridden so that re-drawing will occur when scrolling has completed, effectively erasing all cached tiles
+ *  Basic override for zooming in UIScrollViews
  */
-//- (void)scrollViewDidEndDecelerating:(BandZoomView *)scrollView
-//{
-//    [scrollView.bandDrawView setNeedsDisplay];
-//}
-
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
 {	
 	return _bandDrawView;

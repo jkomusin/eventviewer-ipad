@@ -24,19 +24,7 @@
 @synthesize bandNumber = _bandNumber;
 
 - (void)drawInContext:(CGContextRef)context
-{    
-    [super drawInContext:context];
-    
-//    if (_bandNumber == 0 && _stackNumber == 0)
-//    {
-//        CGRect box = CGContextGetClipBoundingBox(context);
-//        NSLog(@"Drawing in context bounding box:\n\t x: %f \n\t y: %f \n\t width: %f \n\t height: %f",
-//              box.origin.x,
-//              box.origin.y,
-//              box.size.width,
-//              box.size.height);
-//    }
-        
+{            
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
     
     CGRect bandDrawF = CGRectMake(0.0f, 0.0f, self.bounds.size.width, self.bounds.size.height);

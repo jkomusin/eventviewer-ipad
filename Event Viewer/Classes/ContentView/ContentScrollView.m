@@ -388,24 +388,7 @@
 // An empty implementation adversely affects performance during animation.
 - (void)drawRect:(CGRect)rect
 {
-	NSLog(@"ContentView DRAW RECT!!!");
-	
-	CGContextRef context = UIGraphicsGetCurrentContext();
-    QueryData *data = [dataDelegate contentViewRequestQueryData];
-	
-	// Draw labels
-	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
-    for (int i = 0; i < data.stackNum; i++)
-    {
-        float stackY = stackHeight * i;
-		for (int j = 0; j < data.bandNum; j++)
-        {
-			float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
-            CGRect labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT_P);
-			NSString *meta = [(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j];
-			[meta drawInRect:labelF withFont:[UIFont fontWithName:@"Helvetica" size:20.0f] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentRight];
-        }
-    }
+    // Drawing code
 }
 */
 

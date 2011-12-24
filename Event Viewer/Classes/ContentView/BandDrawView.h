@@ -38,7 +38,7 @@
 @interface BandDrawView : UIView <DrawDelegate, UIPopoverControllerDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
-@property (nonatomic, strong) UIPopoverController *infoPopup;
+@property (nonatomic, strong) UIPopoverController *infoPopup;   // The popover to display the EventInfo pane upon user request for details on a specific Event
 
 - (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
@@ -47,12 +47,11 @@
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (UIColor *)getColorForPanel:(int)panelNum;
 
-//- (void)setNewZoomScale:(float)scale;
 - (void)doneZooming;
 
-- (NSArray *)findEventsAtPoint:(CGPoint)location;
 - (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)stopLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (NSArray *)findEventsAtPoint:(CGPoint)location;
+
 
 @end
 
