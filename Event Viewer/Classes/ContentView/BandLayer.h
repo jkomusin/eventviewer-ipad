@@ -16,7 +16,7 @@
  *  Layers that contain all events and are resized along with the BandDrawView.
  *  Are all sublayers of the BandDrawView.
  */
-@interface BandLayer : CALayer
+@interface BandLayer : CATiledLayer
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
 @property (nonatomic, strong) id<DrawDelegate> zoomDelegate;

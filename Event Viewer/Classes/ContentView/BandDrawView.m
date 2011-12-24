@@ -58,7 +58,7 @@ static NSArray *EVMonthLabels = nil;
     
     if ((self = [super initWithFrame:frame]))
     {
-        self.backgroundColor = [UIColor whiteColor];
+        self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
         
         NSArray *newColors = [[NSArray alloc] init];
@@ -130,11 +130,11 @@ static NSArray *EVMonthLabels = nil;
     // Create new stack layers as superlayers
     for (int i = 0; i < stackNum; i++)
     {
-        CALayer *stackLayer = [CALayer layer];
+        CATiledLayer *stackLayer = [CATiledLayer layer];
         float stackY = stackHeight * i + STACK_SPACING;
         CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH_P, stackHeight);
         stackLayer.frame = stackF;
-//        stackLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 2.0f, stackHeight);
+        stackLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 4.0f, stackHeight);
         stackLayer.delegate = stackLayer;
         NSMutableArray *currentBandLayers = [[NSMutableArray alloc] init];
         
@@ -145,7 +145,7 @@ static NSArray *EVMonthLabels = nil;
             float bandY = j * (BAND_HEIGHT_P + BAND_SPACING);
             CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
             bandLayer.frame = bandF;
-//            bandLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 2.0f, BAND_HEIGHT_P);
+            bandLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 4.0f, BAND_HEIGHT_P);
             bandLayer.opaque = YES;
             bandLayer.delegate = bandLayer;
 			bandLayer.dataDelegate = _dataDelegate;
@@ -458,7 +458,7 @@ static NSArray *EVMonthLabels = nil;
     // Resize all BandLayers
     [CATransaction begin];
     [CATransaction setDisableActions: YES];
-    for (CALayer *s in _stackLayerArray)
+    for (CATiledLayer *s in _stackLayerArray)
     {
         for (BandLayer *b in [s sublayers])
         {
@@ -502,6 +502,11 @@ static NSArray *EVMonthLabels = nil;
     _zoomScale = _newZoomScale;
 }
 
++ layerClass
+{
+    return [CATiledLayer class];
+}
+
 - (void)drawRect:(CGRect)rect 
 {
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
@@ -512,12 +517,14 @@ static NSArray *EVMonthLabels = nil;
 	float monthWidth = (float)wInt;
 	
 	CGContextSetRGBStrokeColor(context, 0.75f, 0.75f, 0.75f, 1.0f);
+    CGContextSetRGBFillColor(context, 0.75f, 0.75f, 0.75f, 1.0f);
 	[self drawTimelinesForData:data inContext:context withMonthWidth:monthWidth];
     
-    for (CALayer *s in _stackLayerArray)
+    for (CATiledLayer *s in _stackLayerArray)
     {
         for (BandLayer *b in [s sublayers])
         {
+//            b.contents = nil;
             [b setNeedsDisplay];
         }
     }

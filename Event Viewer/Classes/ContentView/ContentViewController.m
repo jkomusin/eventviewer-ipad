@@ -60,7 +60,8 @@
     CGRect scrubberBarFrame = CGRectMake(0.0, 924.0, 768.0, 100.0);
     UIView *scrubberBar = [[UIView alloc] initWithFrame:scrubberBarFrame];
     _scrubberBar = scrubberBar;
-    _scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];
+//    _scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];   // Grey color
+    _scrubberBar.backgroundColor = [UIColor colorWithRed:0.25f green:0.25f blue:0.25f alpha:1.0f];
     _scrubberBar.opaque = YES;
     CGRect scrubberFrame = CGRectMake(100.0, 0.0, 568.0, 50.0);
     UISlider *pscrub = [[UISlider alloc] initWithFrame:scrubberFrame];
@@ -72,6 +73,7 @@
     [_panelScrubber setMinimumTrackImage:useableTrackImage forState:UIControlStateNormal];
     [_panelScrubber setMaximumTrackImage:useableTrackImage forState:UIControlStateNormal];
     _panelScrubber.opaque = YES;
+    _panelScrubber.backgroundColor = [UIColor colorWithRed:0.25f green:0.25f blue:0.25f alpha:1.0f];    // Should be the same as the scrubberBar's background
     _panelScrubber.continuous = YES;
     _panelScrubber.maximumValue = 0.0;
     _panelScrubber.minimumValue = 0.0;

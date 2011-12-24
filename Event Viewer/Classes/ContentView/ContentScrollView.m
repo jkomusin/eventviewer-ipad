@@ -53,7 +53,7 @@
         self.opaque = YES;
 		self.showsVerticalScrollIndicator = NO;
 		self.showsHorizontalScrollIndicator = NO;
-		[self setBackgroundColor:[UIColor whiteColor]];
+		[self setBackgroundColor:[UIColor blackColor]];
         
         UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
         dragGesture.delegate = self;
@@ -126,6 +126,9 @@
 		UILabel *stackL = [[UILabel alloc] initWithFrame:labelF];
 		[stackL setTextAlignment:UITextAlignmentLeft];
 		[stackL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:20.0f]];
+        [stackL setOpaque:YES];
+        [stackL setBackgroundColor:[UIColor blackColor]];
+        [stackL setTextColor:[UIColor whiteColor]];
 		NSString *stackM = [(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i];
 		[stackL setText:stackM];
 		[self addSubview:stackL];
@@ -140,6 +143,9 @@
 			UILabel *bandL = [[UILabel alloc] initWithFrame:labelF];
 			[bandL setTextAlignment:UITextAlignmentRight];
             [bandL setFont:[UIFont fontWithName:@"Helvetica" size:16.0f]];
+            [bandL setOpaque:YES];
+            [bandL setBackgroundColor:[UIColor blackColor]];
+            [bandL setTextColor:[UIColor whiteColor]];
 			NSString *meta = [(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j];
 			[bandL setText:meta];
 			[self addSubview:bandL];
@@ -333,7 +339,7 @@
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     _draggingLabel.opaque = YES;
-    _draggingLabel.backgroundColor = [UIColor whiteColor];
+    _draggingLabel.backgroundColor = [UIColor blackColor];
     [self insertSubview:_draggingLabel belowSubview:_bandZoomView];
     
     // Set new position for dropped layer based on its index

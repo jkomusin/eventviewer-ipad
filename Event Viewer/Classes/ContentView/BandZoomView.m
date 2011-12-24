@@ -32,12 +32,12 @@
                               (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
     if ((self = [super initWithFrame:frame]))
     {
-        self.backgroundColor = [UIColor whiteColor];
+        self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
 		self.showsVerticalScrollIndicator = NO;
 		self.showsHorizontalScrollIndicator = NO;
 		
-		self.maximumZoomScale = 10.0f;
+		self.maximumZoomScale = 2.0f;   // Irrelevant due to our overridden zooming technique that provides infinite zooming
 		self.minimumZoomScale = 1.0f;
         self.bouncesZoom = YES;
         
@@ -87,6 +87,14 @@
     [scrollView.bandDrawView doneZooming];
 	[scrollView.bandDrawView setNeedsDisplay];
 }
+
+/**
+ *  Overrridden so that re-drawing will occur when scrolling has completed, effectively erasing all cached tiles
+ */
+//- (void)scrollViewDidEndDecelerating:(BandZoomView *)scrollView
+//{
+//    [scrollView.bandDrawView setNeedsDisplay];
+//}
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
 {	
