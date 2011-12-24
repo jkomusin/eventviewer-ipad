@@ -250,6 +250,7 @@
             break;
         }
     }
+    // If the label isn't a stack label, check band labels
     if (!_draggingLabel)
     {
         for (int i = 0; i < [_bandLabelArray count]; i++)
@@ -302,10 +303,8 @@
             // Check to reorder
             int newIndex = pos.y / (BAND_HEIGHT_P + BAND_SPACING);
             if (newIndex != _draggingBandIndex && newIndex >= 0)
-            {
-                int i = [_drawDelegate reorderBandsAroundBand:_draggingBandIndex inStack:_draggingStackIndex withNewIndex:newIndex];
-                
-                if (i == newIndex)  // Successful, reorder labels
+            {                
+                if ([_drawDelegate reorderBandsAroundBand:_draggingBandIndex inStack:_draggingStackIndex withNewIndex:newIndex])
                 {
                    [self swapAllBandLabels:_draggingBandIndex and:newIndex];
                     

@@ -109,7 +109,7 @@ static NSArray *EVMonthLabels = nil;
  *  bandNum is the number of bands in the current query (min of 0)
  */
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum
-{    
+{       
     // Release old layers
     if (_stackLayerArray)
     {
@@ -134,6 +134,7 @@ static NSArray *EVMonthLabels = nil;
         float stackY = stackHeight * i + STACK_SPACING;
         CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH_P, stackHeight);
         stackLayer.frame = stackF;
+//        stackLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 2.0f, stackHeight);
         stackLayer.delegate = stackLayer;
         NSMutableArray *currentBandLayers = [[NSMutableArray alloc] init];
         
@@ -144,6 +145,7 @@ static NSArray *EVMonthLabels = nil;
             float bandY = j * (BAND_HEIGHT_P + BAND_SPACING);
             CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
             bandLayer.frame = bandF;
+//            bandLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 2.0f, BAND_HEIGHT_P);
             bandLayer.opaque = YES;
             bandLayer.delegate = bandLayer;
 			bandLayer.dataDelegate = _dataDelegate;
@@ -232,12 +234,13 @@ static NSArray *EVMonthLabels = nil;
  *  stackNum is the 0-based index of the stack the bands are in
  *  index is the new 0-based index of the band being dragged
  *
- *  Returns the new index of the band being dragged
+ *  Returns YES if the reordering occured, else NO
  */
-- (int)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index
+- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index
 {
-    if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return bandNum;
-    if (bandNum >= [[_bandLayerArray objectAtIndex:stackNum] count]) return bandNum-1;
+    // Check to make sure we need to reorder (we may be outside the bounds of the stack)
+    if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
+    if (bandNum >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
     
     NSMutableArray *bandLayerMutable = [_bandLayerArray mutableCopy];
     for (int i = 0; i < [bandLayerMutable count]; i++)
@@ -261,7 +264,7 @@ static NSArray *EVMonthLabels = nil;
             NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
         
         BandLayer *draggingBand = [bandArray objectAtIndex:bandNum];
-        if (i != stackNum)
+        if (i != stackNum)  // Skip band ayer currently being dragged
         {
             if (bandNum < index)    // Move new band down
             {
@@ -279,6 +282,10 @@ static NSArray *EVMonthLabels = nil;
                 NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
         }
         
+        // Inform band layers of their new positions
+        draggingBand.bandNumber = index;
+        oldBand.bandNumber = bandNum;
+        
         // Reposition layers within array
         [bandArray replaceObjectAtIndex:index withObject:draggingBand];
         [bandArray replaceObjectAtIndex:bandNum withObject:oldBand];
@@ -291,7 +298,7 @@ static NSArray *EVMonthLabels = nil;
     // Inform data delegate that reordering is needed
     [_dataDelegate swapBand:bandNum withBand:index];
         
-    return index;
+    return YES;
 }
 
 /**

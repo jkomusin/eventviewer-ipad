@@ -25,7 +25,7 @@
 
 
 - (void)drawInContext:(CGContextRef)context
-{	
+{    
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
     
     CGRect bandDrawF = CGRectMake(0.0f, 0.0f, self.bounds.size.width, self.bounds.size.height);
@@ -83,5 +83,13 @@
         CGContextFillRect(context, eRect);
     }
 }
+
+/**
+ *  Overridden to modify the duration of the fade-in time of each tile
+ */
+//+ (CFTimeInterval)fadeDuration
+//{
+//    return 0.1;
+//}
 
 @end

@@ -24,7 +24,7 @@
 - (UIColor *)getColorForPanel:(int)panelNum;
 - (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
 - (CALayer *)getStackLayerForStack:(int)stackNum;
-- (int)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index;
+- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index;
 
 - (void)moveBandToRestWithIndex:(int)bandNum inStack:(int)stackNum;
 
@@ -47,7 +47,7 @@
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 - (UIColor *)getColorForPanel:(int)panelNum;
 
-- (void)setNewZoomScale:(float)scale;
+//- (void)setNewZoomScale:(float)scale;
 - (void)doneZooming;
 
 - (NSArray *)findEventsAtPoint:(CGPoint)location;
