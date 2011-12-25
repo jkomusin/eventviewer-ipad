@@ -228,6 +228,66 @@ static NSArray *EVMonthLabels = nil;
 }
 
 /**
+ *  Reorder stacks specified
+ *
+ *  stackNum is the 0-based index of the currently dragged stack
+ *  index is the new 0-based index of the stack being dragged
+ */
+- (BOOL)reorderStacks:(int)stackNum withNewIndex:(int)index
+{
+    // Check to make sure we need to reorder (we may be outside the bounds of the stack)
+    if (index >= [_stackLayerArray count]) return NO;
+    if (stackNum >= [_stackLayerArray count]) return NO;
+    
+    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    
+    NSMutableArray *mutaStackLayerArr = [_stackLayerArray mutableCopy];
+    
+    // Shift old stack
+    CALayer *oldStack = [mutaStackLayerArr objectAtIndex:index];
+    if (stackNum < index)    // Move old band up
+    {
+        CGPoint pos = oldStack.position;
+        pos.y = pos.y - stackHeight;
+        oldStack.position = pos;
+    }
+    else if (stackNum > index)   // Move old band down
+    {
+        CGPoint pos = oldStack.position;
+        pos.y = pos.y + stackHeight;
+        oldStack.position = pos;
+    }
+    else
+        NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackNum, index);
+    
+    // Shift new stack
+    CALayer *draggingStack = [mutaStackLayerArr objectAtIndex:stackNum];
+    if (stackNum < index)    // Move new band down
+    {
+        CGPoint pos = draggingStack.position;
+        pos.y = pos.y + stackHeight;
+        draggingStack.position = pos;
+    }
+    else if (stackNum > index)   // Move new band up
+    {
+        CGPoint pos = draggingStack.position;
+        pos.y = pos.y - stackHeight;
+        draggingStack.position = pos;
+    }
+    else
+        NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackNum, index);
+    
+    // Reposition layers within array
+    [mutaStackLayerArr replaceObjectAtIndex:index withObject:draggingStack];
+    [mutaStackLayerArr replaceObjectAtIndex:stackNum withObject:oldStack];
+    
+    _stackLayerArray = (NSArray *)mutaStackLayerArr;
+    
+    return YES;
+}
+
+/**
  *  Reorders all bands in a stack around the band currently being dragged.
  *
  *  bandNum is the original 0-based index of the band being dragged
@@ -236,7 +296,7 @@ static NSArray *EVMonthLabels = nil;
  *
  *  Returns YES if the reordering occured, else NO
  */
-- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index areBothDragging:(BOOL)bothDragging
+- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index
 {
     // Check to make sure we need to reorder (we may be outside the bounds of the stack)
     if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
@@ -248,42 +308,36 @@ static NSArray *EVMonthLabels = nil;
         NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
         
         BandLayer *oldBand = [bandArray objectAtIndex:index];
-//        if (!bothDragging || i != stackNum)
-//        {
-            if (bandNum < index)    // Move old band up
-            {
-                CGPoint pos = oldBand.position;
-                pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
-                oldBand.position = pos;
-            }
-            else if (bandNum > index)   // Move old band down
-            {
-                CGPoint pos = oldBand.position;
-                pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
-                oldBand.position = pos;
-            }
-            else
-                NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
-//        }
+        if (bandNum < index)    // Move old band up
+        {
+            CGPoint pos = oldBand.position;
+            pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+            oldBand.position = pos;
+        }
+        else if (bandNum > index)   // Move old band down
+        {
+            CGPoint pos = oldBand.position;
+            pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+            oldBand.position = pos;
+        }
+        else
+            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
             
         BandLayer *draggingBand = [bandArray objectAtIndex:bandNum];
-//        if (i != stackNum)  // Skip band ayer currently being dragged
-//        {
-            if (bandNum < index)    // Move new band down
-            {
-                CGPoint pos = draggingBand.position;
-                pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
-                draggingBand.position = pos;
-            }
-            else if (bandNum > index)   // Move new band up
-            {
-                CGPoint pos = draggingBand.position;
-                pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
-                draggingBand.position = pos;
-            }
-            else
-                NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
-//        }
+        if (bandNum < index)    // Move new band down
+        {
+            CGPoint pos = draggingBand.position;
+            pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+            draggingBand.position = pos;
+        }
+        else if (bandNum > index)   // Move new band up
+        {
+            CGPoint pos = draggingBand.position;
+            pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+            draggingBand.position = pos;
+        }
+        else
+            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
         
         // Inform band layers of their new positions
         draggingBand.bandNumber = index;
@@ -302,20 +356,6 @@ static NSArray *EVMonthLabels = nil;
     [_dataDelegate swapBand:bandNum withBand:index];
         
     return YES;
-}
-
-/**
- *  Reset specified band to it's proper position.
- *
- *  bandNum is the 0-based index of the band
- */
-- (void)moveBandToRestWithIndex:(int)bandNum inStack:(int)stackNum
-{
-    BandLayer *b = [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
-    
-    CGPoint pos = b.position;
-    pos.y = bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING;
-    b.position = pos;
 }
 
 

@@ -24,9 +24,8 @@
 - (UIColor *)getColorForPanel:(int)panelNum;
 - (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
 - (CALayer *)getStackLayerForStack:(int)stackNum;
-- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index areBothDragging:(BOOL)bothDragging;
-
-- (void)moveBandToRestWithIndex:(int)bandNum inStack:(int)stackNum;
+- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index;
+- (BOOL)reorderStacks:(int)stackNum withNewIndex:(int)index;
 
 @end
 
