@@ -248,8 +248,8 @@ static NSArray *EVMonthLabels = nil;
         NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
         
         BandLayer *oldBand = [bandArray objectAtIndex:index];
-        if (!bothDragging || i != stackNum)
-        {
+//        if (!bothDragging || i != stackNum)
+//        {
             if (bandNum < index)    // Move old band up
             {
                 CGPoint pos = oldBand.position;
@@ -264,11 +264,11 @@ static NSArray *EVMonthLabels = nil;
             }
             else
                 NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
-        }
+//        }
             
         BandLayer *draggingBand = [bandArray objectAtIndex:bandNum];
-        if (i != stackNum)  // Skip band ayer currently being dragged
-        {
+//        if (i != stackNum)  // Skip band ayer currently being dragged
+//        {
             if (bandNum < index)    // Move new band down
             {
                 CGPoint pos = draggingBand.position;
@@ -283,7 +283,7 @@ static NSArray *EVMonthLabels = nil;
             }
             else
                 NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
-        }
+//        }
         
         // Inform band layers of their new positions
         draggingBand.bandNumber = index;

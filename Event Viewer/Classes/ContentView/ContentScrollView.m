@@ -29,11 +29,6 @@
                                     //  [x][1] corresponds to the layer being dragged (may be a Stack of Band, should check by using properties of BandLayers
                                     //  [x][2] corresponds to the index of the stack being dragged or dragged inside
                                     //  [x][3] corresponds to the index of the band being dragged (obviously optional if a stack is being dragged)
-//    UILabel *_draggingLabel;        // Label currently being dragged
-//    CALayer *_draggingStackLayer;   // Stack layer currently being dragged
-//    BandLayer *_draggingBandLayer;  // Band layer currently being dragged
-//    int _draggingBandIndex;         // Original index of the band currently being dragged
-//    int _draggingStackIndex;        // Original index of the stack or the stack of the current band being dragged
     NSArray *_stackLabelArray;      // Array of labels for each stack
     NSArray *_bandLabelArray;       // 2-dimensional array of labels for each band (indexed by stack then by band)
 }
@@ -281,8 +276,17 @@
             [s setBackgroundColor:[UIColor clearColor]];
             [self insertSubview:s aboveSubview:_bandZoomView];
             
+            // Insert into dragging array ordered based on y-coord of all dragging labels
             NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
-            [mutaDraggingLabels addObject:draggingStack];
+            int l;
+            for (l = 0; l < [mutaDraggingLabels count]; l++)
+            {
+                UILabel *currentL = [[mutaDraggingLabels objectAtIndex:l] objectAtIndex:0];
+                
+                if (currentL.frame.origin.y > s.frame.origin.y) break;
+            }
+            [mutaDraggingLabels insertObject:draggingStack atIndex:l];
+            
             _draggingLabels = (NSArray *)mutaDraggingLabels;
             
             isStack = YES;
@@ -321,14 +325,6 @@
                         if (currentL.frame.origin.y > b.frame.origin.y) break;
                     }
                     [mutaDraggingLabels insertObject:draggingBand atIndex:l];
-                    
-//                    NSLog(@"New ordering of Y:");
-//                    for (int lab = 0; lab < [mutaDraggingLabels count]; lab++)
-//                    {
-//                        UILabel *label = [[mutaDraggingLabels objectAtIndex:lab] objectAtIndex:0];
-//                        NSLog(@"\t %f", label.frame.origin.y);
-//                    }
-//                    NSLog(@"");
                     
                     _draggingLabels = (NSArray *)mutaDraggingLabels;
                     
@@ -434,7 +430,10 @@
         //  Handle swapping with non-dragging band
         if (!reorderedDragging)    
         {
-            int newIndex = pos.y / (BAND_HEIGHT_P + BAND_SPACING);
+            QueryData *data = [_dataDelegate delegateRequestsQueryData];
+            float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+            float normalY = point.y - (stackHeight * stackIndex);
+            int newIndex = normalY / (BAND_HEIGHT_P + BAND_SPACING);
             // Make sure new index is not currently being dragged
             BOOL beingDragged = NO;
             for (NSArray *a in _draggingLabels)
@@ -462,7 +461,7 @@
             }
         }
         
-        [b setPosition:pos];
+//        [b setPosition:pos];
     }
 }
 
