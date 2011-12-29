@@ -9,6 +9,17 @@
 @class ContentScrollView;
 
 /**
+ *  Enumeration for the three primary interface objects: bands, stacks, and panels
+ */
+enum UI_OBJECT
+{
+    BAND = 0,
+    STACK = 1,
+    PANEL = 2
+};
+
+
+/**
  *  Delegate protocol to provide access to the data model to outside objects.
  */
 @protocol DataDelegate

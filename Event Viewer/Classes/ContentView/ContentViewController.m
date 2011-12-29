@@ -44,6 +44,11 @@
 @synthesize currentPanel = _currentPanel;
 
 
+// Global layout parameters that are modified upon a change in device orientation
+//float BAND_HEIGHT = -1.0f;  // Height of bands in the interface
+//float BAND_WIDTH = -1.0f;   // Width of bands in the interface
+BOOL isPortrait = YES;
+
 #pragma mark -
 #pragma mark Initialization
 
@@ -53,18 +58,16 @@
  *  NOTE: Because the view is loaded from a .nib, initially viewDidLoad is called twice in succession
  */
 - (void)viewDidLoad
-{
+{    
     [super viewDidLoad];
     
-    // panelScrubber
-    CGRect scrubberBarFrame = CGRectMake(0.0, 924.0, 768.0, 100.0);
-    UIView *scrubberBar = [[UIView alloc] initWithFrame:scrubberBarFrame];
+    // Panel scrubber
+    UIView *scrubberBar = [[UIView alloc] init];
     _scrubberBar = scrubberBar;
-//    _scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];   // Grey color
+    //_scrubberBar.backgroundColor = [UIColor colorWithRed:238.0/255.0 green:238.0/255.0 blue:238.0/255.0 alpha:1.0];   // Grey color
     _scrubberBar.backgroundColor = [UIColor colorWithRed:0.25f green:0.25f blue:0.25f alpha:1.0f];
     _scrubberBar.opaque = YES;
-    CGRect scrubberFrame = CGRectMake(100.0, 0.0, 568.0, 50.0);
-    UISlider *pscrub = [[UISlider alloc] initWithFrame:scrubberFrame];
+    UISlider *pscrub = [[UISlider alloc] init];
     _panelScrubber = pscrub;
     [_panelScrubber addTarget:self action:@selector(scrubberMoved:) forControlEvents:UIControlEventValueChanged];
     [_panelScrubber addTarget:self action:@selector(scrubberStopped:) forControlEvents:UIControlEventTouchUpInside];
@@ -90,8 +93,7 @@
     _panelOverlays = overlays;
     
     // Scroll view for content
-    CGRect csvFrame = CGRectMake(0.0, 44.0, 768.0, 880.0);
-    ContentScrollView *csv = [[ContentScrollView alloc] initWithFrame:csvFrame];
+    ContentScrollView *csv = [[ContentScrollView alloc] init];
 	[csv setDataDelegate:self];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
@@ -104,6 +106,49 @@
     self.currentPanel = -1;
     
     _zoomScale = 1.0f;
+    
+    // Resize interface componenets as necessary
+    [self configureView];
+}
+
+- (void)configureView
+{
+/////// REMOVE BUTTONS WITH THESE NAMES
+//    // Update the user interface for the detail item.
+//    _detailDescriptionLabel.text = [detailItem description];
+//	toggleItem.title = ([splitController isShowingMaster]) ? @"Hide Master" : @"Show Master"; // "I... AM... THE MASTER!" Derek Jacobi. Gave me chills.
+//	verticalItem.title = (splitController.vertical) ? @"Horizontal Split" : @"Vertical Split";
+//	dividerStyleItem.title = (splitController.dividerStyle == MGSplitViewDividerStyleThin) ? @"Enable Dragging" : @"Disable Dragging";
+//	masterBeforeDetailItem.title = (splitController.masterBeforeDetail) ? @"Detail First" : @"Master First";
+///////
+    
+    // Panel scrubber
+    CGRect scrubberBarFrame;
+    CGRect scrubberFrame;
+    if (isPortrait)
+    {
+        scrubberBarFrame = CGRectMake(0.0f, 924.0f, 768.0f, 100.0f);
+        scrubberFrame = CGRectMake(100.0f, 0.0f, 568.0f, 50.0f);
+    }
+    else
+    {
+        scrubberBarFrame = CGRectMake(0.0, 668.0f, 1024.0f, 100.0f);
+        scrubberFrame = CGRectMake(100.0f, 0.0f, 824.0f, 50.0f);
+    }
+    _scrubberBar.frame = scrubberBarFrame;
+    _panelScrubber.frame = scrubberFrame;
+    
+    // Content scroll view
+    CGRect csvFrame;
+    if (isPortrait)
+    {
+        csvFrame = CGRectMake(0.0f, 44.0f, 768.0f, 880.0f);
+    }
+    else
+    {
+        csvFrame = CGRectMake(0.0f, 44.0f, 1024.0f, 624.0f);
+    }
+    _contentScrollView.frame = csvFrame;
 }
 
 
@@ -408,17 +453,6 @@
 }
 
 
-- (void)configureView
-{
-    // Update the user interface for the detail item.
-    _detailDescriptionLabel.text = [detailItem description];
-	toggleItem.title = ([splitController isShowingMaster]) ? @"Hide Master" : @"Show Master"; // "I... AM... THE MASTER!" Derek Jacobi. Gave me chills.
-	verticalItem.title = (splitController.vertical) ? @"Horizontal Split" : @"Vertical Split";
-	dividerStyleItem.title = (splitController.dividerStyle == MGSplitViewDividerStyleThin) ? @"Enable Dragging" : @"Disable Dragging";
-	masterBeforeDetailItem.title = (splitController.masterBeforeDetail) ? @"Detail First" : @"Master First";
-}
-
-
 #pragma mark -
 #pragma mark Split view support
 
@@ -535,7 +569,16 @@
  */
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation 
 {
-
+    if (interfaceOrientation == UIInterfaceOrientationPortrait || interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
+    {
+        isPortrait = YES;
+    }
+    else if (interfaceOrientation == UIInterfaceOrientationLandscapeLeft || interfaceOrientation == UIInterfaceOrientationLandscapeRight)
+    {
+        isPortrait = NO;
+    }
+    
+    [self configureView];
 }
 
 /**

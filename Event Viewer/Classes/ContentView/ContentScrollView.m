@@ -28,8 +28,9 @@
                                     //  Index of outer array corresponds to each dragging label
                                     //  [x][0] corresponds to the UILabel being dragged
                                     //  [x][1] corresponds to the layer being dragged (may be a Stack of Band, should check by using properties of BandLayers
-                                    //  [x][2] corresponds to the index of the stack being dragged or dragged inside
-                                    //  [x][3] corresponds to the index of the band being dragged (obviously optional if a stack is being dragged)
+                                    //  [x][2] corresponds to the index of the band being dragged (obviously optional if a stack is being dragged)
+                                    //  [x][3] corresponds to the index of the stack being dragged or dragged inside
+    enum UI_OBJECT _draggingType;   // Type of label currently being dragged
     NSArray *_stackLabelArray;      // Array of labels for each stack
     NSArray *_bandLabelArray;       // 2-dimensional array of labels for each band (indexed by stack then by band)
 }
@@ -38,6 +39,8 @@
 @synthesize drawDelegate = _drawDelegate;
 @synthesize currentPanel = _currentPanel;
 @synthesize bandZoomView = _bandZoomView;
+
+
 
 
 #pragma mark -
@@ -60,6 +63,8 @@
 		self.showsVerticalScrollIndicator = NO;
 		self.showsHorizontalScrollIndicator = NO;
 		[self setBackgroundColor:[UIColor blackColor]];
+        
+        _draggingType = -1; // Not currently dragging
     }
     
     return self;
@@ -289,41 +294,27 @@
     CGPoint point = [gestureRecognizer locationInView:self];
     
     // Find label and related layer
-    BOOL isStack = NO;
+    NSMutableArray *draggingLabelArr = [[NSMutableArray alloc] init];
+    UILabel *draggingLabel;
+    enum UI_OBJECT draggingLabelType = -1;
     for (int i = 0; i < [_stackLabelArray count]; i++)
     {
-        UILabel *s = [_stackLabelArray objectAtIndex:i];
-        if (CGRectContainsPoint(s.frame, point))
+        draggingLabel = [_stackLabelArray objectAtIndex:i];
+        if (CGRectContainsPoint(draggingLabel.frame, point))
         {
-            NSMutableArray *draggingStack = [[NSMutableArray alloc] init];
-            [draggingStack addObject:s];
-            [draggingStack addObject:[_drawDelegate getStackLayerForStack:i]];
-            [draggingStack addObject:[NSNumber numberWithInt:i]];
-            [draggingStack addObject:[NSNumber numberWithInt:-1]];
-            [s setFont:[UIFont fontWithName:@"Helvetica-Bold" size:24.0f]];
-            [s setOpaque:NO];
-            [s setBackgroundColor:[UIColor clearColor]];
-            [self insertSubview:s aboveSubview:_bandZoomView];
+            [draggingLabelArr addObject:draggingLabel];
+            [draggingLabelArr addObject:[_drawDelegate getStackLayerForStack:i]];
+            [draggingLabelArr addObject:[NSNumber numberWithInt:-1]];
+            [draggingLabelArr addObject:[NSNumber numberWithInt:i]];
+            [draggingLabelArr addObject:[NSNumber numberWithInt:-1]];   // temp placeholder for panel dragging
             
-            // Insert into dragging array ordered based on y-coord of all dragging labels
-            NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
-            int l;
-            for (l = 0; l < [mutaDraggingLabels count]; l++)
-            {
-                UILabel *currentL = [[mutaDraggingLabels objectAtIndex:l] objectAtIndex:0];
-                
-                if (currentL.frame.origin.y > s.frame.origin.y) break;
-            }
-            [mutaDraggingLabels insertObject:draggingStack atIndex:l];
+            draggingLabelType = STACK;
             
-            _draggingLabels = (NSArray *)mutaDraggingLabels;
-            
-            isStack = YES;
             break;
         }
     }
     // If the label isn't a stack label, check band labels
-    if (!isStack)
+    if (draggingLabelType == -1)
     {
         for (int i = 0; i < [_bandLabelArray count]; i++)
         {   
@@ -331,31 +322,16 @@
             NSArray *bandArray = [_bandLabelArray objectAtIndex:i];
             for (int j = 0; j < [bandArray count]; j++)
             {
-                UILabel *b = [bandArray objectAtIndex:j];
-                if (CGRectContainsPoint(b.frame, point))
+                draggingLabel = [bandArray objectAtIndex:j];
+                if (CGRectContainsPoint(draggingLabel.frame, point))
                 {
-                    NSMutableArray *draggingBand = [[NSMutableArray alloc] init];
-                    [draggingBand addObject:b];
-                    [draggingBand addObject:[_drawDelegate getBandLayerForStack:i band:j]];
-                    [draggingBand addObject:[NSNumber numberWithInt:i]];
-                    [draggingBand addObject:[NSNumber numberWithInt:j]];
-                    [b setFont:[UIFont fontWithName:@"Helvetica" size:20.0f]];
-                    [b setOpaque:NO];
-                    [b setBackgroundColor:[UIColor clearColor]];
-                    [self insertSubview:b aboveSubview:_bandZoomView];
+                    [draggingLabelArr addObject:draggingLabel];
+                    [draggingLabelArr addObject:[_drawDelegate getBandLayerForStack:i band:j]];
+                    [draggingLabelArr addObject:[NSNumber numberWithInt:j]];
+                    [draggingLabelArr addObject:[NSNumber numberWithInt:i]];
+                    [draggingLabelArr addObject:[NSNumber numberWithInt:-1]];   // temp placeholder for panel dragging
                     
-                    // Insert into dragging array ordered based on y-coord of all dragging labels
-                    NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
-                    int l;
-                    for (l = 0; l < [mutaDraggingLabels count]; l++)
-                    {
-                        UILabel *currentL = [[mutaDraggingLabels objectAtIndex:l] objectAtIndex:0];
-                        
-                        if (currentL.frame.origin.y > b.frame.origin.y) break;
-                    }
-                    [mutaDraggingLabels insertObject:draggingBand atIndex:l];
-                    
-                    _draggingLabels = (NSArray *)mutaDraggingLabels;
+                    draggingLabelType = BAND;
                     
                     found = YES;
                     break;
@@ -364,6 +340,50 @@
             if (found) break;
         }
     }
+    
+    if (_draggingType == -1)
+    {
+        _draggingType = draggingLabelType;
+    }
+    
+    // Check to see if the selected label is an illegal label to be dragged
+    //  i.e. if dragging a band, only bands are being dragged, and the band is within the stack and panel the others are being dragged within
+    if (
+        _draggingType != draggingLabelType 
+        ||
+        (draggingLabelType == BAND && [_draggingLabels count] > 0 &&
+            ([[[_draggingLabels objectAtIndex:0] objectAtIndex:3] intValue] != [[draggingLabelArr objectAtIndex:3] intValue]))
+        )
+    {
+        NSLog(@"Cancelling startDrag!!");
+        return;
+    }
+    
+    if (draggingLabelType == BAND)
+    {
+        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:20.0f]];
+    }
+    else if (draggingLabelType == STACK)
+    {
+        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:24.0f]];
+    }
+    
+    [draggingLabel setOpaque:NO];
+    [draggingLabel setBackgroundColor:[UIColor clearColor]];
+    [self insertSubview:draggingLabel aboveSubview:_bandZoomView];
+    
+    // Insert into dragging array ordered based on y-coord of all dragging labels
+    NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
+    int l;
+    for (l = 0; l < [mutaDraggingLabels count]; l++)
+    {
+        UILabel *currentL = [[mutaDraggingLabels objectAtIndex:l] objectAtIndex:0];
+        
+        if (draggingLabel && currentL.frame.origin.y > draggingLabel.frame.origin.y) break;
+    }
+    [mutaDraggingLabels insertObject:draggingLabelArr atIndex:l];
+    
+    _draggingLabels = (NSArray *)mutaDraggingLabels;
 }
 
 /**
@@ -374,6 +394,7 @@
  */
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
+    // We assume that the label being dragged has been added to the _draggingLabels array in startDrag()
     UILabel *draggingLabel = (UILabel *)[gestureRecognizer view];
     NSArray *draggingArr;
     int draggingLabelIndex = -1;
@@ -387,17 +408,36 @@
             break;
         }
     }
+    if (draggingLabelIndex == -1)
+    {
+        return;
+    }
     
-    int stackIndex = [[draggingArr objectAtIndex:2] intValue];
-    int bandIndex = [[draggingArr objectAtIndex:3] intValue];
+    int stackIndex = [[draggingArr objectAtIndex:3] intValue];
+    int bandIndex = [[draggingArr objectAtIndex:2] intValue];
     
+    // Find the type of layer we're dragging
+    enum UI_OBJECT draggingLabelType = -1;
+    if (bandIndex == -1)
+    {
+        draggingLabelType = STACK;
+    }
+    else
+    {
+        draggingLabelType = BAND;
+    }
+    
+    // Ignore if illegal label to drag
+    if (_draggingType != draggingLabelType)
+    {
+        return;
+    }
+    
+    // Move label
     CGPoint point = [gestureRecognizer locationInView:self];
     point.x = draggingLabel.center.x;
     float yDiff = point.y - draggingLabel.center.y;
     [draggingLabel setCenter:point];
-    
-    // Find the type of layer we're dragging
-    BOOL isStack = (bandIndex == -1);
     
     //  Check if currently dragging labels have switched order eachother (by y-coords)
     BOOL reorderedDragging = NO;    // whether or not dragging bands/stacks have been reordered
@@ -412,8 +452,10 @@
         swappingLabelIndex = draggingLabelIndex-1;
         swappingDragArr = [_draggingLabels objectAtIndex:swappingLabelIndex];
         swappingLab = [swappingDragArr objectAtIndex:0];
-        if (isStack)    swappingStackIndex = stackIndex-1;
-        else            swappingBandIndex = bandIndex-1;
+        if (draggingLabelType == STACK)
+            swappingStackIndex = stackIndex-1;
+        else
+            swappingBandIndex = bandIndex-1;
         reorderUp = YES;
     }
     else if (yDiff > 0 && draggingLabelIndex < [_draggingLabels count]-1)
@@ -421,8 +463,10 @@
         swappingLabelIndex = draggingLabelIndex+1;
         swappingDragArr = [_draggingLabels objectAtIndex:swappingLabelIndex];
         swappingLab = [swappingDragArr objectAtIndex:0];
-        if (isStack)    swappingStackIndex = stackIndex+1;
-        else            swappingBandIndex = bandIndex+1;
+        if (draggingLabelType == STACK)
+            swappingStackIndex = stackIndex+1;
+        else
+            swappingBandIndex = bandIndex+1;
         reorderUp = NO;
     }
     
@@ -432,7 +476,7 @@
     {
         // Reorder
         reorderedDragging = YES;
-        if (isStack)
+        if (draggingLabelType == STACK)
         {
             [self swapStackLabels:stackIndex and:swappingStackIndex];
             [_drawDelegate reorderStacks:stackIndex withNewIndex:swappingStackIndex];
@@ -447,15 +491,15 @@
         NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
         NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
         NSMutableArray *mutaSwappingDragArr = [swappingDragArr mutableCopy];
-        if (isStack)
+        if (draggingLabelType == STACK)
         {
-            [mutaDraggingArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:swappingStackIndex]];
-            [mutaSwappingDragArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:stackIndex]];            
+            [mutaDraggingArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:swappingStackIndex]];
+            [mutaSwappingDragArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:stackIndex]];            
         }
         else
         {
-            [mutaDraggingArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:swappingBandIndex]];
-            [mutaSwappingDragArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:bandIndex]];
+            [mutaDraggingArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:swappingBandIndex]];
+            [mutaSwappingDragArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:bandIndex]];
         }
         
         [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaSwappingDragArr];
@@ -469,7 +513,7 @@
         QueryData *data = [_dataDelegate delegateRequestsQueryData];
         float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
         int newIndex;
-        if (isStack)
+        if (draggingLabelType == STACK)
         {
             newIndex = point.y / stackHeight;
         }
@@ -483,8 +527,8 @@
         BOOL beingDragged = NO;
         for (NSArray *a in _draggingLabels)
         {
-            if ((isStack && ([[a objectAtIndex:2] intValue] == newIndex)) ||
-                (!isStack && ([[a objectAtIndex:3] intValue] == newIndex)))
+            if ((draggingLabelType == STACK && ([[a objectAtIndex:3] intValue] == newIndex)) ||
+                (draggingLabelType == BAND && ([[a objectAtIndex:2] intValue] == newIndex)))
             {
                 beingDragged = YES;
                 break;
@@ -492,7 +536,7 @@
         }
         
         // Reorder
-        if (!isStack && (newIndex != bandIndex) && (newIndex >= 0) && !beingDragged)
+        if (draggingLabelType == BAND && (newIndex != bandIndex) && (newIndex >= 0) && !beingDragged)
         {                
             if ([_drawDelegate reorderBandsAroundBand:bandIndex inStack:stackIndex withNewIndex:newIndex])
             {
@@ -501,13 +545,13 @@
                 // Set new index by replacing the dragging array
                 NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
                 NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
-                [mutaDraggingArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:newIndex]];
+                [mutaDraggingArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:newIndex]];
                 
                 [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
                 _draggingLabels = (NSArray *)mutaDraggingLabels;
             }
         }
-        else if (isStack && (newIndex != stackIndex) && (newIndex >= 0) && !beingDragged)
+        else if (draggingLabelType == STACK && (newIndex != stackIndex) && (newIndex >= 0) && !beingDragged)
         {
             if ([_drawDelegate reorderStacks:stackIndex withNewIndex:newIndex])
             {
@@ -516,7 +560,7 @@
                 // Set new index by replacing the dragging array
                 NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
                 NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
-                [mutaDraggingArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:newIndex]];
+                [mutaDraggingArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:newIndex]];
                 
                 [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
                 _draggingLabels = (NSArray *)mutaDraggingLabels;
@@ -542,9 +586,13 @@
             break;
         }
     }
+    if (!draggingArr)
+    {
+        return;
+    }
     
-    int stackIndex = [[draggingArr objectAtIndex:2] intValue];
-    int bandIndex = [[draggingArr objectAtIndex:3] intValue];
+    int stackIndex = [[draggingArr objectAtIndex:3] intValue];
+    int bandIndex = [[draggingArr objectAtIndex:2] intValue];
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
     
@@ -556,14 +604,13 @@
     [self insertSubview:draggingLabel belowSubview:_bandZoomView];
     
     // Set new position for dropped layer based on its index
+    CGRect labelF = draggingLabel.frame;
     if (isStack)
     {
         [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:20.0f]];
         // Move label to rest
         float stackY = stackIndex * stackHeight;
-        CGRect labelF = draggingLabel.frame;
         labelF.origin.y = stackY;
-        draggingLabel.frame = labelF;
     }
     else
     {
@@ -571,15 +618,21 @@
         // Move label to rest
         float stackY = stackIndex * stackHeight;
         float bandY = bandIndex * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
-        CGRect labelF = draggingLabel.frame;
         labelF.origin.y = bandY;
-        draggingLabel.frame = labelF;
     }
+    draggingLabel.frame = labelF;
     
     // Remove dragging array now that it's finished
     NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
     [mutaDraggingLabels removeObjectIdenticalTo:draggingArr];
     _draggingLabels = (NSArray *)mutaDraggingLabels;
+    
+    // If last of the labels being dragged, reset the status to dragging no labels
+    if ([_draggingLabels count] == 0)
+    {
+        NSLog(@"Resetting dragging type!!!");
+        _draggingType = -1;
+    }
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer

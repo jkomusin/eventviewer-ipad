@@ -543,7 +543,7 @@ static NSArray *EVMonthLabels = nil;
  *	data is a copy of the current QueryData object
  */
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
-{
+{    
 	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
 	
 	if (data.timeScale == 1)
