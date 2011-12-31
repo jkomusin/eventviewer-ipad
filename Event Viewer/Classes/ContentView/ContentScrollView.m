@@ -8,8 +8,8 @@
 
 #import "ContentViewController.h"
 #import "ContentScrollView.h"
-#import "BandZoomView.h"
-#import "BandDrawView.h"
+#import "PanelZoomView.h"
+#import "PanelDrawView.h"
 #import "BandLayer.h"
 #import "QueryData.h"
 
@@ -37,28 +37,32 @@
 
 @synthesize dataDelegate = _dataDelegate;
 @synthesize drawDelegate = _drawDelegate;
-@synthesize currentPanel = _currentPanel;
-@synthesize bandZoomView = _bandZoomView;
+@synthesize panelZoomViews = _panelZoomViews;
+@synthesize queryContentView = _queryContentView;
 
-
+OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewController to specify device orientation
 
 
 #pragma mark -
 #pragma mark Initialization
 
-- (id)initWithFrame:(CGRect)frame
+- (id)initWithPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
 {
-    if ((self = [super initWithFrame:frame])) 
+    if ((self = [super init])) 
     {        
-        [self createLabels];
+        NSArray *newPanelZoomers = [[NSArray alloc] init];
+        _panelZoomViews = newPanelZoomers;
+        
+        UIView *newContentView = [[UIView alloc] init];
+        [self addSubview:newContentView];
+        _queryContentView = newContentView;
+        
+        self.delegate = self;
+        
+        [self sizeForPanelNum:panelNum stackNum:stackNum bandNum:bandNum];
         
         NSArray *newDraggingArr = [[NSArray alloc] init];
         _draggingLabels = newDraggingArr;
-        _currentPanel = -1;
-        BandZoomView *zoomView = [[BandZoomView alloc] initWithStackNum:0 bandNum:0];
-        [self addSubview:zoomView];
-        _bandZoomView = zoomView;
-        _drawDelegate = zoomView.bandDrawView;
         self.opaque = YES;
 		self.showsVerticalScrollIndicator = NO;
 		self.showsHorizontalScrollIndicator = NO;
@@ -77,14 +81,104 @@
  *  stackNum is the number of stacks in the new query
  *  bandNum is the number of bands in the new query
  */
-- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
+- (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
 {
-    [_bandZoomView resizeForStackNum:stackNum bandNum:bandNum];
-    if (self.contentSize.height != _bandZoomView.frame.size.height || self.contentSize.width != _bandZoomView.frame.size.width)
+    if ([_panelZoomViews count] != panelNum)
     {
-        self.contentSize = _bandZoomView.frame.size;
+        NSMutableArray *mutaPanels = [_panelZoomViews mutableCopy];
+        // Add additional panels
+        int i;
+        i = [mutaPanels count];
+        while (i < panelNum)
+        {            
+            CGRect panelF = CGRectMake((int)(((768.0 - BAND_WIDTH_P) * 3/4) + (768.0f * i)),  // Has to be rounded to an integer to truncate the trailing floating-point errors that reuslt for the calculation, otherwise drawing will not be exact in iOS's drawing coordinates (in order to offset them by precisely 0.5 units)
+                                      0.0f,
+                                      BAND_WIDTH_P,
+                                      (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
+            PanelZoomView *zoomView = [[PanelZoomView alloc] initWithFrame:panelF forPanelIndex:i stackNum:stackNum bandNum:bandNum];
+            
+            zoomView.frame = panelF;
+            zoomView.bandDrawView.dataDelegate = _dataDelegate;
+            [_queryContentView addSubview:zoomView];
+            [mutaPanels addObject:zoomView];
+            i++;
+        }
+        // Remove excess panels
+        i = [mutaPanels count];
+        while (i > panelNum)
+        {            
+            PanelZoomView *zoomView = [mutaPanels objectAtIndex:(i-1)];
+            [zoomView removeFromSuperview];
+            [mutaPanels removeObjectAtIndex:(i-1)];
+            i--;
+        }
+        
+        _panelZoomViews = (NSArray *)mutaPanels;
     }
-	
+    
+    // Display/remove panels for differring views
+    for (PanelZoomView *p in _panelZoomViews)
+    {
+        [p removeFromSuperview];
+    }
+    if (isPortrait && panelNum != 0)
+    {
+        PanelZoomView *p = [_panelZoomViews objectAtIndex:0];
+        [self addSubview:p];
+    }
+    else
+    {
+        for (PanelZoomView *p in _panelZoomViews)
+        {
+            [self addSubview:p];
+        }
+    }
+    
+    // Skip the rest of configuration if there are no panels
+    if (panelNum == 0) return;
+    
+    // Resize all subviews
+    for (PanelZoomView *p in _panelZoomViews)
+    {
+        [p resizeForStackNum:stackNum bandNum:bandNum];
+    }
+    
+    // Set size of content
+    CGSize selfSize;
+    if (isPortrait)
+    {
+        selfSize = ((PanelZoomView *)[_panelZoomViews objectAtIndex:1]).frame.size;
+    }
+    else
+    {
+        selfSize = CGSizeMake(768.0f * panelNum, 
+                              ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).frame.size.height);
+    }
+    _queryContentView.frame = CGRectMake(0.0f, 0.0f, selfSize.width, selfSize.height);
+    self.contentSize = selfSize;
+    
+    // Set zoom properties
+    if (isPortrait)
+    {
+        for (PanelZoomView *p in _panelZoomViews)
+        {
+            p.userInteractionEnabled = YES;
+        }
+        self.maximumZoomScale = 1.0f;
+        self.minimumZoomScale = 1.0f;
+    }
+    else
+    {
+        for (PanelZoomView *p in _panelZoomViews)
+        {
+            p.userInteractionEnabled = NO;
+        }
+        self.maximumZoomScale = 10.0f;
+        self.minimumZoomScale = 1.0f;
+    }
+    
+    self.drawDelegate = ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).bandDrawView;
+    
 	[self createLabels];
 }
 
@@ -94,14 +188,36 @@
  *
  *  panelNum is the array index of the panel to switch the view to (0-indexed)
  */
-- (void)switchToPanel:(int)panelNum
+- (void)switchToPanel:(int)panelIndex
 {
-    if (panelNum == _currentPanel)
+    NSLog(@"Here with index %d", panelIndex);
+    
+    if (panelIndex == -1) return;
+
+    PanelZoomView *p = [_panelZoomViews objectAtIndex:0];
+    if (panelIndex == p.bandDrawView.currentPanel)
         return;
 
-    _currentPanel = panelNum;
-    _bandZoomView.bandDrawView.layer.contents = nil;
-    [_bandZoomView.bandDrawView setNeedsDisplay];
+    p.bandDrawView.currentPanel = panelIndex;
+    p.bandDrawView.layer.contents = nil;
+    [p.bandDrawView setNeedsDisplay];
+}
+
+
+#pragma mark -
+#pragma mark Custom properties
+
+/**
+ *  Manage the data delegates of all underlying views
+ */
+- (void)setDataDelegate:(id<DataDelegate>)newDataDelegate
+{
+    _dataDelegate = newDataDelegate;
+    
+    for (PanelZoomView *p in _panelZoomViews)
+    {
+        p.bandDrawView.dataDelegate = newDataDelegate;
+    }
 }
 
 
@@ -146,7 +262,7 @@
         [stackL setUserInteractionEnabled:YES];
         
 		[self addSubview:stackL];
-        [self insertSubview:stackL belowSubview:_bandZoomView];
+        [self insertSubview:stackL belowSubview:[_panelZoomViews objectAtIndex:0]];
         [newStackLabels addObject:stackL];
 		
         NSMutableArray *currentBandLabels = [[NSMutableArray alloc] init];
@@ -170,7 +286,7 @@
             [bandL setUserInteractionEnabled:YES];
             
 			[self addSubview:bandL];
-            [self insertSubview:bandL belowSubview:_bandZoomView];
+            [self insertSubview:bandL belowSubview:[_panelZoomViews objectAtIndex:0]];
             [currentBandLabels addObject:bandL];
         }
         [newBandLabels addObject:(NSArray *)currentBandLabels];
@@ -290,7 +406,7 @@
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
-{
+{    
     CGPoint point = [gestureRecognizer locationInView:self];
     
     // Find label and related layer
@@ -370,7 +486,7 @@
     
     [draggingLabel setOpaque:NO];
     [draggingLabel setBackgroundColor:[UIColor clearColor]];
-    [self insertSubview:draggingLabel aboveSubview:_bandZoomView];
+    [self insertSubview:draggingLabel aboveSubview:[_panelZoomViews objectAtIndex:0]];
     
     // Insert into dragging array ordered based on y-coord of all dragging labels
     NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
@@ -601,7 +717,7 @@
     
     draggingLabel.opaque = YES;
     draggingLabel.backgroundColor = [UIColor blackColor];
-    [self insertSubview:draggingLabel belowSubview:_bandZoomView];
+    [self insertSubview:draggingLabel belowSubview:[_panelZoomViews objectAtIndex:0]];
     
     // Set new position for dropped layer based on its index
     CGRect labelF = draggingLabel.frame;
@@ -648,6 +764,18 @@
     {
         return NO;
     }
+}
+
+
+#pragma mark -
+#pragma mark Drawing
+
+/**
+ *  Basic override for zooming in UIScrollViews
+ */
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
+{	
+	return _queryContentView;
 }
 
 /*

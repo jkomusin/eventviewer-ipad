@@ -7,7 +7,7 @@
 //
 
 #import "ContentViewController.h"
-#import "BandDrawView.h"
+#import "PanelDrawView.h"
 #import "QueryData.h"
 #import "BandLayer.h"
 #import "Event.h"
@@ -35,7 +35,7 @@
     CGContextFillRect(context, bandDrawF);
     
     // Draw events for overlaid & current panels
-    int currentPanel = [_dataDelegate delegateRequestsCurrentPanel];
+    int currentPanel = [_drawDelegate delegateRequestsCurrentPanel];
     BOOL currentPanelIsOverlaid = NO;
     NSArray *overlays = [_dataDelegate delegateRequestsOverlays];
     for (NSNumber *i in overlays)

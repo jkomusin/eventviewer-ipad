@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class BandZoomView;
+@class PanelZoomView;
 @class QueryData;
 @protocol DataDelegate;
 @protocol DrawDelegate;
@@ -23,18 +23,19 @@
 #define STACK_SPACING 32.0f
 
 /**
- *  ScrollView containing all content in the currently displayed query results. Is the superview to all others, and the ContentViewController's priary view.
+ *  ScrollView containing all content in the currently displayed query results. Is the superview to all others, and the ContentViewController's primary view.
  */
-@interface ContentScrollView : UIScrollView <UIGestureRecognizerDelegate>
+@interface ContentScrollView : UIScrollView <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
 @property (nonatomic, strong) id<DrawDelegate> drawDelegate;
-@property (nonatomic, assign) int currentPanel;      // Index in the panelViews array of the panel currently selected by the scrubber's movable selector (0-indexed, -1 indicates no panes exist)
-@property (nonatomic, strong) BandZoomView *bandZoomView;   // Zooming scrollview containing all drawings of bands, stacks, and events
+@property (nonatomic, strong) NSArray *panelZoomViews;      // Array of all zooming scrollviews representing the panels in the display
+@property (nonatomic, strong) UIView *queryContentView;          // View containing all panels and content within the ContentScrollView (_contentView is reserved by UIScrollView :( )
 
-- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
+- (id)initWithPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum;
+- (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum;
 
-- (void)switchToPanel:(int)panelNum;
+- (void)switchToPanel:(int)panelIndex;
 
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;

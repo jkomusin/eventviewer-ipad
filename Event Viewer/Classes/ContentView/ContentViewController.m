@@ -3,8 +3,8 @@
 #import "QueryViewController.h"
 #import "QueryData.h"
 #import "ContentScrollView.h"
-#import "BandZoomView.h"
-#import "BandDrawView.h"
+#import "PanelZoomView.h"
+#import "PanelDrawView.h"
 
 @interface ContentViewController ()
 
@@ -19,10 +19,6 @@
 {
     // MGUISplitViewController private properties
 	IBOutlet MGSplitViewController *splitController;
-	IBOutlet UIBarButtonItem *toggleItem;
-	IBOutlet UIBarButtonItem *verticalItem;
-	IBOutlet UIBarButtonItem *dividerStyleItem;
-	IBOutlet UIBarButtonItem *masterBeforeDetailItem;
     UIPopoverController *popoverController;
     UIToolbar *toolbar;
     id detailItem;
@@ -36,12 +32,11 @@
                                             //  NOTE: This includes the current panel if it is overlaid!
     ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
     
-    float _zoomScale;
+    float _zoomScale;                       // Current zoom scale of content
 }
 
 @synthesize toolbar, popoverController, detailItem, _detailDescriptionLabel;
 @synthesize queryData = _queryData;
-@synthesize currentPanel = _currentPanel;
 
 
 // Global layout parameters that are modified upon a change in device orientation
@@ -93,17 +88,16 @@ BOOL isPortrait = YES;
     _panelOverlays = overlays;
     
     // Scroll view for content
-    ContentScrollView *csv = [[ContentScrollView alloc] init];
-	[csv setDataDelegate:self];
+    ContentScrollView *csv = [[ContentScrollView alloc] initWithPanelNum:_queryData.panelNum stackNum:_queryData.stackNum bandNum:_queryData.bandNum];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
-    _contentScrollView.bandZoomView.bandDrawView.dataDelegate = self;
+    
+    // Establish data delegation
+    [_contentScrollView setDataDelegate:self];
     
     // QueryData model
     QueryData *qdata = [[QueryData alloc] init];
     self.queryData = qdata;
-    
-    self.currentPanel = -1;
     
     _zoomScale = 1.0f;
     
@@ -111,17 +105,12 @@ BOOL isPortrait = YES;
     [self configureView];
 }
 
+
+#pragma mark -
+#pragma mark View Sizing
+
 - (void)configureView
-{
-/////// REMOVE BUTTONS WITH THESE NAMES
-//    // Update the user interface for the detail item.
-//    _detailDescriptionLabel.text = [detailItem description];
-//	toggleItem.title = ([splitController isShowingMaster]) ? @"Hide Master" : @"Show Master"; // "I... AM... THE MASTER!" Derek Jacobi. Gave me chills.
-//	verticalItem.title = (splitController.vertical) ? @"Horizontal Split" : @"Vertical Split";
-//	dividerStyleItem.title = (splitController.dividerStyle == MGSplitViewDividerStyleThin) ? @"Enable Dragging" : @"Disable Dragging";
-//	masterBeforeDetailItem.title = (splitController.masterBeforeDetail) ? @"Detail First" : @"Master First";
-///////
-    
+{    
     // Panel scrubber
     CGRect scrubberBarFrame;
     CGRect scrubberFrame;
@@ -149,6 +138,18 @@ BOOL isPortrait = YES;
         csvFrame = CGRectMake(0.0f, 44.0f, 1024.0f, 624.0f);
     }
     _contentScrollView.frame = csvFrame;
+    
+    [self initScrubber];
+    
+    [self resizeSubviews];
+}
+
+/**
+ *  Called whenever a new query is submitted, to resize all of the content-displying subviews to their proper sizes.
+ */
+- (void)resizeSubviews
+{
+    [_contentScrollView sizeForPanelNum:_queryData.panelNum stackNum:_queryData.stackNum bandNum:_queryData.bandNum];
 }
 
 
@@ -175,15 +176,18 @@ BOOL isPortrait = YES;
 */
     _queryData = queryData;
     
-    // Update display with new data
-    int newPanelNum = _queryData.panelNum;
-    if (newPanelNum > 0)
-        self.currentPanel = 0;
-    else
-        self.currentPanel = -1;
-    
     [self resizeSubviews];
-    [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
+    
+    // Update display with new data
+    if (_queryData.panelNum > 0)
+        [self changeCurrentPanel:0];
+    else
+        [self changeCurrentPanel:-1];
+    
+    for (PanelZoomView *p in _contentScrollView.panelZoomViews)
+    {
+        [p.bandDrawView setNeedsDisplay];
+    }
     
     // Re-initialize scrubber
     [self initScrubber];
@@ -191,29 +195,15 @@ BOOL isPortrait = YES;
 
 
 #pragma mark -
-#pragma mark View Sizing
-
-/**
- *  Called whenever a new query is submitted, to resize all of the content-displying subviews to their proper sizes.
- */
-- (void)resizeSubviews
-{
-    [_contentScrollView resizeForStackNum:_queryData.stackNum bandNum:_queryData.bandNum];
-}
-
-
-#pragma mark -
 #pragma mark Panel Control
 
 /**
- *  Custom setter for _currentPanel.
- *  Overridden to update the panel scrubber slider and to inform the scroll view and all subviews to redraw the new panel.
+ *  Changes panel and updates the panel scrubber slider and to inform the scroll view and all subviews to redraw the new panel.
  */
-- (void)setCurrentPanel:(int)panelNum
+- (void)changeCurrentPanel:(int)panelIndex
 {
-    _currentPanel = panelNum;
-    [_panelScrubber setValue:(float)panelNum animated:YES];
-    [_contentScrollView switchToPanel:panelNum];
+    [_panelScrubber setValue:(float)panelIndex animated:YES];
+    [_contentScrollView switchToPanel:panelIndex];
 }
 
 /**
@@ -229,12 +219,9 @@ BOOL isPortrait = YES;
         [_panelScrubber setValue:_panelScrubber.maximumValue animated:YES];
     }
     // Remove all buttons
-    if (_scrubberButtons.count != panelNum)
+    for (UIButton *b in _scrubberButtons)
     {
-        for (UIButton *b in _scrubberButtons)
-        {
-            [b removeFromSuperview];
-        }
+        [b removeFromSuperview];
     }
     // Remove all overlays
     NSArray *emptyOverlays = [[NSArray alloc] init];
@@ -247,12 +234,12 @@ BOOL isPortrait = YES;
     {
         CGRect frame;
         if (panelNum == 1)
-            frame = CGRectMake(90.0f+(568.0f/2.0f)-50.0f, 
+            frame = CGRectMake(90.0f+(_panelScrubber.frame.size.width/2.0f)-50.0f, 
                                   50.0f, 
                                   100.0f, 
                                   20.0f);
         else
-            frame = CGRectMake(90.0f+(568.0f/(panelNum-1.0f))*i-50.0f, 
+            frame = CGRectMake(90.0f+(_panelScrubber.frame.size.width/(panelNum-1.0f))*i-50.0f, 
                                50.0f, 
                                100.0f, 
                                20.0f);
@@ -273,8 +260,11 @@ BOOL isPortrait = YES;
     }
     _scrubberButtons = butts;
 
-    int roundVal = roundf((float)_panelScrubber.value);
-    [_contentScrollView switchToPanel:roundVal];
+//    int roundVal = roundf((float)_panelScrubber.value);
+//    
+//    if (_queryData.panelNum == 0)
+//        roundVal = -1;
+//    [_contentScrollView switchToPanel:roundVal];
 }
 
 /**
@@ -287,9 +277,9 @@ BOOL isPortrait = YES;
 {
     int roundVal = roundf((float)_panelScrubber.value);
     
-    if (_currentPanel != roundVal)
+    if (((PanelZoomView *)[_contentScrollView.panelZoomViews objectAtIndex:0]).bandDrawView.currentPanel != roundVal)
     {
-        self.currentPanel = roundVal;
+        [self changeCurrentPanel:roundVal];
         NSLog(@"Switching to panel %d", roundVal);
     }
 }
@@ -340,7 +330,10 @@ BOOL isPortrait = YES;
         _panelOverlays = overlays;
     }
 
-    [_contentScrollView.bandZoomView.bandDrawView setNeedsDisplay];
+    for (PanelZoomView *p in _contentScrollView.panelZoomViews)
+    {
+        [p.bandDrawView setNeedsDisplay];
+    }
 }
 
 
@@ -378,14 +371,6 @@ BOOL isPortrait = YES;
 - (QueryData *)delegateRequestsQueryData
 {
     return [_queryData copy];
-}
-
-/**
- *  Returns the currently viewed panel (0-indexed)
- */
-- (int)delegateRequestsCurrentPanel
-{
-    return _currentPanel;
 }
 
 /**

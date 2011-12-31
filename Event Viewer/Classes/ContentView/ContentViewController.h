@@ -1,7 +1,7 @@
 
 #import <UIKit/UIKit.h>
 #import "MGSplitViewController.h"
-#import "BandDrawView.h"
+#import "PanelDrawView.h"
 #import "ContentScrollView.h"
 
 @class QueryViewController;
@@ -25,7 +25,6 @@ enum UI_OBJECT
 @protocol DataDelegate
 @required
 - (QueryData *)delegateRequestsQueryData;
-- (int)delegateRequestsCurrentPanel;
 - (int)delegateRequestsNumberOfBands;
 - (NSArray *)delegateRequestsOverlays;
 - (int)delegateRequestsTimescale;
@@ -53,10 +52,10 @@ enum UI_OBJECT
 ///////
 
 @property (nonatomic, copy) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
-@property (nonatomic, assign) int currentPanel;     // Currently selected panel
 
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer;
+- (void)changeCurrentPanel:(int)panelIndex;
 - (void)initScrubber;
 - (void)buttonPressed:(id)sender;
 - (void)addNewPanel;
