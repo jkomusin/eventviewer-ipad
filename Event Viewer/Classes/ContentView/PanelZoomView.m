@@ -11,6 +11,9 @@
 #import "ContentScrollView.h"
 
 @implementation PanelZoomView
+{
+    CGRect _originalFrame;  // Frame of the view at zoomScale 1.0
+}
 
 @synthesize panelDrawView = _panelDrawView;
 
@@ -49,8 +52,6 @@ OBJC_EXPORT float STACK_SPACING;            //
         PanelDrawView *bandView = [[PanelDrawView alloc] init];
         _panelDrawView = bandView;
         [self addSubview:bandView];
-        
-//        [_bandDrawView setNeedsDisplay];
     }
     
     return self;
@@ -71,12 +72,15 @@ OBJC_EXPORT float STACK_SPACING;            //
     frame.size.height = (bandNum * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING) * stackNum;
     self.frame = frame;
     
+    _originalFrame = frame;
+    
     [_panelDrawView sizeForStackNum:stackNum bandNum:bandNum];
     self.contentSize = _panelDrawView.frame.size;
 }
 
 /**
  *  Overridden so that re-drawing only occurs when zooming has completed, to allow for smooth zooming (redrawing is costly if done on ever minute update).
+ *  Also informs drawing view that it may set its zoomscale to the current value, as the transformation has ended
  */
 - (void)scrollViewDidEndZooming:(PanelZoomView *)scrollView withView:(UIView *)view atScale:(float)scale
 {
@@ -90,6 +94,24 @@ OBJC_EXPORT float STACK_SPACING;            //
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
 {	    
 	return _panelDrawView;
+}
+
+/**
+ *  Zoom self and all subviews
+ */
+- (void)zoomToScale:(float)zoomScale
+{
+    CGRect newFrame = _originalFrame;
+    newFrame.size.width = _originalFrame.size.width * zoomScale;
+    newFrame.size.height = _originalFrame.size.height * zoomScale;
+    if (_panelDrawView.currentPanel != 0)
+    {
+        newFrame.origin.x = _originalFrame.origin.x * zoomScale;
+    }
+    self.frame = newFrame;
+    
+    [_panelDrawView zoomToScale:zoomScale];
+    self.contentSize = _panelDrawView.frame.size;
 }
 
 /*

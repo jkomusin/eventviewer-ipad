@@ -16,9 +16,11 @@
  */
 @interface PanelZoomView : UIScrollView <UIScrollViewDelegate>
 
-@property (nonatomic, strong) PanelDrawView *panelDrawView;      // The static View in which all bands are drawn. Is the view that is zoomed and panned by this ScrollView.
+@property (nonatomic, strong) PanelDrawView *panelDrawView;     // The static View in which all bands are drawn. Is the view that is zoomed and panned by this ScrollView.
 
 //- (id)initWithFrame:(CGRect)frame forPanelIndex:(int)panelIndex stackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum;
+
+- (void)zoomToScale:(float)zoomScale;
 
 @end

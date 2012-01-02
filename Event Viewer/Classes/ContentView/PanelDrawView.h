@@ -49,6 +49,7 @@
 - (UIColor *)getColorForPanel:(int)panelNum;
 
 - (void)doneZooming;
+- (void)zoomToScale:(float)zoomScale;
 
 - (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (NSArray *)findEventsAtPoint:(CGPoint)location;

@@ -10,6 +10,7 @@
 #import "ContentScrollView.h"
 #import "PanelZoomView.h"
 #import "PanelDrawView.h"
+#import "ContentView.h"
 #import "BandLayer.h"
 #import "QueryData.h"
 #import "Meta.h"
@@ -60,7 +61,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         NSArray *newPanelZoomers = [[NSArray alloc] init];
         _panelZoomViews = newPanelZoomers;
         
-        UIView *newContentView = [[UIView alloc] init];
+        ContentView *newContentView = [[ContentView alloc] init];
         [self addSubview:newContentView];
         _queryContentView = newContentView;
         
@@ -68,9 +69,6 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         [self addSubview:newLabelView];
         newLabelView.backgroundColor = [UIColor blackColor];
         _sideLabelView = newLabelView;
-        
-        
-        
         
         self.delegate = self;
         
@@ -193,7 +191,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
     }
     else
     {
-        selfSize = CGSizeMake(768.0f * panelNum, 
+        selfSize = CGSizeMake(1024.0f, 
                               ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).frame.size.height);
     }
     _queryContentView.frame = CGRectMake(0.0f, 0.0f, selfSize.width, selfSize.height);
@@ -826,6 +824,55 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
 - (UIView *)viewForZoomingInScrollView:(ContentScrollView *)scrollView 
 {	
 	return _queryContentView;
+}
+
+/**
+ *  Overridden so that the contentView knows when transformations have completed
+ */
+- (void)scrollViewDidEndZooming:(PanelZoomView *)scrollView withView:(UIView *)view atScale:(float)scale
+{
+//    [_queryContentView doneZooming];
+    for (PanelZoomView *p in _panelZoomViews)
+    {
+        [p.panelDrawView setNeedsDisplay];
+    }
+}
+
+- (void)scrollViewDidZoom:(UIScrollView *)scrollView
+{
+    // Resize panels
+    for (PanelZoomView *p in _panelZoomViews)
+    {
+        [p zoomToScale:scrollView.zoomScale];
+    }
+    
+    // Resize labels
+    CGRect newLabelF = _sideLabelView.frame;
+    newLabelF.size.height = _queryContentView.frame.size.height;
+    _sideLabelView.frame = newLabelF;
+    
+    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    float temp_BAND_HEIGHT = BAND_HEIGHT * scrollView.zoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * scrollView.zoomScale;
+    float temp_STACK_SPACING = STACK_SPACING * scrollView.zoomScale;
+    
+    float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_STACK_SPACING;
+    for (int i = 0; i < data.stackNum; i++)
+    {
+        float stackY = stackHeight * i;
+		CGRect labelF = CGRectMake(16.0f, stackY, 128.0f, 32.0f);
+		UILabel *stackL = [_stackLabelArray objectAtIndex:i];
+        stackL.frame = labelF;
+		
+        NSArray *currentBandLabels = [_bandLabelArray objectAtIndex:i];
+		for (int j = 0; j < data.bandNum; j++)
+        {
+			float bandY = j * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_STACK_SPACING + stackY;
+            labelF = CGRectMake(32.0f, bandY, 128.0f, temp_BAND_HEIGHT);
+			UILabel *bandL = [currentBandLabels objectAtIndex:j];
+            bandL.frame = labelF;
+        }
+    }
 }
 
 /**

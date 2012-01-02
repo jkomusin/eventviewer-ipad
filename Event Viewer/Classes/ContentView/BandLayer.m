@@ -76,14 +76,14 @@ OBJC_EXPORT float STACK_SPACING;            //
     
     for (Event *e in eArr)
     {
-        int intX = (int)(e.x * zoomScale * (BAND_WIDTH / BAND_WIDTH_P));
+        int intX = (int)(e.x * zoomScale * (self.frame.size.width / BAND_WIDTH_P));
         float x = (float)intX + 0.5f;
-        int intW = (int)(e.width * zoomScale * (BAND_WIDTH / BAND_WIDTH_P));
+        int intW = (int)(e.width * zoomScale * (self.frame.size.width / BAND_WIDTH_P));
         float width = (float)intW;
         CGRect eRect = CGRectMake(x, 
                                   0.0f, 
                                   width, 
-                                  BAND_HEIGHT);
+                                  self.frame.size.height);
         CGContextFillRect(context, eRect);
     }
 }

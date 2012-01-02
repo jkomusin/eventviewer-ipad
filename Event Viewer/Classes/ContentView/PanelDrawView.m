@@ -23,8 +23,7 @@
 	
 	float _zoomScale;           // Current scale of the events and bands specified by the BandZoomView, for use in re-drawing at appropriate sizes
     float _newZoomScale;        // Zoom scale to be used during zooming, due to the manual management of transforms
-	float _originalWidth;       // Original width of the view (a little superficial given that this width is specified by BAND_WIDTH, but included for added robustness)
-    float _currentWidth;        // Current width of the view for use in manual zooming
+    CGRect _originalFrame;      // Frame of view at (external) zoomScale 1.0
     
     NSArray *_stackLayerArray;  // Array of all stack layers (superlayers to their respective band layers)
     NSArray *_bandLayerArray;   // 2-dimensions array of band layers where for array[i][j], 
@@ -89,8 +88,7 @@ OBJC_EXPORT float STACK_SPACING;            //
                               (bandNum * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING) * stackNum);
     self.frame = frame;
     
-    _originalWidth = frame.size.width;
-    _currentWidth = frame.size.width;
+    _originalFrame = frame;
     _zoomScale = 1.0f;
     _newZoomScale = 1.0f;
     
@@ -434,7 +432,7 @@ OBJC_EXPORT float STACK_SPACING;            //
                     NSArray *eArr = [[[data.eventArray objectAtIndex:[o intValue]] objectAtIndex:i] objectAtIndex:j];
                     for (Event *e in eArr)
                     {
-                        if ((e.x * _zoomScale * (BAND_WIDTH / BAND_WIDTH_P)) <= location.x && (e.x + e.width) * _zoomScale  * (BAND_WIDTH / BAND_WIDTH_P) >= location.x)
+                        if ((e.x * _zoomScale * (b.frame.size.width / BAND_WIDTH_P)) <= location.x && (e.x + e.width) * _zoomScale  * (b.frame.size.width / BAND_WIDTH_P) >= location.x)
                         {
                             [results addObject:e];
                         }
@@ -479,7 +477,7 @@ OBJC_EXPORT float STACK_SPACING;            //
 		_newZoomScale = 1.0;
 	
     // Resize self
-	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalWidth * _newZoomScale, self.frame.size.height);
+	self.frame = CGRectMake(self.frame.origin.x, self.frame.origin.y, _originalFrame.size.width * _newZoomScale, self.frame.size.height);
     
     // Resize all BandLayers
     [CATransaction begin];
@@ -506,6 +504,57 @@ OBJC_EXPORT float STACK_SPACING;            //
 - (void)doneZooming
 {
     _zoomScale = _newZoomScale;
+}
+
+/**
+ *  Zoom self and all subviews/layers
+ */
+- (void)zoomToScale:(float)zoomScale
+{
+    CGRect newDrawF = _originalFrame;
+    newDrawF.size.width = _originalFrame.size.width * zoomScale;
+    newDrawF.size.height = _originalFrame.size.width * zoomScale;
+    self.frame = newDrawF;
+    
+    float temp_BAND_WIDTH = BAND_WIDTH * zoomScale;
+    float temp_BAND_HEIGHT = BAND_HEIGHT * zoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * zoomScale;
+    float temp_STACK_SPACING = STACK_SPACING * zoomScale;
+    
+    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_STACK_SPACING;
+    
+    CGSize stackTiles = ((CATiledLayer *)[_stackLayerArray lastObject]).tileSize;
+    stackTiles.width = stackTiles.width * zoomScale;
+    stackTiles.height = stackTiles.height * zoomScale;
+    
+    CGSize bandTiles = ((BandLayer *)[[_bandLayerArray lastObject] lastObject]).tileSize;
+    stackTiles.width = stackTiles.width * zoomScale;
+    stackTiles.height = stackTiles.height * zoomScale;
+    
+    [CATransaction begin];
+    [CATransaction setDisableActions: YES];
+    // Resize stack layers
+    for (int i = 0; i < data.stackNum; i++)
+    {
+        CATiledLayer *stackLayer = [_stackLayerArray objectAtIndex:i];
+        float stackY = stackHeight * i + temp_STACK_SPACING;
+        CGRect stackF = CGRectMake(0.0f, stackY, temp_BAND_WIDTH, stackHeight);
+        stackLayer.frame = stackF;
+        stackLayer.tileSize = stackTiles;
+        
+        // Create new band layers as sublayers of stack layers
+        NSArray *bandArray = [_bandLayerArray objectAtIndex:i];
+        for (int j = 0; j < data.bandNum; j++)
+        {
+            BandLayer *bandLayer = [bandArray objectAtIndex:j];
+            float bandY = j * (temp_BAND_HEIGHT + temp_BAND_SPACING);
+            CGRect bandF = CGRectMake(0.0f, bandY, temp_BAND_WIDTH, temp_BAND_HEIGHT);  
+            bandLayer.frame = bandF;
+            bandLayer.tileSize = bandTiles;
+        }
+    }
+    [CATransaction commit];
 }
 
 + layerClass

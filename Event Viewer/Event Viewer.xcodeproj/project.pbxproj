@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0344847B14B1139100537F77 /* Meta.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Meta.m */; };
+		038E341B14B154EC0052388B /* ContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 038E341A14B154EC0052388B /* ContentView.m */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
@@ -36,6 +37,8 @@
 /* Begin PBXFileReference section */
 		0344847914B1139100537F77 /* Meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Meta.h; path = Model/Meta.h; sourceTree = "<group>"; };
 		0344847A14B1139100537F77 /* Meta.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Meta.m; path = Model/Meta.m; sourceTree = "<group>"; };
+		038E341914B154EC0052388B /* ContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContentView.h; path = ContentView/ContentView.h; sourceTree = "<group>"; };
+		038E341A14B154EC0052388B /* ContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContentView.m; path = ContentView/ContentView.m; sourceTree = "<group>"; };
 		03D2750614A3E6F900C91945 /* EventInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventInfo.h; path = ContentView/EventInfo.h; sourceTree = "<group>"; };
 		03D2750714A3E6F900C91945 /* EventInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventInfo.m; path = ContentView/EventInfo.m; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -184,6 +187,8 @@
 				849AA9901450F78900F93059 /* ContentViewController.m */,
 				847D130A1454818D00B1DA76 /* ContentScrollView.h */,
 				847D130B1454818D00B1DA76 /* ContentScrollView.m */,
+				038E341914B154EC0052388B /* ContentView.h */,
+				038E341A14B154EC0052388B /* ContentView.m */,
 				844EB51F1466117D00711EC6 /* PanelZoomView.h */,
 				844EB5201466117D00711EC6 /* PanelZoomView.m */,
 				847D131414548CC000B1DA76 /* PanelDrawView.h */,
@@ -305,6 +310,7 @@
 				CA1910C914984471004C8C4B /* BandLayer.m in Sources */,
 				03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */,
 				0344847B14B1139100537F77 /* Meta.m in Sources */,
+				038E341B14B154EC0052388B /* ContentView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
