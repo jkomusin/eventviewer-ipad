@@ -26,7 +26,7 @@
 OBJC_EXPORT float BAND_HEIGHT;              //
 OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
 OBJC_EXPORT float BAND_SPACING;             //
-OBJC_EXPORT float STACK_SPACING;            //
+OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 - (void)drawInContext:(CGContextRef)context
 {            

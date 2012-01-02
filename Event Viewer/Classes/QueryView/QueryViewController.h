@@ -16,6 +16,7 @@
 
 - (void)selectFirstRow;
 
+- (void)handleDragging:(UIPanGestureRecognizer *)gestureRecognizer;
 - (void)startDragging:(UIPanGestureRecognizer *)gestureRecognizer;
 - (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)point;
 - (void)doDrag:(UIPanGestureRecognizer *)gestureRecognizer;

@@ -26,7 +26,7 @@
 - (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
 - (CALayer *)getStackLayerForStack:(int)stackNum;
 - (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index;
-- (BOOL)reorderStacks:(int)stackNum withNewIndex:(int)index;
+- (BOOL)reorderStack:(int)stackNum withNewIndex:(int)index;
 
 @end
 
@@ -51,6 +51,7 @@
 - (void)doneZooming;
 - (void)zoomToScale:(float)zoomScale;
 
+-(void)handleLongPress:(UILongPressGestureRecognizer *)longPressRecognizer;
 - (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (NSArray *)findEventsAtPoint:(CGPoint)location;
 

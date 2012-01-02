@@ -21,7 +21,8 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 OBJC_EXPORT float BAND_HEIGHT;              //
 OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
 OBJC_EXPORT float BAND_SPACING;             //
-OBJC_EXPORT float STACK_SPACING;            //
+OBJC_EXPORT float TIMELINE_HEIGHT;            //
+OBJC_EXPORT float LABEL_SPACING;
 
 #pragma mark -
 #pragma mark Initialization
@@ -69,7 +70,7 @@ OBJC_EXPORT float STACK_SPACING;            //
 {
     CGRect frame = self.frame;
     frame.size.width = BAND_WIDTH;
-    frame.size.height = (bandNum * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING) * stackNum;
+    frame.size.height = (bandNum * (BAND_HEIGHT + BAND_SPACING) + TIMELINE_HEIGHT) * stackNum + TIMELINE_HEIGHT;
     self.frame = frame;
     
     _originalFrame = frame;
@@ -104,9 +105,11 @@ OBJC_EXPORT float STACK_SPACING;            //
     CGRect newFrame = _originalFrame;
     newFrame.size.width = _originalFrame.size.width * zoomScale;
     newFrame.size.height = _originalFrame.size.height * zoomScale;
+    int selfIndex = (_originalFrame.origin.x - LABEL_SPACING) / _originalFrame.size.width;
     if (_panelDrawView.currentPanel != 0)
     {
-        newFrame.origin.x = _originalFrame.origin.x * zoomScale;
+        // Move to new x index, determined by the difference of the new band width multiplied by how many panels precede this one
+        newFrame.origin.x = _originalFrame.origin.x + ((newFrame.size.width - _originalFrame.size.width) * selfIndex);
     }
     self.frame = newFrame;
     

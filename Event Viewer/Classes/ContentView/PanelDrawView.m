@@ -22,8 +22,9 @@
     NSArray *_colorArray;
 	
 	float _zoomScale;           // Current scale of the events and bands specified by the BandZoomView, for use in re-drawing at appropriate sizes
-    float _newZoomScale;        // Zoom scale to be used during zooming, due to the manual management of transforms
+    float _newZoomScale;        // Zoom scale to be used during band zooming, due to the manual management of transforms
     CGRect _originalFrame;      // Frame of view at (external) zoomScale 1.0
+    float _globalZoomScale;     // Zoom scale of the global content display
     
     NSArray *_stackLayerArray;  // Array of all stack layers (superlayers to their respective band layers)
     NSArray *_bandLayerArray;   // 2-dimensions array of band layers where for array[i][j], 
@@ -39,7 +40,8 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 OBJC_EXPORT float BAND_HEIGHT;              //
 OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
 OBJC_EXPORT float BAND_SPACING;             //
-OBJC_EXPORT float STACK_SPACING;            //
+OBJC_EXPORT float TIMELINE_HEIGHT;            //
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -63,6 +65,7 @@ OBJC_EXPORT float STACK_SPACING;            //
 		
 		_zoomScale = 1.0f;
         _newZoomScale = 1.0f;
+        _globalZoomScale = 1.0f;
         
         // Handler for event details
         UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
@@ -85,12 +88,13 @@ OBJC_EXPORT float STACK_SPACING;            //
     CGRect frame = CGRectMake(0.0f,
                               0.0f, 
                               BAND_WIDTH, 
-                              (bandNum * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING) * stackNum);
+                              (bandNum * (BAND_HEIGHT + BAND_SPACING) + TIMELINE_HEIGHT) * stackNum + TIMELINE_HEIGHT);
     self.frame = frame;
     
     _originalFrame = frame;
     _zoomScale = 1.0f;
     _newZoomScale = 1.0f;
+    _globalZoomScale = 1.0f;
     
     [self initLayersWithStackNum:stackNum bandNum:bandNum];
 }
@@ -118,16 +122,15 @@ OBJC_EXPORT float STACK_SPACING;            //
     
     NSMutableArray *newStackLayers = [[NSMutableArray alloc] init];
     NSMutableArray *newBandLayers = [[NSMutableArray alloc] init];
-    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
+    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + TIMELINE_HEIGHT;
     
     // Create new stack layers as superlayers
     for (int i = 0; i < stackNum; i++)
     {
         CATiledLayer *stackLayer = [CATiledLayer layer];
-        float stackY = stackHeight * i + STACK_SPACING;
+        float stackY = stackHeight * i + TIMELINE_HEIGHT;
         CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH, stackHeight);
         stackLayer.frame = stackF;
-        stackLayer.tileSize = CGSizeMake((BAND_WIDTH / 4.0f), stackHeight);
         stackLayer.delegate = stackLayer;
         NSMutableArray *currentBandLayers = [[NSMutableArray alloc] init];
         
@@ -138,7 +141,6 @@ OBJC_EXPORT float STACK_SPACING;            //
             float bandY = j * (BAND_HEIGHT + BAND_SPACING);
             CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH, BAND_HEIGHT);  
             bandLayer.frame = bandF;
-            bandLayer.tileSize = CGSizeMake((BAND_WIDTH / 4.0f), BAND_HEIGHT);
             bandLayer.opaque = YES;
             bandLayer.delegate = bandLayer;
 			bandLayer.dataDelegate = _dataDelegate;
@@ -231,14 +233,14 @@ OBJC_EXPORT float STACK_SPACING;            //
  *  stackNum is the 0-based index of the currently dragged stack
  *  index is the new 0-based index of the stack being dragged
  */
-- (BOOL)reorderStacks:(int)stackNum withNewIndex:(int)index
+- (BOOL)reorderStack:(int)stackNum withNewIndex:(int)index
 {
     // Check to make sure we need to reorder (we may be outside the bounds of the stack)
     if (index >= [_stackLayerArray count]) return NO;
     if (stackNum >= [_stackLayerArray count]) return NO;
     
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + TIMELINE_HEIGHT;
     
     NSMutableArray *mutaStackLayerArr = [_stackLayerArray mutableCopy];
     
@@ -281,6 +283,9 @@ OBJC_EXPORT float STACK_SPACING;            //
     [mutaStackLayerArr replaceObjectAtIndex:stackNum withObject:oldStack];
     
     _stackLayerArray = (NSArray *)mutaStackLayerArr;
+    
+    // Inform data delegate that reordering is needed
+    [_dataDelegate swapStack:stackNum withStack:index];
     
     return YES;
 }
@@ -366,7 +371,7 @@ OBJC_EXPORT float STACK_SPACING;            //
  *  as dismissal of the popover is handled by the popover's delegate (us in popoverControllerShouldDismissPopover).
  */
 -(void)handleLongPress:(UILongPressGestureRecognizer *)longPressRecognizer 
-{
+{    
     switch ([longPressRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:
@@ -510,27 +515,29 @@ OBJC_EXPORT float STACK_SPACING;            //
  *  Zoom self and all subviews/layers
  */
 - (void)zoomToScale:(float)zoomScale
-{
+{    
+    _globalZoomScale = zoomScale;
+    
     CGRect newDrawF = _originalFrame;
     newDrawF.size.width = _originalFrame.size.width * zoomScale;
-    newDrawF.size.height = _originalFrame.size.width * zoomScale;
+    newDrawF.size.height = _originalFrame.size.height * zoomScale;
     self.frame = newDrawF;
     
-    float temp_BAND_WIDTH = BAND_WIDTH * zoomScale;
-    float temp_BAND_HEIGHT = BAND_HEIGHT * zoomScale;
-    float temp_BAND_SPACING = BAND_SPACING * zoomScale;
-    float temp_STACK_SPACING = STACK_SPACING * zoomScale;
+    float temp_BAND_WIDTH = BAND_WIDTH * _globalZoomScale;
+    float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
+    float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
     
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_STACK_SPACING;
+    float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
     
-    CGSize stackTiles = ((CATiledLayer *)[_stackLayerArray lastObject]).tileSize;
-    stackTiles.width = stackTiles.width * zoomScale;
-    stackTiles.height = stackTiles.height * zoomScale;
-    
-    CGSize bandTiles = ((BandLayer *)[[_bandLayerArray lastObject] lastObject]).tileSize;
-    stackTiles.width = stackTiles.width * zoomScale;
-    stackTiles.height = stackTiles.height * zoomScale;
+//    CGSize stackTiles = ((CATiledLayer *)[_stackLayerArray lastObject]).tileSize;
+//    stackTiles.width = stackTiles.width * zoomScale;
+//    stackTiles.height = stackTiles.height * zoomScale;
+//    
+//    CGSize bandTiles = ((BandLayer *)[[_bandLayerArray lastObject] lastObject]).tileSize;
+//    stackTiles.width = stackTiles.width * zoomScale;
+//    stackTiles.height = stackTiles.height * zoomScale;
     
     [CATransaction begin];
     [CATransaction setDisableActions: YES];
@@ -538,10 +545,10 @@ OBJC_EXPORT float STACK_SPACING;            //
     for (int i = 0; i < data.stackNum; i++)
     {
         CATiledLayer *stackLayer = [_stackLayerArray objectAtIndex:i];
-        float stackY = stackHeight * i + temp_STACK_SPACING;
+        float stackY = stackHeight * i + temp_TIMELINE_HEIGHT;
         CGRect stackF = CGRectMake(0.0f, stackY, temp_BAND_WIDTH, stackHeight);
         stackLayer.frame = stackF;
-        stackLayer.tileSize = stackTiles;
+//        stackLayer.tileSize = stackTiles;
         
         // Create new band layers as sublayers of stack layers
         NSArray *bandArray = [_bandLayerArray objectAtIndex:i];
@@ -551,10 +558,10 @@ OBJC_EXPORT float STACK_SPACING;            //
             float bandY = j * (temp_BAND_HEIGHT + temp_BAND_SPACING);
             CGRect bandF = CGRectMake(0.0f, bandY, temp_BAND_WIDTH, temp_BAND_HEIGHT);  
             bandLayer.frame = bandF;
-            bandLayer.tileSize = bandTiles;
+//            bandLayer.tileSize = bandTiles;
         }
     }
-    [CATransaction commit];
+    [CATransaction commit]; 
 }
 
 + layerClass
@@ -566,7 +573,7 @@ OBJC_EXPORT float STACK_SPACING;            //
  *  Typical override of drawing code to initiate redrawing of results
  */
 - (void)drawRect:(CGRect)rect 
-{
+{    
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSetLineWidth(context, 1.0f);
@@ -594,7 +601,10 @@ OBJC_EXPORT float STACK_SPACING;            //
  */
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
 {    
-	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
+    float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
+    float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
+	float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
 	
 	if (data.timeScale == 1)
 	{
@@ -614,11 +624,7 @@ OBJC_EXPORT float STACK_SPACING;            //
 				float stackY = stackHeight * i;
 				NSString *month = [months objectAtIndex:m];
 				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, width, 16.0f);
-                float fontSize;
-                if (isPortrait)
-                    fontSize = 10.0f;
-                else
-                    fontSize = 2.0f;
+                float fontSize = (temp_TIMELINE_HEIGHT / 3.0f) + 1.0f;
 				[month drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:fontSize] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
 			}
 		}

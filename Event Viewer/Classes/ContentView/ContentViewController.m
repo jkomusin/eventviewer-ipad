@@ -48,7 +48,7 @@ BOOL isPortrait = YES;  // Modified on change of device orientation
 float BAND_HEIGHT = BAND_HEIGHT_P;
 float BAND_WIDTH = BAND_WIDTH_P;
 float BAND_SPACING = BAND_SPACING_P;
-float STACK_SPACING = STACK_SPACING_P;
+float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and spacing is more distinct
 
 #pragma mark -
 #pragma mark Initialization
@@ -127,7 +127,7 @@ float STACK_SPACING = STACK_SPACING_P;
     }
     else
     {
-        scrubberBarFrame = CGRectMake(0.0, 668.0f, 1024.0f, 100.0f);
+        scrubberBarFrame = CGRectMake(0.0, 768.0f, 1024.0f, 100.0f);
         scrubberFrame = CGRectMake(100.0f, 0.0f, 824.0f, 50.0f);
     }
     _scrubberBar.frame = scrubberBarFrame;
@@ -141,7 +141,7 @@ float STACK_SPACING = STACK_SPACING_P;
     }
     else
     {
-        csvFrame = CGRectMake(0.0f, 44.0f, 1024.0f, 624.0f);
+        csvFrame = CGRectMake(0.0f, 44.0f, 1024.0f, 724.0f);
     }
     _contentScrollView.frame = csvFrame;
     
@@ -408,11 +408,11 @@ float STACK_SPACING = STACK_SPACING_P;
  */
 - (void)swapBand:(int)i withBand:(int)j
 {
+    // Reorder events
     for (int p = 0; p < _queryData.panelNum; p++)
     {
         for (int s = 0; s < _queryData.stackNum; s++)
         {
-            // Reorder event array
             NSMutableArray *mutableBands = [[[_queryData.eventArray objectAtIndex:p] objectAtIndex:s] mutableCopy];
             NSArray *tempBand = [mutableBands objectAtIndex:i];
             [mutableBands replaceObjectAtIndex:i withObject:[mutableBands objectAtIndex:j]];
@@ -428,6 +428,34 @@ float STACK_SPACING = STACK_SPACING_P;
     [mutableBandMetas replaceObjectAtIndex:j withObject:tempMeta];
     NSMutableDictionary *mutableMetas = [_queryData.selectedMetas mutableCopy];
     [mutableMetas setObject:(NSArray *)mutableBandMetas forKey:@"Bands"];
+    _queryData.selectedMetas = (NSDictionary *)mutableMetas;
+}
+
+/**
+ *  Swap the arrangement of stacks in the data model when they are rearranged visually
+ */
+- (void)swapStack:(int)i withStack:(int)j
+{
+    // Reorder events
+    NSMutableArray *mutableEvents = [_queryData.eventArray mutableCopy];
+    for (int p = 0; p < _queryData.panelNum; p++)
+    {
+        NSMutableArray *mutableStacks = [[_queryData.eventArray objectAtIndex:p] mutableCopy];
+        NSArray *tempStack = [mutableStacks objectAtIndex:i];
+        [mutableStacks replaceObjectAtIndex:i withObject:[mutableStacks objectAtIndex:j]];
+        [mutableStacks replaceObjectAtIndex:j withObject:tempStack];
+        
+        [mutableEvents replaceObjectAtIndex:p withObject:(NSArray *)mutableStacks];
+    }
+    _queryData.eventArray = (NSArray *)mutableEvents;
+    
+    // Reorder meta array
+    NSMutableArray *mutableStackMetas = [[_queryData.selectedMetas objectForKey:@"Stacks"] mutableCopy];
+    Meta *tempMeta = [mutableStackMetas objectAtIndex:i];
+    [mutableStackMetas replaceObjectAtIndex:i withObject:[mutableStackMetas objectAtIndex:j]];
+    [mutableStackMetas replaceObjectAtIndex:j withObject:tempMeta];
+    NSMutableDictionary *mutableMetas = [_queryData.selectedMetas mutableCopy];
+    [mutableMetas setObject:(NSArray *)mutableStackMetas forKey:@"Stacks"];
     _queryData.selectedMetas = (NSDictionary *)mutableMetas;
 }
 

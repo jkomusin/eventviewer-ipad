@@ -9,7 +9,7 @@
 #define BAND_HEIGHT_P 64.0f
 #define BAND_WIDTH_P 529.0f
 #define BAND_SPACING_P 8.0f
-#define STACK_SPACING_P 32.0f
+#define TIMELINE_HEIGHT_P 64.0f
 
 
 @class QueryViewController;
@@ -37,6 +37,7 @@ enum UI_OBJECT
 - (NSArray *)delegateRequestsOverlays;
 - (int)delegateRequestsTimescale;
 - (void)swapBand:(int)i withBand:(int)j;
+- (void)swapStack:(int)i withStack:(int)j;
 
 @end
 
@@ -62,9 +63,13 @@ enum UI_OBJECT
 @property (nonatomic, copy) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
 
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
+- (void)configureView;
 - (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer;
 - (void)changeCurrentPanel:(int)panelIndex;
+
 - (void)initScrubber;
+- (void)scrubberMoved:(id)sender;
+- (void)scrubberStopped:(id)sender;
 - (void)buttonPressed:(id)sender;
 - (void)addNewPanel;
 - (void)resizeSubviews;

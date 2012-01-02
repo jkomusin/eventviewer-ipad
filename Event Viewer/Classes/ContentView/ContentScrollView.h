@@ -20,15 +20,16 @@
 @interface ContentScrollView : UIScrollView <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
-@property (nonatomic, strong) id<DrawDelegate> drawDelegate;
-@property (nonatomic, strong) NSArray *panelZoomViews;      // Array of all zooming scrollviews representing the panels in the display
-@property (nonatomic, strong) ContentView *queryContentView;          // View containing all panels and content within the ContentScrollView (_contentView is reserved by UIScrollView :( )
+@property (nonatomic, strong) id<DrawDelegate> drawDelegate;    // Target for drawing delegation (must be set to the 0-indexed panel)
+@property (nonatomic, strong) NSArray *panelZoomViews;          // Array of all zooming scrollviews representing the panels in the display
+@property (nonatomic, strong) UIView *queryContentView;         // View containing all panels and content within the ContentScrollView (_contentView is reserved by UIScrollView :( )
 
 - (id)initWithPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum;
 
 - (void)switchToPanel:(int)panelIndex;
 
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
