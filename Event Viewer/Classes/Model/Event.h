@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 /**
- *  Object representation of an Event to encapsulate ll associated information
+ *  Object representation of an Event to encapsulate all associated information
  */
 @interface Event : NSObject
 
@@ -18,6 +18,6 @@
 @property (nonatomic, assign) float x;          // Raw float of the beginning point of the event on a Band, used to speed up later drawing and re-drawing at the cost of a longer initialization time
 @property (nonatomic, assign) float width;      // Raw float representing the width or duration of the event on a Band, for the same reason as above
 
-- (id) initWithStartTime:(NSDate *)start endTime:(NSDate *)end;
+- (id)initWithStartTime:(NSDate *)start endTime:(NSDate *)end;
 
 @end

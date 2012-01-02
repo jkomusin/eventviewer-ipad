@@ -12,6 +12,7 @@
 #import "PanelDrawView.h"
 #import "BandLayer.h"
 #import "QueryData.h"
+#import "Meta.h"
 
 @interface ContentScrollView ()
 - (void)createLabels;
@@ -33,6 +34,8 @@
     enum UI_OBJECT _draggingType;   // Type of label currently being dragged
     NSArray *_stackLabelArray;      // Array of labels for each stack
     NSArray *_bandLabelArray;       // 2-dimensional array of labels for each band (indexed by stack then by band)
+    
+    UIView *_sideLabelView;          // View ocntaining all stack and band labels that moves horizontally with the landscape view
 }
 
 @synthesize dataDelegate = _dataDelegate;
@@ -40,8 +43,12 @@
 @synthesize panelZoomViews = _panelZoomViews;
 @synthesize queryContentView = _queryContentView;
 
-OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewController to specify device orientation
-
+OBJC_EXPORT BOOL isPortrait;                // Global variable set in ContentViewController to specify device orientation
+OBJC_EXPORT float BAND_HEIGHT;              //
+OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
+OBJC_EXPORT float BAND_SPACING;             //
+OBJC_EXPORT float STACK_SPACING;            //
+float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
 
 #pragma mark -
 #pragma mark Initialization
@@ -56,6 +63,14 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         UIView *newContentView = [[UIView alloc] init];
         [self addSubview:newContentView];
         _queryContentView = newContentView;
+        
+        UIView *newLabelView = [[UIView alloc] init];
+        [self addSubview:newLabelView];
+        newLabelView.backgroundColor = [UIColor blackColor];
+        _sideLabelView = newLabelView;
+        
+        
+        
         
         self.delegate = self;
         
@@ -75,30 +90,57 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 }
 
 /**
- *  Resize this view to fit the specified number of stacks and bands.
+ *  Resize this view to fit the specified number of panels, stacks, and bands.
  *  Should also inform all subviews to do the same.
  *
+ *  panelNum is the number of panels in the new query
  *  stackNum is the number of stacks in the new query
  *  bandNum is the number of bands in the new query
  */
 - (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
 {
-    if ([_panelZoomViews count] != panelNum)
+    // Scale UI layout constants
+    float scale;
+    float panelSpace = 1024.0f - (768.0f - BAND_WIDTH_P);
+    float landBandW = panelSpace / panelNum;
+    if (isPortrait)
     {
+        scale = 1.0f;
+    }
+    else
+    {
+        scale = landBandW / BAND_WIDTH_P;
+    }
+    BAND_WIDTH = BAND_WIDTH_P * scale;
+    BAND_HEIGHT = BAND_HEIGHT_P * scale;
+    BAND_SPACING = BAND_SPACING_P * scale;
+    STACK_SPACING = STACK_SPACING_P * scale;
+    
+    if ([_panelZoomViews count] != panelNum)
+    {        
         NSMutableArray *mutaPanels = [_panelZoomViews mutableCopy];
+        // Move panels to new x-coords
+        for (int i = 0; i < [mutaPanels count]; i++)
+        {
+            PanelZoomView *p = [mutaPanels objectAtIndex:i];
+            CGRect frame = p.frame;
+            frame.origin.x = LABEL_SPACING + (landBandW * i);
+            p.frame = frame;
+        }
         // Add additional panels
         int i;
         i = [mutaPanels count];
         while (i < panelNum)
         {            
-            CGRect panelF = CGRectMake((int)(((768.0 - BAND_WIDTH_P) * 3/4) + (768.0f * i)),  // Has to be rounded to an integer to truncate the trailing floating-point errors that reuslt for the calculation, otherwise drawing will not be exact in iOS's drawing coordinates (in order to offset them by precisely 0.5 units)
-                                      0.0f,
-                                      BAND_WIDTH_P,
-                                      (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);
-            PanelZoomView *zoomView = [[PanelZoomView alloc] initWithFrame:panelF forPanelIndex:i stackNum:stackNum bandNum:bandNum];
+            CGRect panelF = CGRectMake(LABEL_SPACING + (landBandW * i),  // Has to be rounded to an integer to truncate the trailing floating-point errors that reuslt for the calculation, otherwise drawing will not be exact in iOS's drawing coordinates (in order to offset them by precisely 0.5 units)
+                                       0.0f,
+                                       0.0f,
+                                       0.0f);
+            PanelZoomView *zoomView = [[PanelZoomView alloc] init];
             
             zoomView.frame = panelF;
-            zoomView.bandDrawView.dataDelegate = _dataDelegate;
+            zoomView.panelDrawView.currentPanel = i;
+            zoomView.panelDrawView.dataDelegate = _dataDelegate;
             [_queryContentView addSubview:zoomView];
             [mutaPanels addObject:zoomView];
             i++;
@@ -140,14 +182,14 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     // Resize all subviews
     for (PanelZoomView *p in _panelZoomViews)
     {
-        [p resizeForStackNum:stackNum bandNum:bandNum];
+        [p sizeForStackNum:stackNum bandNum:bandNum];
     }
     
     // Set size of content
     CGSize selfSize;
     if (isPortrait)
     {
-        selfSize = ((PanelZoomView *)[_panelZoomViews objectAtIndex:1]).frame.size;
+        selfSize = ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).frame.size;
     }
     else
     {
@@ -162,7 +204,8 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     {
         for (PanelZoomView *p in _panelZoomViews)
         {
-            p.userInteractionEnabled = YES;
+            p.bouncesZoom = YES;
+            p.pinchGestureRecognizer.enabled = YES;
         }
         self.maximumZoomScale = 1.0f;
         self.minimumZoomScale = 1.0f;
@@ -171,13 +214,14 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     {
         for (PanelZoomView *p in _panelZoomViews)
         {
-            p.userInteractionEnabled = NO;
+            p.bouncesZoom = NO;
+            p.pinchGestureRecognizer.enabled = NO;
         }
         self.maximumZoomScale = 10.0f;
         self.minimumZoomScale = 1.0f;
     }
     
-    self.drawDelegate = ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).bandDrawView;
+    self.drawDelegate = ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).panelDrawView;
     
 	[self createLabels];
 }
@@ -195,12 +239,12 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     if (panelIndex == -1) return;
 
     PanelZoomView *p = [_panelZoomViews objectAtIndex:0];
-    if (panelIndex == p.bandDrawView.currentPanel)
+    if (panelIndex == p.panelDrawView.currentPanel)
         return;
 
-    p.bandDrawView.currentPanel = panelIndex;
-    p.bandDrawView.layer.contents = nil;
-    [p.bandDrawView setNeedsDisplay];
+    p.panelDrawView.currentPanel = panelIndex;
+    p.panelDrawView.layer.contents = nil;
+    [p.panelDrawView setNeedsDisplay];
 }
 
 
@@ -216,7 +260,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     
     for (PanelZoomView *p in _panelZoomViews)
     {
-        p.bandDrawView.dataDelegate = newDataDelegate;
+        p.panelDrawView.dataDelegate = newDataDelegate;
     }
 }
 
@@ -232,14 +276,20 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 	QueryData *data = [_dataDelegate delegateRequestsQueryData];
 	
 	// Remove old labels
-	for (UIView *sub in self.subviews)
+	for (UIView *sub in _sideLabelView.subviews)
 	{
 		if ([sub isKindOfClass:[UILabel class]])
 			[sub removeFromSuperview];
 	}
+    
+    // Resize label view
+    CGRect lFrame = CGRectMake(0.0f, 0.0f, 
+                               LABEL_SPACING, 
+                               self.contentSize.height);
+    _sideLabelView.frame = lFrame;
 	
 	// Create new labels
-	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
     NSMutableArray *newStackLabels = [[NSMutableArray alloc] init];
     NSMutableArray *newBandLabels = [[NSMutableArray alloc] init];
     for (int i = 0; i < data.stackNum; i++)
@@ -249,10 +299,10 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 		UILabel *stackL = [[UILabel alloc] initWithFrame:labelF];
 		[stackL setTextAlignment:UITextAlignmentLeft];
 		[stackL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:20.0f]];
-        [stackL setOpaque:YES];
-        [stackL setBackgroundColor:[UIColor blackColor]];
+//        [stackL setOpaque:YES];
+        [stackL setBackgroundColor:[UIColor clearColor]];
         [stackL setTextColor:[UIColor whiteColor]];
-		NSString *stackM = [(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i];
+		NSString *stackM = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i] name];
 		[stackL setText:stackM];
         
         UILongPressGestureRecognizer* sDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
@@ -261,22 +311,22 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         [stackL addGestureRecognizer:sDragGesture];
         [stackL setUserInteractionEnabled:YES];
         
-		[self addSubview:stackL];
-        [self insertSubview:stackL belowSubview:[_panelZoomViews objectAtIndex:0]];
+		[_sideLabelView addSubview:stackL];
+//        [self insertSubview:stackL belowSubview:[_panelZoomViews objectAtIndex:0]];
         [newStackLabels addObject:stackL];
 		
         NSMutableArray *currentBandLabels = [[NSMutableArray alloc] init];
 		for (int j = 0; j < data.bandNum; j++)
         {
-			float bandY = j * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
-            labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT_P);
+			float bandY = j * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING + stackY;
+            labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT);
 			UILabel *bandL = [[UILabel alloc] initWithFrame:labelF];
 			[bandL setTextAlignment:UITextAlignmentRight];
             [bandL setFont:[UIFont fontWithName:@"Helvetica" size:16.0f]];
-            [bandL setOpaque:YES];
-            [bandL setBackgroundColor:[UIColor blackColor]];
+//            [bandL setOpaque:YES];
+            [bandL setBackgroundColor:[UIColor clearColor]];
             [bandL setTextColor:[UIColor whiteColor]];
-			NSString *meta = [(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j];
+			NSString *meta = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j] name];
 			[bandL setText:meta];
             
             UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
@@ -285,8 +335,8 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
             [bandL addGestureRecognizer:bDragGesture];
             [bandL setUserInteractionEnabled:YES];
             
-			[self addSubview:bandL];
-            [self insertSubview:bandL belowSubview:[_panelZoomViews objectAtIndex:0]];
+			[_sideLabelView addSubview:bandL];
+//            [self insertSubview:bandL belowSubview:[_panelZoomViews objectAtIndex:0]];
             [currentBandLabels addObject:bandL];
         }
         [newBandLabels addObject:(NSArray *)currentBandLabels];
@@ -305,7 +355,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 - (void)swapStackLabels:(int)draggingIndex and:(int)otherIndex
 {
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
     
     UILabel *draggingLabel = [_stackLabelArray objectAtIndex:draggingIndex];
     UILabel *otherLabel = [_stackLabelArray objectAtIndex:otherIndex];
@@ -333,7 +383,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 - (void)swapAllBandLabels:(int)draggingIndex and:(int)otherIndex skippingStack:(int)skipStackIndex areBothDragging:(BOOL)bothDragging
 {
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
     NSMutableArray *bandLabelsMutable = [_bandLabelArray mutableCopy];
     for (int i = 0; i < [bandLabelsMutable count]; i++)
     {
@@ -344,7 +394,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         UILabel *draggingLabel = [arrMutable objectAtIndex:draggingIndex];
         if (i != skipStackIndex)
         {
-            float draggingY = otherIndex * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+            float draggingY = otherIndex * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING + stackY;
             CGRect draggingF = draggingLabel.frame;
             draggingF.origin.y = draggingY;
             draggingLabel.frame = draggingF;
@@ -354,7 +404,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         UILabel *otherLabel = [arrMutable objectAtIndex:otherIndex];
         if (!bothDragging || i != skipStackIndex)
         {
-            float otherY = draggingIndex * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+            float otherY = draggingIndex * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING + stackY;
             CGRect otherF = otherLabel.frame;
             otherF.origin.y = otherY;
             otherLabel.frame = otherF;
@@ -471,7 +521,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
             ([[[_draggingLabels objectAtIndex:0] objectAtIndex:3] intValue] != [[draggingLabelArr objectAtIndex:3] intValue]))
         )
     {
-        NSLog(@"Cancelling startDrag!!");
+        NSLog(@"Dragging types do not match, cancelling startDrag!!");
         return;
     }
     
@@ -484,9 +534,9 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:24.0f]];
     }
     
-    [draggingLabel setOpaque:NO];
-    [draggingLabel setBackgroundColor:[UIColor clearColor]];
-    [self insertSubview:draggingLabel aboveSubview:[_panelZoomViews objectAtIndex:0]];
+//    [draggingLabel setOpaque:NO];
+//    [draggingLabel setBackgroundColor:[UIColor clearColor]];
+//    [self insertSubview:draggingLabel aboveSubview:[_panelZoomViews objectAtIndex:0]];
     
     // Insert into dragging array ordered based on y-coord of all dragging labels
     NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
@@ -627,7 +677,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     if (!reorderedDragging)    
     {
         QueryData *data = [_dataDelegate delegateRequestsQueryData];
-        float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+        float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
         int newIndex;
         if (draggingLabelType == STACK)
         {
@@ -636,7 +686,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         else
         {
             float normalY = point.y - (stackHeight * stackIndex);
-            newIndex = normalY / (BAND_HEIGHT_P + BAND_SPACING);            
+            newIndex = normalY / (BAND_HEIGHT + BAND_SPACING);            
         }
         
         // Make sure new index is not currently being dragged
@@ -710,14 +760,14 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
     int stackIndex = [[draggingArr objectAtIndex:3] intValue];
     int bandIndex = [[draggingArr objectAtIndex:2] intValue];
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
     
     // Find the type of layer we're dragging
     BOOL isStack = (bandIndex == -1);
     
-    draggingLabel.opaque = YES;
-    draggingLabel.backgroundColor = [UIColor blackColor];
-    [self insertSubview:draggingLabel belowSubview:[_panelZoomViews objectAtIndex:0]];
+//    draggingLabel.opaque = YES;
+//    draggingLabel.backgroundColor = [UIColor blackColor];
+//    [self insertSubview:draggingLabel belowSubview:[_panelZoomViews objectAtIndex:0]];
     
     // Set new position for dropped layer based on its index
     CGRect labelF = draggingLabel.frame;
@@ -733,7 +783,7 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
         [draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:16.0f]];
         // Move label to rest
         float stackY = stackIndex * stackHeight;
-        float bandY = bandIndex * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING + stackY;
+        float bandY = bandIndex * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING + stackY;
         labelF.origin.y = bandY;
     }
     draggingLabel.frame = labelF;
@@ -773,9 +823,21 @@ OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewCo
 /**
  *  Basic override for zooming in UIScrollViews
  */
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
+- (UIView *)viewForZoomingInScrollView:(ContentScrollView *)scrollView 
 {	
 	return _queryContentView;
+}
+
+/**
+ *  Enable the labels to scroll with the scrollView
+ */
+- (void)scrollViewDidScroll:(ContentScrollView *)scrollView
+{
+    CGPoint offset = scrollView.contentOffset;
+    CGRect newFrame = _sideLabelView.frame;
+    newFrame.origin.x = offset.x;
+    _sideLabelView.frame = newFrame;
+    [self bringSubviewToFront:_sideLabelView];
 }
 
 /*

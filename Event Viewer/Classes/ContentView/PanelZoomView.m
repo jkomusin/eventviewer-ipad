@@ -12,21 +12,28 @@
 
 @implementation PanelZoomView
 
-@synthesize bandDrawView = _bandDrawView;
+@synthesize panelDrawView = _panelDrawView;
 
+OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewController to specify device orientation
+OBJC_EXPORT float BAND_HEIGHT;              //
+OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
+OBJC_EXPORT float BAND_SPACING;             //
+OBJC_EXPORT float STACK_SPACING;            //
 
 #pragma mark -
 #pragma mark Initialization
 
 /**
- *  Custom initializer to resize the view to fit the required number of stacks and bands.
+ *  Custom initializer to set and intiialize parameters
+ *  NOTE: Does NOT establish frame. Sizing must be done by the caller via the approproate method to establish a frame
+ *      currenPanel property of drawView must also be set by caller
  *
  *  stackNum is the number of stacks being fit
  *  bandNum is the number of bands being fit
  */
-- (id)initWithFrame:(CGRect)frame forPanelIndex:(int)panelIndex stackNum:(int)stackNum bandNum:(int)bandNum
+- (id)init
 {
-    if ((self = [super initWithFrame:frame]))
+    if ((self = [super init]))
     {
         self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
@@ -39,31 +46,33 @@
         
 		self.delegate = self;
         
-        PanelDrawView *bandView = [[PanelDrawView alloc] initWithStackNum:stackNum bandNum:bandNum];
-        _bandDrawView = bandView;
-        _bandDrawView.currentPanel = panelIndex;
+        PanelDrawView *bandView = [[PanelDrawView alloc] init];
+        _panelDrawView = bandView;
         [self addSubview:bandView];
-        self.contentSize = bandView.frame.size;
         
-        [_bandDrawView setNeedsDisplay];
+//        [_bandDrawView setNeedsDisplay];
     }
     
     return self;
 }
 
 /**
- *  Resizes the view to the correct dimensions to fit the specified number of stacks and bands, typically for a newly submitted query.
+ *  Sizes the view to the correct dimensions to fit the specified number of panels, stacks, and bands, typically for a newly submitted query.
+ *  NOTE: x,y coordinates must be set by caller prior to sizing
  *
+ *  panelNum is the number of panels this must fit alongside with in landscape
  *  stackNum is the number of stacks being fit
  *  bandNum is the number of bands being fit
  */
-- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
+- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum
 {
     CGRect frame = self.frame;
-    frame.size.height = (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum;
+    frame.size.width = BAND_WIDTH;
+    frame.size.height = (bandNum * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING) * stackNum;
     self.frame = frame;
-    [_bandDrawView resizeForStackNum:stackNum bandNum:bandNum];
-    self.contentSize = _bandDrawView.frame.size;
+    
+    [_panelDrawView sizeForStackNum:stackNum bandNum:bandNum];
+    self.contentSize = _panelDrawView.frame.size;
 }
 
 /**
@@ -71,16 +80,16 @@
  */
 - (void)scrollViewDidEndZooming:(PanelZoomView *)scrollView withView:(UIView *)view atScale:(float)scale
 {
-    [scrollView.bandDrawView doneZooming];
-	[scrollView.bandDrawView setNeedsDisplay];
+    [scrollView.panelDrawView doneZooming];
+	[scrollView.panelDrawView setNeedsDisplay];
 }
 
 /**
  *  Basic override for zooming in UIScrollViews
  */
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView 
-{	
-	return _bandDrawView;
+{	    
+	return _panelDrawView;
 }
 
 /*

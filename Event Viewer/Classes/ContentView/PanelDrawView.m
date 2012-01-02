@@ -23,7 +23,7 @@
 	
 	float _zoomScale;           // Current scale of the events and bands specified by the BandZoomView, for use in re-drawing at appropriate sizes
     float _newZoomScale;        // Zoom scale to be used during zooming, due to the manual management of transforms
-	float _originalWidth;       // Original width of the view (a little superficial given that this width is specified by BAND_WIDTH_P/L, but included for added robustness)
+	float _originalWidth;       // Original width of the view (a little superficial given that this width is specified by BAND_WIDTH, but included for added robustness)
     float _currentWidth;        // Current width of the view for use in manual zooming
     
     NSArray *_stackLayerArray;  // Array of all stack layers (superlayers to their respective band layers)
@@ -36,24 +36,25 @@
 @synthesize infoPopup = _infoPopup;
 @synthesize currentPanel = _currentPanel;
 
+OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewController to specify device orientation
+OBJC_EXPORT float BAND_HEIGHT;              //
+OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
+OBJC_EXPORT float BAND_SPACING;             //
+OBJC_EXPORT float STACK_SPACING;            //
 
 #pragma mark -
 #pragma mark Initialization
 
 /**
- *  Initialize the drawing view's size based on the number of stacks and panels in the current query.
+ *  Initialize the drawing view's parameters
+ *  NOTE: Does NOT establish frame. Sizing must be done by the caller via the approproate method to establish a frame
  *
  *  stackNum is the number of stacks in the current query (min of 0)
  *  bandNum is the number of bands in the current query (min of 0)
  */
-- (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum
-{    
-    CGRect frame = CGRectMake(0.0f, 
-                              0.0f, 
-                              BAND_WIDTH_P, 
-                              (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum);   
-    
-    if ((self = [super initWithFrame:frame]))
+- (id)init
+{        
+    if ((self = [super init]))
     {
         self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
@@ -61,32 +62,31 @@
         NSArray *newColors = [[NSArray alloc] init];
         _colorArray = newColors;
 		
-		_originalWidth = frame.size.width;
-        _currentWidth = frame.size.width;
 		_zoomScale = 1.0f;
         _newZoomScale = 1.0f;
         
         // Handler for event details
         UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
         [self addGestureRecognizer:longPressRecognizer]; 
-        
-        [self initLayersWithStackNum:stackNum bandNum:bandNum];
     }
     
     return self;
 }
 
 /**
- *  Re-initializes the drawing view's size based on the number of stack and panels in the current query.
- *  Should be called whenever the number of stacks or bands change (ex: in the event of a re-query).
+ *  Sizes the drawing view based on the number of panels, stacks, and bands in the current query.
+ *  Should be called whenever the number of panels, stacks, or bands change (ex: in the event of a re-query).
  *
  *  stackNum is the number of stacks in the current query (min of 0)
  *  bandNum is the number of bands in the current query (min of 0)
+ *  landScale is the scale the panel should be sized to
  */
-- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum
+- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum
 {
-    CGRect frame = self.frame;
-    frame.size.height = (bandNum * (BAND_HEIGHT_P + BAND_SPACING) + STACK_SPACING) * stackNum;
+    CGRect frame = CGRectMake(0.0f,
+                              0.0f, 
+                              BAND_WIDTH, 
+                              (bandNum * (BAND_HEIGHT + BAND_SPACING) + STACK_SPACING) * stackNum);
     self.frame = frame;
     
     _originalWidth = frame.size.width;
@@ -120,16 +120,16 @@
     
     NSMutableArray *newStackLayers = [[NSMutableArray alloc] init];
     NSMutableArray *newBandLayers = [[NSMutableArray alloc] init];
-    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    float stackHeight = (bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
     
     // Create new stack layers as superlayers
     for (int i = 0; i < stackNum; i++)
     {
         CATiledLayer *stackLayer = [CATiledLayer layer];
         float stackY = stackHeight * i + STACK_SPACING;
-        CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH_P, stackHeight);
+        CGRect stackF = CGRectMake(0.0f, stackY, BAND_WIDTH, stackHeight);
         stackLayer.frame = stackF;
-        stackLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 4.0f, stackHeight);
+        stackLayer.tileSize = CGSizeMake((BAND_WIDTH / 4.0f), stackHeight);
         stackLayer.delegate = stackLayer;
         NSMutableArray *currentBandLayers = [[NSMutableArray alloc] init];
         
@@ -137,10 +137,10 @@
         for (int j = 0; j < bandNum; j++)
         {
             BandLayer *bandLayer = [BandLayer layer];
-            float bandY = j * (BAND_HEIGHT_P + BAND_SPACING);
-            CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH_P, BAND_HEIGHT_P);
+            float bandY = j * (BAND_HEIGHT + BAND_SPACING);
+            CGRect bandF = CGRectMake(0.0f, bandY, BAND_WIDTH, BAND_HEIGHT);  
             bandLayer.frame = bandF;
-            bandLayer.tileSize = CGSizeMake(BAND_WIDTH_P / 4.0f, BAND_HEIGHT_P);
+            bandLayer.tileSize = CGSizeMake((BAND_WIDTH / 4.0f), BAND_HEIGHT);
             bandLayer.opaque = YES;
             bandLayer.delegate = bandLayer;
 			bandLayer.dataDelegate = _dataDelegate;
@@ -240,7 +240,7 @@
     if (stackNum >= [_stackLayerArray count]) return NO;
     
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
     
     NSMutableArray *mutaStackLayerArr = [_stackLayerArray mutableCopy];
     
@@ -311,13 +311,13 @@
         if (bandNum < index)    // Move old band up
         {
             CGPoint pos = oldBand.position;
-            pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+            pos.y = pos.y - (BAND_HEIGHT + BAND_SPACING);
             oldBand.position = pos;
         }
         else if (bandNum > index)   // Move old band down
         {
             CGPoint pos = oldBand.position;
-            pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+            pos.y = pos.y + (BAND_HEIGHT + BAND_SPACING);
             oldBand.position = pos;
         }
         else
@@ -327,13 +327,13 @@
         if (bandNum < index)    // Move new band down
         {
             CGPoint pos = draggingBand.position;
-            pos.y = pos.y + (BAND_HEIGHT_P + BAND_SPACING);
+            pos.y = pos.y + (BAND_HEIGHT + BAND_SPACING);
             draggingBand.position = pos;
         }
         else if (bandNum > index)   // Move new band up
         {
             CGPoint pos = draggingBand.position;
-            pos.y = pos.y - (BAND_HEIGHT_P + BAND_SPACING);
+            pos.y = pos.y - (BAND_HEIGHT + BAND_SPACING);
             draggingBand.position = pos;
         }
         else
@@ -434,7 +434,7 @@
                     NSArray *eArr = [[[data.eventArray objectAtIndex:[o intValue]] objectAtIndex:i] objectAtIndex:j];
                     for (Event *e in eArr)
                     {
-                        if ((e.x * _zoomScale) <= location.x && (e.x + e.width) * _zoomScale >= location.x)
+                        if ((e.x * _zoomScale * (BAND_WIDTH / BAND_WIDTH_P)) <= location.x && (e.x + e.width) * _zoomScale  * (BAND_WIDTH / BAND_WIDTH_P) >= location.x)
                         {
                             [results addObject:e];
                         }
@@ -469,6 +469,8 @@
  */
 - (void)setTransform:(CGAffineTransform)newValue;
 {   
+    if (!isPortrait) return;
+    
     // The 'a' value of the transform is the transform's new scale of the view, which is reset after the zooming action completes
     //  newZoomScale should therefore be kept while zooming, and then zoomScale should be updated upon completion
 	_newZoomScale = _zoomScale * newValue.a;
@@ -487,7 +489,7 @@
         for (BandLayer *b in [s sublayers])
         {
             CGRect bandF = b.frame;
-            bandF.size.width = BAND_WIDTH_P * _newZoomScale;
+            bandF.size.width = BAND_WIDTH * _newZoomScale;
             
             b.frame = bandF;
             
@@ -543,7 +545,7 @@
  */
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
 {    
-	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT_P + BAND_SPACING) + BAND_HEIGHT_P + STACK_SPACING;
+	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + STACK_SPACING;
 	
 	if (data.timeScale == 1)
 	{
@@ -562,8 +564,13 @@
 			{
 				float stackY = stackHeight * i;
 				NSString *month = [months objectAtIndex:m];
-				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, width, 32.0f);
-				[month drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:14.0f] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
+				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, width, 16.0f);
+                float fontSize;
+                if (isPortrait)
+                    fontSize = 10.0f;
+                else
+                    fontSize = 2.0f;
+				[month drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:fontSize] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
 			}
 		}
 	}

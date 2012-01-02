@@ -1,10 +1,11 @@
 
 #import "ContentViewController.h"
 #import "QueryViewController.h"
-#import "QueryData.h"
 #import "ContentScrollView.h"
 #import "PanelZoomView.h"
 #import "PanelDrawView.h"
+#import "QueryData.h"
+#import "Meta.h"
 
 @interface ContentViewController ()
 
@@ -39,10 +40,15 @@
 @synthesize queryData = _queryData;
 
 
-// Global layout parameters that are modified upon a change in device orientation
+// Global layout parameters
 //float BAND_HEIGHT = -1.0f;  // Height of bands in the interface
 //float BAND_WIDTH = -1.0f;   // Width of bands in the interface
-BOOL isPortrait = YES;
+BOOL isPortrait = YES;  // Modified on change of device orientation
+
+float BAND_HEIGHT = BAND_HEIGHT_P;
+float BAND_WIDTH = BAND_WIDTH_P;
+float BAND_SPACING = BAND_SPACING_P;
+float STACK_SPACING = STACK_SPACING_P;
 
 #pragma mark -
 #pragma mark Initialization
@@ -186,7 +192,7 @@ BOOL isPortrait = YES;
     
     for (PanelZoomView *p in _contentScrollView.panelZoomViews)
     {
-        [p.bandDrawView setNeedsDisplay];
+        [p.panelDrawView setNeedsDisplay];
     }
     
     // Re-initialize scrubber
@@ -249,8 +255,8 @@ BOOL isPortrait = YES;
         [newb setBackgroundImage:inactiveImg forState:UIControlStateNormal];
         [newb setBackgroundImage:activeImg forState:UIControlStateHighlighted];
         
-        NSString *panelM = [(NSArray *)[_queryData.selectedMetas objectForKey:@"Panels"] objectAtIndex:i];
-        [newb setTitle:panelM forState:UIControlStateNormal];
+        Meta *panelM = [(NSArray *)[_queryData.selectedMetas objectForKey:@"Panels"] objectAtIndex:i];
+        [newb setTitle:panelM.name forState:UIControlStateNormal];
         
         newb.tag = i;
         [newb setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
@@ -277,7 +283,7 @@ BOOL isPortrait = YES;
 {
     int roundVal = roundf((float)_panelScrubber.value);
     
-    if (((PanelZoomView *)[_contentScrollView.panelZoomViews objectAtIndex:0]).bandDrawView.currentPanel != roundVal)
+    if (((PanelZoomView *)[_contentScrollView.panelZoomViews objectAtIndex:0]).panelDrawView.currentPanel != roundVal)
     {
         [self changeCurrentPanel:roundVal];
         NSLog(@"Switching to panel %d", roundVal);
@@ -332,7 +338,7 @@ BOOL isPortrait = YES;
 
     for (PanelZoomView *p in _contentScrollView.panelZoomViews)
     {
-        [p.bandDrawView setNeedsDisplay];
+        [p.panelDrawView setNeedsDisplay];
     }
 }
 
@@ -406,14 +412,23 @@ BOOL isPortrait = YES;
     {
         for (int s = 0; s < _queryData.stackNum; s++)
         {
+            // Reorder event array
             NSMutableArray *mutableBands = [[[_queryData.eventArray objectAtIndex:p] objectAtIndex:s] mutableCopy];
             NSArray *tempBand = [mutableBands objectAtIndex:i];
             [mutableBands replaceObjectAtIndex:i withObject:[mutableBands objectAtIndex:j]];
             [mutableBands replaceObjectAtIndex:j withObject:tempBand];
-            
             [[_queryData.eventArray objectAtIndex:p] replaceObjectAtIndex:s withObject:(NSArray *)mutableBands];
         }
     }
+    
+    // Reorder meta array
+    NSMutableArray *mutableBandMetas = [[_queryData.selectedMetas objectForKey:@"Bands"] mutableCopy];
+    Meta *tempMeta = [mutableBandMetas objectAtIndex:i];
+    [mutableBandMetas replaceObjectAtIndex:i withObject:[mutableBandMetas objectAtIndex:j]];
+    [mutableBandMetas replaceObjectAtIndex:j withObject:tempMeta];
+    NSMutableDictionary *mutableMetas = [_queryData.selectedMetas mutableCopy];
+    [mutableMetas setObject:(NSArray *)mutableBandMetas forKey:@"Bands"];
+    _queryData.selectedMetas = (NSDictionary *)mutableMetas;
 }
 
 

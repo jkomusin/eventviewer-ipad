@@ -4,6 +4,14 @@
 #import "PanelDrawView.h"
 #import "ContentScrollView.h"
 
+// Constants containing dimensions of bands in each device orientation.
+//  All other measurements of UI elements are based off of these dimensions.
+#define BAND_HEIGHT_P 64.0f
+#define BAND_WIDTH_P 529.0f
+#define BAND_SPACING_P 8.0f
+#define STACK_SPACING_P 32.0f
+
+
 @class QueryViewController;
 @class QueryData;
 @class ContentScrollView;

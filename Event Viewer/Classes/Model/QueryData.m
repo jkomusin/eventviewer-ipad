@@ -1,7 +1,9 @@
 
+#import "ContentViewController.h"
+#import "ContentScrollView.h"
 #import "QueryData.h"
 #import "Event.h"
-#import "ContentScrollView.h"
+#import "Meta.h"
 
 #define MY_MALLOC(x)    my_malloc( #x, x )
 #define MY_FREE(x)      my_free(x)
@@ -13,6 +15,10 @@
 //@synthesize eventFloats = _eventFloats;
 @synthesize timeScale = _timeScale;
 
+OBJC_EXPORT float BAND_HEIGHT;              //
+OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
+OBJC_EXPORT float BAND_SPACING;             //
+OBJC_EXPORT float STACK_SPACING;            //
 
 - (id) init
 {
@@ -54,19 +60,22 @@
         for (char c = 'A'; c < ('A' + panels); c++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Panel %c", c];
-            [mutablePanels addObject:new];
+            Meta *newM = [[Meta alloc] initWithName:new];
+            [mutablePanels addObject:newM];
         }
         NSMutableArray *mutableStacks = [[NSMutableArray alloc] init];
         for (char c = 'A'; c < ('A' + TEST_STACKS); c++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Stack %c", c];
-            [mutableStacks addObject:new];
+            Meta *newM = [[Meta alloc] initWithName:new];
+            [mutableStacks addObject:newM];
         }
         NSMutableArray *mutableBands = [[NSMutableArray alloc] init];
         for (char c = 'A'; c < ('A' + TEST_BANDS); c++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Band %c", c];
-            [mutableBands addObject:new];
+            Meta *newM = [[Meta alloc] initWithName:new];
+            [mutableBands addObject:newM];
         }
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
         NSArray *panelArray = [NSArray arrayWithArray:mutablePanels];

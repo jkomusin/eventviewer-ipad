@@ -16,7 +16,7 @@
 @synthesize width = _width;
 
 
-- (id) initWithStartTime:(NSDate *)start endTime:(NSDate *)end
+- (id)initWithStartTime:(NSDate *)start endTime:(NSDate *)end
 {
     if ((self = [super init]))
     { 

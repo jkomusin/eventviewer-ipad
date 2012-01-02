@@ -13,15 +13,6 @@
 @protocol DataDelegate;
 @protocol DrawDelegate;
 
-// Constants containing dimensions of bands in each device orientation.
-//  All other measurements of UI elements are based off of these dimensions.
-#define BAND_HEIGHT_P 64.0f
-#define BAND_HEIGHT_L 48.0f
-#define BAND_WIDTH_P 529.0f
-#define BAND_WIDTH_L 369.0f
-#define BAND_SPACING 8.0f
-#define STACK_SPACING 32.0f
-
 /**
  *  ScrollView containing all content in the currently displayed query results. Is the superview to all others, and the ContentViewController's primary view.
  */

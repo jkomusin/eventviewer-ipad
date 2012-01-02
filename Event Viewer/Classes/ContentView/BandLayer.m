@@ -23,6 +23,11 @@
 @synthesize stackNumber = _stackNumber;
 @synthesize bandNumber = _bandNumber;
 
+OBJC_EXPORT float BAND_HEIGHT;              //
+OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
+OBJC_EXPORT float BAND_SPACING;             //
+OBJC_EXPORT float STACK_SPACING;            //
+
 - (void)drawInContext:(CGContextRef)context
 {            
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
@@ -71,14 +76,14 @@
     
     for (Event *e in eArr)
     {
-        int intX = (int)(e.x * zoomScale);
+        int intX = (int)(e.x * zoomScale * (BAND_WIDTH / BAND_WIDTH_P));
         float x = (float)intX + 0.5f;
-        int intW = (int)(e.width * zoomScale);
+        int intW = (int)(e.width * zoomScale * (BAND_WIDTH / BAND_WIDTH_P));
         float width = (float)intW;
         CGRect eRect = CGRectMake(x, 
                                   0.0f, 
                                   width, 
-                                  BAND_HEIGHT_P);
+                                  BAND_HEIGHT);
         CGContextFillRect(context, eRect);
     }
 }

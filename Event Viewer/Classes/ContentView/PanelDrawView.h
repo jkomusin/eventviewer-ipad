@@ -41,8 +41,8 @@
 @property (nonatomic, strong) UIPopoverController *infoPopup;   // The popover to display the EventInfo pane upon user request for details on a specific Event
 @property (nonatomic, assign) int currentPanel; // Index of the panel this zoom view displays content for
 
-- (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum;
-- (void)resizeForStackNum:(int)stackNum bandNum:(int)bandNum;
+//- (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum withScale:(float)scale;
+- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
