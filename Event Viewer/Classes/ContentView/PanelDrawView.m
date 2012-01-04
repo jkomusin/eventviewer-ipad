@@ -248,8 +248,12 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     if (index >= [_stackLayerArray count]) return NO;
     if (stackNum >= [_stackLayerArray count]) return NO;
     
+    float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
+    float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
+    
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + TIMELINE_HEIGHT;
+    float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
     
     NSMutableArray *mutaStackLayerArr = [_stackLayerArray mutableCopy];
     
@@ -287,14 +291,20 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     else
         NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackNum, index);
     
-    // Reposition layers within array
+    // Reposition layers within stack array
     [mutaStackLayerArr replaceObjectAtIndex:index withObject:draggingStack];
     [mutaStackLayerArr replaceObjectAtIndex:stackNum withObject:oldStack];
-    
     _stackLayerArray = (NSArray *)mutaStackLayerArr;
     
-    // Inform data delegate that reordering is needed
-    [_dataDelegate swapStack:stackNum withStack:index];
+    // Inform band layers of their new stack indices
+    for (BandLayer *b in oldStack.sublayers)
+    {
+        b.stackNumber = stackNum;
+    }
+    for (BandLayer *b in draggingStack.sublayers)
+    {
+        b.stackNumber = index;
+    }
     
     return YES;
 }
@@ -314,6 +324,9 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
     if (bandNum >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
     
+    float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
+    
     NSMutableArray *bandLayerMutable = [_bandLayerArray mutableCopy];
     for (int i = 0; i < [bandLayerMutable count]; i++)
     {
@@ -323,13 +336,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         if (bandNum < index)    // Move old band up
         {
             CGPoint pos = oldBand.position;
-            pos.y = pos.y - (BAND_HEIGHT + BAND_SPACING);
+            pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING);
             oldBand.position = pos;
         }
         else if (bandNum > index)   // Move old band down
         {
             CGPoint pos = oldBand.position;
-            pos.y = pos.y + (BAND_HEIGHT + BAND_SPACING);
+            pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING);
             oldBand.position = pos;
         }
         else
@@ -339,13 +352,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         if (bandNum < index)    // Move new band down
         {
             CGPoint pos = draggingBand.position;
-            pos.y = pos.y + (BAND_HEIGHT + BAND_SPACING);
+            pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING);
             draggingBand.position = pos;
         }
         else if (bandNum > index)   // Move new band up
         {
             CGPoint pos = draggingBand.position;
-            pos.y = pos.y - (BAND_HEIGHT + BAND_SPACING);
+            pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING);
             draggingBand.position = pos;
         }
         else
@@ -363,9 +376,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     }
     
     _bandLayerArray = (NSArray *)bandLayerMutable;
-    
-    // Inform data delegate that reordering is needed
-    [_dataDelegate swapBand:bandNum withBand:index];
         
     return YES;
 }
@@ -559,7 +569,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         stackLayer.frame = stackF;
 //        stackLayer.tileSize = stackTiles;
         
-        // Create new band layers as sublayers of stack layers
+        // Resize band layers
         NSArray *bandArray = [_bandLayerArray objectAtIndex:i];
         for (int j = 0; j < data.bandNum; j++)
         {

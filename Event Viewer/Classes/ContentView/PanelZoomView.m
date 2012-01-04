@@ -22,7 +22,7 @@ OBJC_EXPORT float BAND_HEIGHT;              //
 OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
 OBJC_EXPORT float BAND_SPACING;             //
 OBJC_EXPORT float TIMELINE_HEIGHT;            //
-OBJC_EXPORT float LABEL_SPACING;
+OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 #pragma mark -
 #pragma mark Initialization
@@ -105,7 +105,7 @@ OBJC_EXPORT float LABEL_SPACING;
     CGRect newFrame = _originalFrame;
     newFrame.size.width = _originalFrame.size.width * zoomScale;
     newFrame.size.height = _originalFrame.size.height * zoomScale;
-    int selfIndex = (_originalFrame.origin.x - LABEL_SPACING) / _originalFrame.size.width;
+    int selfIndex = (_originalFrame.origin.x - SIDE_LABEL_SPACING) / _originalFrame.size.width;
     if (_panelDrawView.currentPanel != 0)
     {
         // Move to new x index, determined by the difference of the new band width multiplied by how many panels precede this one
