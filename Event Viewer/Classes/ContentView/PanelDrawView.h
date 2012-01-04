@@ -22,7 +22,6 @@
 @required
 - (float)delegateRequestsZoomscale;
 - (int)delegateRequestsCurrentPanel;
-- (UIColor *)getColorForPanel:(int)panelNum;
 - (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
 - (CALayer *)getStackLayerForStack:(int)stackNum;
 - (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index;
@@ -41,12 +40,10 @@
 @property (nonatomic, strong) UIPopoverController *infoPopup;   // The popover to display the EventInfo pane upon user request for details on a specific Event
 @property (nonatomic, assign) int currentPanel; // Index of the panel this zoom view displays content for
 
-//- (id)initWithStackNum:(int)stackNum bandNum:(int)bandNum withScale:(float)scale;
 - (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
 - (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
-- (UIColor *)getColorForPanel:(int)panelNum;
 
 - (void)doneZooming;
 - (void)zoomToScale:(float)zoomScale;

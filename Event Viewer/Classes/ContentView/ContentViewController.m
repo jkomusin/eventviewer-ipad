@@ -10,6 +10,7 @@
 @interface ContentViewController ()
 
 @property (nonatomic, strong) UIPopoverController *popoverController;   // Controller of the query popover, implemented as part of the MGSplitViewController
+
 - (void)configureView;
 
 @end
@@ -31,6 +32,8 @@
     NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
     NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
                                             //  NOTE: This includes the current panel if it is overlaid!
+    NSArray *_colorArray;
+    
     ContentScrollView *_contentScrollView;  // Scrolling container for the results of the query
     
     float _zoomScale;                       // Current zoom scale of content
@@ -92,6 +95,10 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     // Overlay array
     NSArray *overlays = [[NSArray alloc] init];
     _panelOverlays = overlays;
+    
+    // Color array
+    NSArray *colors = [[NSArray alloc] init];
+    _colorArray = colors;
     
     // Scroll view for content
     ContentScrollView *csv = [[ContentScrollView alloc] initWithPanelNum:_queryData.panelNum stackNum:_queryData.stackNum bandNum:_queryData.bandNum];
@@ -457,6 +464,30 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     NSMutableDictionary *mutableMetas = [_queryData.selectedMetas mutableCopy];
     [mutableMetas setObject:(NSArray *)mutableStackMetas forKey:@"Stacks"];
     _queryData.selectedMetas = (NSDictionary *)mutableMetas;
+}
+
+/**
+ *  Retrieve color for events of a specified panel.
+ *  If no color has been created for the panel, create one and add it to the array.
+ */
+- (UIColor *)getColorForPanel:(int)panelIndex
+{
+    UIColor *eColor;
+    
+    while ([_colorArray count] < panelIndex+1)
+    {
+        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
+        eColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
+        NSMutableArray *mutableColors = [_colorArray mutableCopy];
+        [mutableColors addObject:eColor];
+        _colorArray = mutableColors;
+    }
+    
+    eColor = [_colorArray objectAtIndex:panelIndex];
+    
+    return eColor;
 }
 
 

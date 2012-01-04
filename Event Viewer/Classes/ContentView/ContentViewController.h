@@ -38,6 +38,7 @@ enum UI_OBJECT
 - (int)delegateRequestsTimescale;
 - (void)swapBand:(int)i withBand:(int)j;
 - (void)swapStack:(int)i withStack:(int)j;
+- (UIColor *)getColorForPanel:(int)panelIndex;
 
 @end
 

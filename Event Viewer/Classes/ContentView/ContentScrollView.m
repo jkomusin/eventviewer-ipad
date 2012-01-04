@@ -32,12 +32,15 @@
                                     //  [x][2] corresponds to the index of the band being dragged (obviously optional if a stack is being dragged)
                                     //  [x][3] corresponds to the index of the stack being dragged or dragged inside
     enum UI_OBJECT _draggingType;   // Type of label currently being dragged
+    NSArray *_panelLabelArray;      // Array of labels for each panel
     NSArray *_stackLabelArray;      // Array of labels for each stack
     NSArray *_bandLabelArray;       // 2-dimensional array of labels for each band (indexed by stack then by band)
     float _bandFontSize;
     float _stackFontSize;
+    float _panelFontSize;
     
-    UIView *_sideLabelView;          // View ocntaining all stack and band labels that moves horizontally with the landscape view
+    UIView *_topLabelView;          // View containing all panel labels that moves vertically with the landscae view
+    UIView *_sideLabelView;         // View containing all stack and band labels that moves horizontally with the landscape view
 }
 
 @synthesize dataDelegate = _dataDelegate;
@@ -66,10 +69,15 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         [self addSubview:newContentView];
         _queryContentView = newContentView;
         
-        UIView *newLabelView = [[UIView alloc] init];
-        [self addSubview:newLabelView];
-        newLabelView.backgroundColor = [UIColor blackColor];
-        _sideLabelView = newLabelView;
+        UIView *newTopLabelView = [[UIView alloc] init];
+        [self addSubview:newTopLabelView];
+        newTopLabelView.backgroundColor = [UIColor blackColor];
+        _topLabelView = newTopLabelView;
+        
+        UIView *newSideLabelView = [[UIView alloc] init];
+        [self addSubview:newSideLabelView];
+        newSideLabelView.backgroundColor = [UIColor blackColor];
+        _sideLabelView = newSideLabelView;
         
         self.delegate = self;
         
@@ -86,6 +94,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         
         _bandFontSize = 16.0f;
         _stackFontSize = 20.0f;
+        _panelFontSize = 24.0f;
     }
     
     return self;
@@ -100,7 +109,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
  *  bandNum is the number of bands in the new query
  */
 - (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
-{
+{    
     // Scale UI layout constants
     float scale;
     float panelSpaceHoriz = 1024.0f - (768.0f - BAND_WIDTH_P);
@@ -113,7 +122,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
     }
     else
     {
-        landBandW = BAND_WIDTH_P * ((768.0f - 44.0f) / contentHeight);
+        landBandW = BAND_WIDTH_P * ((768.0f - 44.0f - _topLabelView.frame.size.height) / contentHeight);
     }
     if (isPortrait)
     {
@@ -128,17 +137,24 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
     BAND_SPACING = BAND_SPACING_P * scale;
     TIMELINE_HEIGHT = BAND_HEIGHT_P * scale;
     
+    [self createLabels];
+    if (isPortrait) [_topLabelView removeFromSuperview];
+    else            [self addSubview:_topLabelView];
+    
+    NSMutableArray *mutaPanels = [_panelZoomViews mutableCopy];
+    // Move panels to new coords
+    for (int i = 0; i < [mutaPanels count]; i++)
+    {
+        PanelZoomView *p = [mutaPanels objectAtIndex:i];
+        CGRect frame = p.frame;
+        frame.origin.x = LABEL_SPACING + (landBandW * i);
+        if (isPortrait) frame.origin.y = 0.0f;
+        else            frame.origin.y = _topLabelView.frame.size.height;
+        p.frame = frame;
+    }
+    
     if ([_panelZoomViews count] != panelNum)
     {        
-        NSMutableArray *mutaPanels = [_panelZoomViews mutableCopy];
-        // Move panels to new x-coords
-        for (int i = 0; i < [mutaPanels count]; i++)
-        {
-            PanelZoomView *p = [mutaPanels objectAtIndex:i];
-            CGRect frame = p.frame;
-            frame.origin.x = LABEL_SPACING + (landBandW * i);
-            p.frame = frame;
-        }
         // Add additional panels
         int i;
         i = [mutaPanels count];
@@ -148,6 +164,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
                                        0.0f,
                                        0.0f,
                                        0.0f);
+            if (!isPortrait) panelF.origin.y = _topLabelView.frame.size.height;
             PanelZoomView *zoomView = [[PanelZoomView alloc] init];
             
             zoomView.frame = panelF;
@@ -206,8 +223,9 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
     else
     {
         selfSize = CGSizeMake(1024.0f, 
-                              ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).frame.size.height);
+                              ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).frame.size.height + _topLabelView.frame.size.height);
     }
+    NSLog(@"Setting content size and view's frame with dimensions %f x %f", selfSize.width, selfSize.height);
     _queryContentView.frame = CGRectMake(0.0f, 0.0f, selfSize.width, selfSize.height);
     self.contentSize = selfSize;
     
@@ -235,11 +253,10 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
     
     self.drawDelegate = ((PanelZoomView *)[_panelZoomViews objectAtIndex:0]).panelDrawView;
     
-	[self createLabels];
-    
     // Draw new panels
     for (PanelZoomView *p in _panelZoomViews)
     {
+        [p.panelDrawView zoomToScale:1.0f];
         [p.panelDrawView setNeedsDisplay];
     }
 }
@@ -293,31 +310,66 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
 {
 	QueryData *data = [_dataDelegate delegateRequestsQueryData];
 	
-	// Remove old labels
+    // Remove old panel labels
+    for (UIView *sub in _topLabelView.subviews)
+    {
+        if ([sub isKindOfClass:[UILabel class]])
+            [sub removeFromSuperview];
+    }
+    // Resize top label view
+    CGRect lTopFrame = CGRectMake(0.0f, 
+                                  0.0f, 
+                                  BAND_WIDTH * data.panelNum, 
+                                  50.0f);
+    _topLabelView.frame = lTopFrame;
+    
+	// Remove old band & stack labels
 	for (UIView *sub in _sideLabelView.subviews)
 	{
 		if ([sub isKindOfClass:[UILabel class]])
 			[sub removeFromSuperview];
 	}
+    // Resize side label view
+    CGRect lSideFrame = CGRectMake(0.0f,    
+                                   -1024.0f,    // To cover excess when zoom-bouncing
+                                   LABEL_SPACING, 
+                                   self.contentSize.height + 1024.0f);  // ^^^
+    _sideLabelView.frame = lSideFrame;
     
-    // Resize label view
-    CGRect lFrame = CGRectMake(0.0f, 0.0f, 
-                               LABEL_SPACING, 
-                               self.contentSize.height);
-    _sideLabelView.frame = lFrame;
-	
     // Determine font sizing 
     //  (NOTE: The height box (including ascender and decender) of a font in equal to the point size - 1.0)
+//    _panelFontSize = (
     _stackFontSize = (TIMELINE_HEIGHT + 1.0f < 20.0f ? TIMELINE_HEIGHT + 1.0f : 20.0f);
     _bandFontSize = (BAND_HEIGHT + 1.0f < 16.0f ? BAND_HEIGHT + 1.0f : 16.0f);
     
-	// Create new labels
+    // Create new panel labels
+    NSMutableArray *newPanelLabels = [[NSMutableArray alloc] init];
+    for (int i = 0; i < data.panelNum; i++)
+    {
+        CGRect labelF = CGRectMake(LABEL_SPACING + BAND_WIDTH * i, 0.0f, BAND_WIDTH, 50.0f);
+        UILabel *panelL = [[UILabel alloc] initWithFrame:labelF];
+        [panelL setTextAlignment:UITextAlignmentCenter];
+        [panelL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize]];
+        [panelL setBackgroundColor:[UIColor clearColor]];
+        [panelL setTextColor:[UIColor whiteColor]];
+        NSString *panelM = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Panels"] objectAtIndex:i] name];
+        [panelL setText:panelM];
+        
+        [_topLabelView addSubview:panelL];
+        [newPanelLabels addObject:panelL];
+    }
+    
+    _panelLabelArray = (NSArray *)newPanelLabels;
+    
+	// Create new stack & band labels
 	float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + TIMELINE_HEIGHT;
     NSMutableArray *newStackLabels = [[NSMutableArray alloc] init];
     NSMutableArray *newBandLabels = [[NSMutableArray alloc] init];
     for (int i = 0; i < data.stackNum; i++)
     {
-        float stackY = stackHeight * i;
+        float stackY;
+        if (isPortrait) stackY = stackHeight * i + 1024.0f;
+        else            stackY = _topLabelView.frame.size.height + stackHeight * i + 1024.0f;
 		CGRect labelF = CGRectMake(16.0f, stackY, 128.0f, TIMELINE_HEIGHT);
 		UILabel *stackL = [[UILabel alloc] initWithFrame:labelF];
 		[stackL setTextAlignment:UITextAlignmentLeft];
@@ -451,6 +503,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
  */
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
+    NSLog(@"Handling dragging!");
     switch ([gestureRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:
@@ -694,11 +747,17 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         _draggingLabels = (NSArray *)mutaDraggingLabels;
     }
     
+    // Establish temproary dimensions related to the current zoomScale of the CSV
+//    float temp_BAND_WIDTH = BAND_WIDTH * self.zoomScale;
+    float temp_BAND_HEIGHT = BAND_HEIGHT * self.zoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * self.zoomScale;
+    float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * self.zoomScale;
+    
     //  Handle swapping with non-dragging label
     if (!reorderedDragging)    
     {
         QueryData *data = [_dataDelegate delegateRequestsQueryData];
-        float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + TIMELINE_HEIGHT;
+        float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
         int newIndex;
         if (draggingLabelType == STACK)
         {
@@ -707,7 +766,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         else
         {
             float normalY = point.y - (stackHeight * stackIndex);
-            newIndex = normalY / (BAND_HEIGHT + BAND_SPACING);            
+            newIndex = normalY / (temp_BAND_HEIGHT + temp_BAND_SPACING);            
         }
         
         // Make sure new index is not currently being dragged
@@ -790,10 +849,16 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         return;
     }
     
+    // Establish temp variables based on zoomScale of CSV
+//    float temp_BAND_WIDTH = BAND_WIDTH * self.zoomScale;
+    float temp_BAND_HEIGHT = BAND_HEIGHT * self.zoomScale;
+    float temp_BAND_SPACING = BAND_SPACING * self.zoomScale;
+    float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * self.zoomScale;
+    
     int stackIndex = [[draggingArr objectAtIndex:3] intValue];
     int bandIndex = [[draggingArr objectAtIndex:2] intValue];
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-    float stackHeight = (data.bandNum-1.0f) * (BAND_HEIGHT + BAND_SPACING) + BAND_HEIGHT + TIMELINE_HEIGHT;
+    float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
     
     // Find the type of layer we're dragging
     BOOL isStack = (bandIndex == -1);
@@ -812,7 +877,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         [draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize]];
         // Move label to rest
         float stackY = stackIndex * stackHeight;
-        float bandY = bandIndex * (BAND_HEIGHT + BAND_SPACING) + TIMELINE_HEIGHT + stackY;
+        float bandY = bandIndex * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_TIMELINE_HEIGHT + stackY;
         labelF.origin.y = bandY;
     }
     draggingLabel.frame = labelF;
@@ -871,7 +936,7 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView
 {
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
-//    float temp_BAND_WIDTH = BAND_WIDTH * scrollView.zoomScale;
+    float temp_BAND_WIDTH = BAND_WIDTH * scrollView.zoomScale;
     float temp_BAND_HEIGHT = BAND_HEIGHT * scrollView.zoomScale;
     float temp_BAND_SPACING = BAND_SPACING * scrollView.zoomScale;
     float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * scrollView.zoomScale;
@@ -882,18 +947,35 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
         [p zoomToScale:scrollView.zoomScale];
     }
     
-    // Resize labels
+    // Resize label frames
     CGRect newLabelF = _sideLabelView.frame;
-    newLabelF.size.height = _queryContentView.frame.size.height;
+    newLabelF.size.height = _queryContentView.frame.size.height + 1024.0f;
     _sideLabelView.frame = newLabelF;
+    newLabelF = _topLabelView.frame;
+    newLabelF.size.width = LABEL_SPACING + temp_BAND_WIDTH * data.panelNum;
+    _topLabelView.frame = newLabelF;
     
     _stackFontSize = (temp_TIMELINE_HEIGHT + 1.0f < 20.0f ? temp_TIMELINE_HEIGHT + 1.0f : 20.0f);
     _bandFontSize = (temp_BAND_HEIGHT + 1.0f < 16.0f ? temp_BAND_HEIGHT + 1.0f : 16.0f);
     
+    // Resize panel labels
+    for (int i = 0; i < data.panelNum; i++)
+    {
+        UILabel *panelLabel = [_panelLabelArray objectAtIndex:i];
+        CGRect labelF = CGRectMake(LABEL_SPACING + (temp_BAND_WIDTH * i), 
+                                   0.0f, 
+                                   temp_BAND_WIDTH, 
+                                   50.0f);
+        panelLabel.frame = labelF;
+    }
+    
+    // Resize stack and band labels
     float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
     for (int i = 0; i < data.stackNum; i++)
     {
-        float stackY = stackHeight * i;
+        float stackY;
+        if (isPortrait) stackY = stackHeight * i + 1024.0f;
+        else            stackY = _topLabelView.frame.size.height + stackHeight * i + 1024.0f;
 		CGRect labelF = CGRectMake(16.0f, stackY, 128.0f, temp_TIMELINE_HEIGHT);
 		UILabel *stackL = [_stackLabelArray objectAtIndex:i];
         stackL.frame = labelF;
@@ -917,7 +999,13 @@ float LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
 - (void)scrollViewDidScroll:(ContentScrollView *)scrollView
 {
     CGPoint offset = scrollView.contentOffset;
-    CGRect newFrame = _sideLabelView.frame;
+    
+    CGRect newFrame = _topLabelView.frame;
+    newFrame.origin.y = offset.y;
+    if(!isPortrait) _topLabelView.frame = newFrame;
+    [self bringSubviewToFront:_topLabelView];
+    
+    newFrame = _sideLabelView.frame;
     newFrame.origin.x = offset.x;
     _sideLabelView.frame = newFrame;
     [self bringSubviewToFront:_sideLabelView];
