@@ -242,11 +242,11 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  stackNum is the 0-based index of the currently dragged stack
  *  index is the new 0-based index of the stack being dragged
  */
-- (BOOL)reorderStack:(int)stackNum withNewIndex:(int)index
+- (BOOL)reorderStack:(int)stackIndex withNewIndex:(int)index
 {
     // Check to make sure we need to reorder (we may be outside the bounds of the stack)
     if (index >= [_stackLayerArray count]) return NO;
-    if (stackNum >= [_stackLayerArray count]) return NO;
+    if (stackIndex >= [_stackLayerArray count]) return NO;
     
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
@@ -259,47 +259,47 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     
     // Shift old stack
     CALayer *oldStack = [mutaStackLayerArr objectAtIndex:index];
-    if (stackNum < index)    // Move old band up
+    if (stackIndex < index)    // Move old band up
     {
         CGPoint pos = oldStack.position;
         pos.y = pos.y - stackHeight;
         oldStack.position = pos;
     }
-    else if (stackNum > index)   // Move old band down
+    else if (stackIndex > index)   // Move old band down
     {
         CGPoint pos = oldStack.position;
         pos.y = pos.y + stackHeight;
         oldStack.position = pos;
     }
     else
-        NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackNum, index);
+        NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackIndex, index);
     
     // Shift new stack
-    CALayer *draggingStack = [mutaStackLayerArr objectAtIndex:stackNum];
-    if (stackNum < index)    // Move new band down
+    CALayer *draggingStack = [mutaStackLayerArr objectAtIndex:stackIndex];
+    if (stackIndex < index)    // Move new band down
     {
         CGPoint pos = draggingStack.position;
         pos.y = pos.y + stackHeight;
         draggingStack.position = pos;
     }
-    else if (stackNum > index)   // Move new band up
+    else if (stackIndex > index)   // Move new band up
     {
         CGPoint pos = draggingStack.position;
         pos.y = pos.y - stackHeight;
         draggingStack.position = pos;
     }
     else
-        NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackNum, index);
+        NSLog(@"ERROR! -- stackNum (%d), index (%d) conflict", stackIndex, index);
     
     // Reposition layers within stack array
     [mutaStackLayerArr replaceObjectAtIndex:index withObject:draggingStack];
-    [mutaStackLayerArr replaceObjectAtIndex:stackNum withObject:oldStack];
+    [mutaStackLayerArr replaceObjectAtIndex:stackIndex withObject:oldStack];
     _stackLayerArray = (NSArray *)mutaStackLayerArr;
     
     // Inform band layers of their new stack indices
     for (BandLayer *b in oldStack.sublayers)
     {
-        b.stackNumber = stackNum;
+        b.stackNumber = stackIndex;
     }
     for (BandLayer *b in draggingStack.sublayers)
     {
@@ -318,11 +318,11 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *
  *  Returns YES if the reordering occured, else NO
  */
-- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index
+- (BOOL)reorderBandsAroundBand:(int)bandIndex inStack:(int)stackIndex withNewIndex:(int)index
 {
     // Check to make sure we need to reorder (we may be outside the bounds of the stack)
-    if (index >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
-    if (bandNum >= [[_bandLayerArray objectAtIndex:stackNum] count]) return NO;
+    if (index >= [[_bandLayerArray objectAtIndex:stackIndex] count]) return NO;
+    if (bandIndex >= [[_bandLayerArray objectAtIndex:stackIndex] count]) return NO;
     
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
@@ -333,44 +333,44 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
         
         BandLayer *oldBand = [bandArray objectAtIndex:index];
-        if (bandNum < index)    // Move old band up
+        if (bandIndex < index)    // Move old band up
         {
             CGPoint pos = oldBand.position;
             pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING);
             oldBand.position = pos;
         }
-        else if (bandNum > index)   // Move old band down
+        else if (bandIndex > index)   // Move old band down
         {
             CGPoint pos = oldBand.position;
             pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING);
             oldBand.position = pos;
         }
         else
-            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
+            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandIndex, index);
             
-        BandLayer *draggingBand = [bandArray objectAtIndex:bandNum];
-        if (bandNum < index)    // Move new band down
+        BandLayer *draggingBand = [bandArray objectAtIndex:bandIndex];
+        if (bandIndex < index)    // Move new band down
         {
             CGPoint pos = draggingBand.position;
             pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING);
             draggingBand.position = pos;
         }
-        else if (bandNum > index)   // Move new band up
+        else if (bandIndex > index)   // Move new band up
         {
             CGPoint pos = draggingBand.position;
             pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING);
             draggingBand.position = pos;
         }
         else
-            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandNum, index);
+            NSLog(@"ERROR! -- bandNum (%d), index (%d) conflict", bandIndex, index);
         
         // Inform band layers of their new positions
         draggingBand.bandNumber = index;
-        oldBand.bandNumber = bandNum;
+        oldBand.bandNumber = bandIndex;
         
         // Reposition layers within array
         [bandArray replaceObjectAtIndex:index withObject:draggingBand];
-        [bandArray replaceObjectAtIndex:bandNum withObject:oldBand];
+        [bandArray replaceObjectAtIndex:bandIndex withObject:oldBand];
                 
         [bandLayerMutable replaceObjectAtIndex:i withObject:(NSArray *)bandArray];        
     }
@@ -456,7 +456,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
                     NSArray *eArr = [[[data.eventArray objectAtIndex:[o intValue]] objectAtIndex:i] objectAtIndex:j];
                     for (Event *e in eArr)
                     {
-                        if ((e.x * _zoomScale * (b.frame.size.width / BAND_WIDTH_P)) <= location.x && (e.x + e.width) * _zoomScale  * (b.frame.size.width / BAND_WIDTH_P) >= location.x)
+                        if ((e.x * (b.frame.size.width / BAND_WIDTH_P)) <= location.x && (e.x + e.width) * (b.frame.size.width / BAND_WIDTH_P) >= location.x)
                         {
                             [results addObject:e];
                         }

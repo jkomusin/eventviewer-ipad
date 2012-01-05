@@ -34,4 +34,6 @@
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
+- (BOOL)reorderPanel:(int)panelIndex withNewIndex:(int)index;
+
 @end

@@ -24,8 +24,8 @@
 - (int)delegateRequestsCurrentPanel;
 - (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
 - (CALayer *)getStackLayerForStack:(int)stackNum;
-- (BOOL)reorderBandsAroundBand:(int)bandNum inStack:(int)stackNum withNewIndex:(int)index;
-- (BOOL)reorderStack:(int)stackNum withNewIndex:(int)index;
+- (BOOL)reorderBandsAroundBand:(int)bandIndex inStack:(int)stackIndex withNewIndex:(int)index;
+- (BOOL)reorderStack:(int)stackIndex withNewIndex:(int)index;
 
 @end
 

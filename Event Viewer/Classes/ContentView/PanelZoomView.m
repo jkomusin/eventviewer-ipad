@@ -11,9 +11,6 @@
 #import "ContentScrollView.h"
 
 @implementation PanelZoomView
-{
-    CGRect _originalFrame;  // Frame of the view at zoomScale 1.0
-}
 
 @synthesize panelDrawView = _panelDrawView;
 
@@ -23,6 +20,8 @@ OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewContro
 OBJC_EXPORT float BAND_SPACING;             //
 OBJC_EXPORT float TIMELINE_HEIGHT;            //
 OBJC_EXPORT float SIDE_LABEL_SPACING;
+
+@synthesize originalFrame = _originalFrame;
 
 #pragma mark -
 #pragma mark Initialization

@@ -171,7 +171,7 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
 
 /**
  *  Overridden setter for the static query data model, so that necessary updates may be performed when a new query is submitted.
- *  (Legacy, replaced by delegation)Implements the 'copy' property descriptor for thread-safety.
+ *  (Legacy, replaced by delegation returning a copy)Implements the 'copy' property descriptor for thread-safety.
  *
  *  queryData is the new data model object
  */
@@ -188,6 +188,9 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     ///////
 */
     _queryData = queryData;
+    
+    // Reset color array
+    _colorArray = [[NSArray alloc] init];
     
     [self resizeSubviews];
     
@@ -464,6 +467,37 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     NSMutableDictionary *mutableMetas = [_queryData.selectedMetas mutableCopy];
     [mutableMetas setObject:(NSArray *)mutableStackMetas forKey:@"Stacks"];
     _queryData.selectedMetas = (NSDictionary *)mutableMetas;
+}
+
+/**
+ *  Swap the arrangement of panels in the data model when they are rearranged visually
+ */
+- (void)swapPanel:(int)i withPanel:(int)j
+{
+    // Reorder events
+    NSMutableArray *mutableEvents = [_queryData.eventArray mutableCopy];
+    
+    NSArray *tempPanel = [mutableEvents objectAtIndex:i];
+    [mutableEvents replaceObjectAtIndex:i withObject:[mutableEvents objectAtIndex:j]];
+    [mutableEvents replaceObjectAtIndex:j withObject:tempPanel];
+
+    _queryData.eventArray = (NSArray *)mutableEvents;
+    
+    // Reorder meta array
+    NSMutableArray *mutablePanelMetas = [[_queryData.selectedMetas objectForKey:@"Panels"] mutableCopy];
+    Meta *tempMeta = [mutablePanelMetas objectAtIndex:i];
+    [mutablePanelMetas replaceObjectAtIndex:i withObject:[mutablePanelMetas objectAtIndex:j]];
+    [mutablePanelMetas replaceObjectAtIndex:j withObject:tempMeta];
+    NSMutableDictionary *mutableMetas = [_queryData.selectedMetas mutableCopy];
+    [mutableMetas setObject:(NSArray *)mutablePanelMetas forKey:@"Panels"];
+    _queryData.selectedMetas = (NSDictionary *)mutableMetas;
+    
+    // Reorder panel event color array
+    NSMutableArray *mutaColors = [_colorArray mutableCopy];
+    UIColor *temp = [mutaColors objectAtIndex:i];
+    [mutaColors replaceObjectAtIndex:i withObject:[mutaColors objectAtIndex:j]];
+    [mutaColors replaceObjectAtIndex:j withObject:temp];
+    _colorArray = mutaColors;
 }
 
 /**

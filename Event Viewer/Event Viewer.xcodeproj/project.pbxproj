@@ -93,11 +93,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		080E96DDFE201D6D7F000001 /* Classes */ = {
+		033EC73214B5F26000E2D45A /* AppDelegation */ = {
 			isa = PBXGroup;
 			children = (
 				1D3623240D0F684500981E51 /* AppDelegate.h */,
 				1D3623250D0F684500981E51 /* AppDelegate.m */,
+			);
+			name = AppDelegation;
+			sourceTree = "<group>";
+		};
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				033EC73214B5F26000E2D45A /* AppDelegation */,
 				84DD27AD1450F7C000E15113 /* QueryView */,
 				84DD27AF1450F7CA00E15113 /* ContentView */,
 				84E626611451FC26007DDF98 /* Model */,
