@@ -49,7 +49,7 @@ enum UI_OBJECT
  *
  *  Used in Event Viewer to display the results of a query.
  */
-@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, MGSplitViewControllerDelegate, DataDelegate> 
+@interface ContentViewController : UIViewController <UIPopoverControllerDelegate, UIGestureRecognizerDelegate, MGSplitViewControllerDelegate, DataDelegate> 
 
 // MGUISplitViewController public properties
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
@@ -73,6 +73,13 @@ enum UI_OBJECT
 - (void)scrubberMoved:(id)sender;
 - (void)scrubberStopped:(id)sender;
 - (void)buttonPressed:(id)sender;
+
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)swapButton:(int)i toIndex:(int)j;
+
 - (void)addNewPanel;
 - (void)resizeSubviews;
 

@@ -12,6 +12,7 @@
 @property (nonatomic, strong) UIPopoverController *popoverController;   // Controller of the query popover, implemented as part of the MGSplitViewController
 
 - (void)configureView;
+- (void)initColorArray;
 
 @end
 
@@ -30,6 +31,10 @@
     UISlider *_panelScrubber;               // Scrubber at the bottom of the results window that controls the display of overlaid panels
     UIView *_scrubberBar;                   // Frame for the panelScrubber
     NSArray *_scrubberButtons;              // Immutable array of buttons to select which panels are statically overlaid
+    NSArray *_draggingButtons;              // 2-dimensional array of panel buttons and thier associated information as such:
+                                            //  [i][x] corresponds to the i'th button
+                                            //  [x][0] corresponds to the UIButton being dragged
+                                            //  [x][1] corresponds to the index of the button's associated panel (0-indexed)
     NSArray *_panelOverlays;                // Immutable array of indexes of panels that are currently overlaid
                                             //  NOTE: This includes the current panel if it is overlaid!
     NSArray *_colorArray;
@@ -91,6 +96,9 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     // Button array
     NSArray *tmp = [[NSArray alloc] init];
     _scrubberButtons = tmp;
+    
+    NSArray *tmp2 = [[NSArray alloc] init];
+    _draggingButtons = tmp2;
     
     // Overlay array
     NSArray *overlays = [[NSArray alloc] init];
@@ -190,7 +198,7 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     _queryData = queryData;
     
     // Reset color array
-    _colorArray = [[NSArray alloc] init];
+    [self initColorArray];
     
     [self resizeSubviews];
     
@@ -271,6 +279,12 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
         newb.tag = i;
         [newb setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [newb addTarget:self action:@selector(buttonPressed:) forControlEvents:UIControlEventTouchUpInside];
+        
+        UILongPressGestureRecognizer* pDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+        pDragGesture.delegate = self;
+        [pDragGesture setNumberOfTouchesRequired:1];
+        [newb addGestureRecognizer:pDragGesture];
+        
         [butts addObject:newb];
         [_scrubberBar addSubview:newb];
     }
@@ -350,6 +364,267 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     {
         [p.panelDrawView setNeedsDisplay];
     }
+}
+
+/**
+ *  Initialize the panel color array with the current query
+ */
+- (void)initColorArray
+{
+    NSMutableArray *newColors = [[NSMutableArray alloc] init];
+    
+    for (int i = 0; i < _queryData.panelNum; i++)
+    {
+        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
+        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
+        UIColor *newColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
+        [newColors addObject:newColor];
+    }
+    
+    _colorArray = (NSArray *)newColors;
+}
+
+#pragma mark -
+#pragma mark Panel reordering
+
+/**
+ *  Point of entry for drag-and-dropping of panel overlay buttons.
+ *
+ *  gestureRecognizer is the recognizer associated with the individual button.
+ */
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{    
+    NSLog(@"Handling dragging!");
+    switch ([gestureRecognizer state]) 
+    {
+        case UIGestureRecognizerStateBegan:
+            [self startDragging:gestureRecognizer];
+            break;
+        case UIGestureRecognizerStateChanged:
+            [self doDrag:gestureRecognizer];
+            break;
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+            [self stopDragging:gestureRecognizer];
+            break;
+        default:
+            break;
+    }
+}
+
+/**
+ *  Initializes the button for dragging.
+ *
+ *  gestureRecognizer is the recognizer associated with the individual button.
+ */
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    // Find button's index
+    NSMutableArray *draggingButtArr = [[NSMutableArray alloc] init];
+    UIButton *draggingButton = (UIButton *)[gestureRecognizer view];
+    for (int i = 0; i < [_scrubberButtons count]; i++)
+    {
+        if (draggingButton == [_scrubberButtons objectAtIndex:i])
+        {
+            [draggingButtArr addObject:draggingButton];
+            [draggingButtArr addObject:[NSNumber numberWithInt:i]];
+            
+            break;
+        }
+    }
+    if ([draggingButtArr count] == 0) return;
+    
+    // Size to give indication of dragging
+    CGPoint center = draggingButton.center;
+    CGRect bigFrame = draggingButton.frame;
+    bigFrame.size.width = bigFrame.size.width + 15.0f;
+    bigFrame.size.height = bigFrame.size.height + 10.0f;
+    draggingButton.frame = bigFrame;
+    draggingButton.center = center;
+    
+    // Insert into dragging array based on x-coord
+    NSMutableArray *mutaDraggingButts = [_draggingButtons mutableCopy];
+    int l;
+    for (l = 0; l < [mutaDraggingButts count]; l++)
+    {
+        UIButton *currentL = [[mutaDraggingButts objectAtIndex:l] objectAtIndex:0];
+        
+        if (currentL.frame.origin.x > draggingButton.frame.origin.x) 
+        {
+            break;
+        }
+    }
+    [mutaDraggingButts insertObject:(NSArray *)draggingButtArr atIndex:l];
+    _draggingButtons = (NSArray *)mutaDraggingButts;
+}
+
+/**
+ *  Called whenever the gesture (press) is dragged.
+ *  Should check for changes in position and reorder if necessary.
+ *
+ *  gestureRecognizer is the recognizer associated with the individual button.
+ */
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    // Find button being dragged and its info, assuming that it has been added to the _draggingButtons array in startDrag()
+    UIButton *draggingButton = (UIButton *)[gestureRecognizer view];
+    NSArray *draggingArr;
+    int draggingButtonIndex = -1;
+    for (int i = 0; i < [_draggingButtons count]; i++)
+    {
+        NSArray *a = [_draggingButtons objectAtIndex:i];
+        if ([a objectAtIndex:0] == draggingButton)
+        {
+            draggingArr = a;
+            draggingButtonIndex = i;
+            break;
+        }
+    }
+    if (draggingButtonIndex == -1) return;
+    
+    int panelIndex = [[draggingArr objectAtIndex:1] intValue];
+    
+    // Move button
+    CGPoint point = [gestureRecognizer locationInView:[_panelScrubber superview]];
+    point.y = draggingButton.center.y;
+    float xDiff = point.x - draggingButton.center.x;
+    [draggingButton setCenter:point];
+    
+    // Check if two dragging buttons have crossed over eachother
+    int swappingButtonIndex = -1;   // index in _dragingButtons of the button being swapped with the currently dragging button
+    BOOL reorderLeft = NO;          // YES if moving curent button to the left, NO otherwise
+    NSArray *swappingDragArr;       // Dragging array info about button being swapped
+    UIButton *swappingButton;       // UIButton being swapped
+    int swappingPanelIndex;         // Index of the panel associated with the swapping button
+    if ((xDiff < 0) && (draggingButtonIndex > 0))
+    {
+        swappingButtonIndex = draggingButtonIndex-1;
+        swappingDragArr = [_draggingButtons objectAtIndex:swappingButtonIndex];
+        swappingButton = [swappingDragArr objectAtIndex:0];
+        swappingPanelIndex = [[swappingDragArr objectAtIndex:1] intValue];
+        reorderLeft = YES;
+    }
+    else if ((xDiff > 0) && (draggingButtonIndex < [_draggingButtons count]-1))
+    {
+        swappingButtonIndex = draggingButtonIndex+1;
+        swappingDragArr = [_draggingButtons objectAtIndex:swappingButtonIndex];
+        swappingButton = [swappingDragArr objectAtIndex:0];
+        swappingPanelIndex = [[swappingDragArr objectAtIndex:1] intValue];
+        reorderLeft = NO;
+    }
+    
+    // Check for reordering of two dragging buttons
+    if (swappingButton &&
+        ((reorderLeft && swappingButton.center.x > draggingButton.center.x)
+        ||
+        (!reorderLeft && swappingButton.center.x < draggingButton.center.x)))
+    {
+        [_contentScrollView reorderPanel:panelIndex withNewIndex:swappingPanelIndex];
+        [self swapPanel:panelIndex withPanel:swappingPanelIndex];
+        
+        // Set new indices
+        NSMutableArray *mutaDraggingButts = [_draggingButtons mutableCopy];
+        NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
+        NSMutableArray *mutaSwappingDragArr = [swappingDragArr mutableCopy];
+        [mutaDraggingArr replaceObjectAtIndex:1 withObject:[NSNumber numberWithInt:swappingPanelIndex]];
+        [mutaSwappingDragArr replaceObjectAtIndex:1 withObject:[NSNumber numberWithInt:panelIndex]];
+        
+        // Replace in dragging array
+        [mutaDraggingButts replaceObjectAtIndex:draggingButtonIndex withObject:(NSArray *)mutaSwappingDragArr];
+        [mutaDraggingButts replaceObjectAtIndex:swappingButtonIndex withObject:(NSArray *)mutaDraggingArr];
+        _draggingButtons = (NSArray *)mutaDraggingButts;
+    }
+    
+    // Check for reordering of single dragging button
+    else
+    {
+        int newIndex = (draggingButton.frame.origin.x - 40.0f) / (_panelScrubber.frame.size.width/(_queryData.panelNum-1.0f));
+        
+        // Make sure new index if not currently being dragged
+        BOOL beingDragged = NO;
+        for (NSArray *a in _draggingButtons)
+        {
+            if ([[a objectAtIndex:1] intValue] == newIndex)
+            {
+                beingDragged = YES;
+                break;
+            }
+        }
+        
+        // Reorder
+        if ((newIndex != panelIndex) && (newIndex >= 0) && !beingDragged)
+        {
+            if ([_contentScrollView reorderPanel:panelIndex withNewIndex:newIndex])
+            {
+                [self swapButton:panelIndex toIndex:newIndex];
+                [self swapPanel:panelIndex withPanel:newIndex];
+                
+                // Set new index in dragging array
+                NSMutableArray *mutaDraggingButtons = [_draggingButtons mutableCopy];
+                NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
+                [mutaDraggingArr replaceObjectAtIndex:1 withObject:[NSNumber numberWithInt:newIndex]];
+                [mutaDraggingButtons replaceObjectAtIndex:draggingButtonIndex withObject:(NSArray *)mutaDraggingArr];
+                _draggingButtons = (NSArray *)mutaDraggingButtons;
+            }
+        }
+    }
+}
+
+/**
+ *  Called upon terminations of the dragging gesture.
+ *  Should relocated dragged button to its resting place.
+ *
+ *  gestureRecognizer is the recognizer associated with the individual button.
+ */
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+    UIButton *draggingButton = (UIButton *)[gestureRecognizer view];
+    NSArray *draggingArr;
+    for (NSArray *a in _draggingButtons)
+    {
+        if ([a objectAtIndex:0] == draggingButton)
+        {
+            draggingArr = a;
+            break;
+        }
+    }
+    if (!draggingArr) return;
+    
+    int panelIndex = [[draggingArr objectAtIndex:1] intValue];
+    
+    // Set frame of now resting button
+    CGRect frame = CGRectMake(40.0f+(_panelScrubber.frame.size.width/(_queryData.panelNum-1.0f))*panelIndex, 
+                              50.0f, 
+                              100.0f, 
+                              20.0f);
+    draggingButton.frame = frame;
+    
+    // Remove from dragging array
+    NSMutableArray *mutaDraggingButtons = [_draggingButtons mutableCopy];
+    [mutaDraggingButtons removeObjectIdenticalTo:draggingArr];
+    _draggingButtons = (NSArray *)mutaDraggingButtons;
+}
+
+/**
+ *  Swap a button to a new index
+ */
+- (void)swapButton:(int)i toIndex:(int)j
+{
+    UIButton *draggingButton = [_scrubberButtons objectAtIndex:i];
+    UIButton *otherButton = [_scrubberButtons objectAtIndex:j];
+    
+    float buttonX = 40.0f+(_panelScrubber.frame.size.width/(_queryData.panelNum-1.0f))*i;
+    CGRect buttonF = otherButton.frame;
+    buttonF.origin.x = buttonX;
+    otherButton.frame = buttonF;
+    
+    // Reorder buttons in array
+    NSMutableArray *mutaButtonArr = [_scrubberButtons mutableCopy];
+    [mutaButtonArr replaceObjectAtIndex:i withObject:otherButton];
+    [mutaButtonArr replaceObjectAtIndex:j withObject:draggingButton];
+    _scrubberButtons = (NSArray *)mutaButtonArr;
 }
 
 
@@ -506,20 +781,7 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
  */
 - (UIColor *)getColorForPanel:(int)panelIndex
 {
-    UIColor *eColor;
-    
-    while ([_colorArray count] < panelIndex+1)
-    {
-        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
-        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
-        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
-        eColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
-        NSMutableArray *mutableColors = [_colorArray mutableCopy];
-        [mutableColors addObject:eColor];
-        _colorArray = mutableColors;
-    }
-    
-    eColor = [_colorArray objectAtIndex:panelIndex];
+    UIColor *eColor = [_colorArray objectAtIndex:panelIndex];
     
     return eColor;
 }
