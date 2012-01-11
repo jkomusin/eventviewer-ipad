@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0331700814BCC64700C9B287 /* DraggableLabel.m */; };
 		0344847B14B1139100537F77 /* Meta.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Meta.m */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
@@ -34,6 +35,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0331700714BCC64700C9B287 /* DraggableLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = DraggableLabel.h; path = "UI Subclasses/DraggableLabel.h"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		0331700814BCC64700C9B287 /* DraggableLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableLabel.m; path = "UI Subclasses/DraggableLabel.m"; sourceTree = "<group>"; };
 		0344847914B1139100537F77 /* Meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Meta.h; path = Model/Meta.h; sourceTree = "<group>"; };
 		0344847A14B1139100537F77 /* Meta.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Meta.m; path = Model/Meta.m; sourceTree = "<group>"; };
 		03D2750614A3E6F900C91945 /* EventInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventInfo.h; path = ContentView/EventInfo.h; sourceTree = "<group>"; };
@@ -93,6 +96,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0331700514BCB93900C9B287 /* UI Subclasses */ = {
+			isa = PBXGroup;
+			children = (
+				0331700714BCC64700C9B287 /* DraggableLabel.h */,
+				0331700814BCC64700C9B287 /* DraggableLabel.m */,
+			);
+			name = "UI Subclasses";
+			sourceTree = "<group>";
+		};
 		033EC73214B5F26000E2D45A /* AppDelegation */ = {
 			isa = PBXGroup;
 			children = (
@@ -108,6 +120,7 @@
 				033EC73214B5F26000E2D45A /* AppDelegation */,
 				84DD27AD1450F7C000E15113 /* QueryView */,
 				84DD27AF1450F7CA00E15113 /* ContentView */,
+				0331700514BCB93900C9B287 /* UI Subclasses */,
 				84E626611451FC26007DDF98 /* Model */,
 				C9CDF79E11FDA7140016C1C5 /* MGSplitViewController */,
 			);
@@ -313,6 +326,7 @@
 				CA1910C914984471004C8C4B /* BandLayer.m in Sources */,
 				03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */,
 				0344847B14B1139100537F77 /* Meta.m in Sources */,
+				0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

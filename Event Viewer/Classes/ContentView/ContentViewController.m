@@ -395,7 +395,6 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
  */
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
-    NSLog(@"Handling dragging!");
     switch ([gestureRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:

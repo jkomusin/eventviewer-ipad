@@ -8,6 +8,7 @@
 
 #import "ContentViewController.h"
 #import "ContentScrollView.h"
+#import "DraggableLabel.h"
 #import "PanelZoomView.h"
 #import "PanelDrawView.h"
 #import "BandLayer.h"
@@ -28,8 +29,8 @@
     
     NSArray *_draggingLabels;       // 2-dimensional array of labels and their associated information as such:
                                     //  Index of outer array corresponds to each dragging label
-                                    //  [x][0] corresponds to the UILabel being dragged
-                                    //  [x][1] corresponds to the layer being dragged (may be a Stack of Band, should check by using properties of BandLayers
+                                    //  [x][0] corresponds to the DraggableLabel being dragged
+                                    //  [x][1] corresponds to the layer being dragged (may be a Panel, Stack, or Band, should check)
                                     //  [x][2] corresponds to the index of the band being dragged (obviously optional if a stack is being dragged)
                                     //  [x][3] corresponds to the index of the stack being dragged or dragged inside
     enum UI_OBJECT _draggingType;   // Type of label currently being dragged
@@ -363,7 +364,7 @@ float TOP_LABEL_SPACING = 50.0f;
     for (int i = 0; i < data.panelNum; i++)
     {
         CGRect labelF = CGRectMake(SIDE_LABEL_SPACING + BAND_WIDTH * i, 0.0f, BAND_WIDTH, 50.0f);
-        UILabel *panelL = [[UILabel alloc] initWithFrame:labelF];
+        DraggableLabel *panelL = [[DraggableLabel alloc] initWithFrame:labelF];
         [panelL setTextAlignment:UITextAlignmentCenter];
         [panelL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize]];
         [panelL setBackgroundColor:[UIColor clearColor]];
@@ -374,6 +375,7 @@ float TOP_LABEL_SPACING = 50.0f;
         UILongPressGestureRecognizer* pDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
         pDragGesture.delegate = self;
         [pDragGesture setNumberOfTouchesRequired:1];
+        [pDragGesture setMinimumPressDuration:0.1f];
         [panelL addGestureRecognizer:pDragGesture];
         [panelL setUserInteractionEnabled:YES];
         
@@ -393,17 +395,19 @@ float TOP_LABEL_SPACING = 50.0f;
         if (isPortrait) stackY = stackHeight * i;// + 1024.0f;
         else            stackY = TOP_LABEL_SPACING + stackHeight * i;// + 1024.0f;
 		CGRect labelF = CGRectMake(16.0f, stackY, 128.0f, TIMELINE_HEIGHT);
-		UILabel *stackL = [[UILabel alloc] initWithFrame:labelF];
+		DraggableLabel *stackL = [[DraggableLabel alloc] initWithFrame:labelF];
 		[stackL setTextAlignment:UITextAlignmentLeft];
 		[stackL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_stackFontSize]];
         [stackL setBackgroundColor:[UIColor clearColor]];
         [stackL setTextColor:[UIColor whiteColor]];
 		NSString *stackM = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i] name];
-		[stackL setText:stackM];
+        NSString *newStackM = [NSString stringWithFormat:@"\t\t\t%@", stackM];
+		[stackL setText:newStackM];
         
         UILongPressGestureRecognizer* sDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
         sDragGesture.delegate = self;
         [sDragGesture setNumberOfTouchesRequired:1];
+        [sDragGesture setMinimumPressDuration:0.1f];
         [stackL addGestureRecognizer:sDragGesture];
         [stackL setUserInteractionEnabled:YES];
         
@@ -415,7 +419,7 @@ float TOP_LABEL_SPACING = 50.0f;
         {
 			float bandY = j * (BAND_HEIGHT + BAND_SPACING) + TIMELINE_HEIGHT + stackY;
             labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT);
-			UILabel *bandL = [[UILabel alloc] initWithFrame:labelF];
+			DraggableLabel *bandL = [[DraggableLabel alloc] initWithFrame:labelF];
 			[bandL setTextAlignment:UITextAlignmentRight];
             [bandL setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize]];
             [bandL setBackgroundColor:[UIColor clearColor]];
@@ -426,6 +430,7 @@ float TOP_LABEL_SPACING = 50.0f;
             UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
             bDragGesture.delegate = self;
             [bDragGesture setNumberOfTouchesRequired:1];
+            [bDragGesture setMinimumPressDuration:0.1f];
             [bandL addGestureRecognizer:bDragGesture];
             [bandL setUserInteractionEnabled:YES];
             
@@ -441,8 +446,8 @@ float TOP_LABEL_SPACING = 50.0f;
 
 - (void)swapPanelLabels:(int)draggingIndex and:(int)otherIndex
 {
-    UILabel *draggingLabel = [_panelLabelArray objectAtIndex:draggingIndex];
-    UILabel *otherLabel = [_panelLabelArray objectAtIndex:otherIndex];
+    DraggableLabel *draggingLabel = [_panelLabelArray objectAtIndex:draggingIndex];
+    DraggableLabel *otherLabel = [_panelLabelArray objectAtIndex:otherIndex];
     
     float panelX = draggingIndex * ZOOMED_BAND_WIDTH + SIDE_LABEL_SPACING;
     CGRect labelF = otherLabel.frame;
@@ -468,8 +473,8 @@ float TOP_LABEL_SPACING = 50.0f;
     QueryData *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_BAND_HEIGHT + ZOOMED_TIMELINE_HEIGHT;
     
-    UILabel *draggingLabel = [_stackLabelArray objectAtIndex:draggingIndex];
-    UILabel *otherLabel = [_stackLabelArray objectAtIndex:otherIndex];
+    DraggableLabel *draggingLabel = [_stackLabelArray objectAtIndex:draggingIndex];
+    DraggableLabel *otherLabel = [_stackLabelArray objectAtIndex:otherIndex];
     
     float stackY;
     if (isPortrait) stackY = draggingIndex * stackHeight;
@@ -506,7 +511,7 @@ float TOP_LABEL_SPACING = 50.0f;
         NSMutableArray *arrMutable = [bandLabelsMutable objectAtIndex:i];
         
         // Move all labels corresponding to the label currently being dragged
-        UILabel *draggingLabel = [arrMutable objectAtIndex:draggingIndex];
+        DraggableLabel *draggingLabel = [arrMutable objectAtIndex:draggingIndex];
         if (i != skipStackIndex)
         {
             float draggingY = otherIndex * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_TIMELINE_HEIGHT + stackY;
@@ -516,7 +521,7 @@ float TOP_LABEL_SPACING = 50.0f;
         }
         
         // Move labels corresponding to the label not being dragged that is being swapped
-        UILabel *otherLabel = [arrMutable objectAtIndex:otherIndex];
+        DraggableLabel *otherLabel = [arrMutable objectAtIndex:otherIndex];
         if (!bothDragging || i != skipStackIndex)
         {
             float otherY = draggingIndex * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_TIMELINE_HEIGHT + stackY;
@@ -547,7 +552,6 @@ float TOP_LABEL_SPACING = 50.0f;
  */
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
-    NSLog(@"Handling dragging!");
     switch ([gestureRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:
@@ -575,7 +579,7 @@ float TOP_LABEL_SPACING = 50.0f;
 {        
     // Find label and related layer
     NSMutableArray *draggingLabelArr = [[NSMutableArray alloc] init];
-    UILabel *draggingLabel = (UILabel *)[gestureRecognizer view];
+    DraggableLabel *draggingLabel = (DraggableLabel *)[gestureRecognizer view];
     enum UI_OBJECT draggingLabelType = -1;
     // Check panel labels
     for (int i = 0; i < [_panelLabelArray count]; i++)
@@ -659,15 +663,15 @@ float TOP_LABEL_SPACING = 50.0f;
     
     if (draggingLabelType == BAND)
     {
-        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize + 4.0f]];
+        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize + 8.0f]];
     }
     else if (draggingLabelType == STACK)
     {
-        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_stackFontSize + 4.0f]];
+        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_stackFontSize + 8.0f]];
     }
     else if (draggingLabelType == PANEL)
     {
-        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize + 4.0f]];
+        [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize + 8.0f]];
     }
     
     // Insert into dragging array ordered based on:
@@ -677,7 +681,7 @@ float TOP_LABEL_SPACING = 50.0f;
     int l;
     for (l = 0; l < [mutaDraggingLabels count]; l++)
     {
-        UILabel *currentL = [[mutaDraggingLabels objectAtIndex:l] objectAtIndex:0];
+        DraggableLabel *currentL = [[mutaDraggingLabels objectAtIndex:l] objectAtIndex:0];
         
         if (((draggingLabelType == BAND || draggingLabelType == STACK) && draggingLabel && (currentL.frame.origin.y > draggingLabel.frame.origin.y))
             ||
@@ -692,7 +696,7 @@ float TOP_LABEL_SPACING = 50.0f;
 }
 
 /**
- *  Handle the moving of the UILabel corresponding to a band, stack, or panel.
+ *  Handle the moving of the DraggingLabel corresponding to a band, stack, or panel.
  *  Check if re-ordering is necessary and if so, re-order.
  *
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
@@ -704,7 +708,7 @@ float TOP_LABEL_SPACING = 50.0f;
 //    [CATransaction setDisableActions: YES];
     
     // We assume that the label being dragged has been added to the _draggingLabels array in startDrag()
-    UILabel *draggingLabel = (UILabel *)[gestureRecognizer view];
+    DraggableLabel *draggingLabel = (DraggableLabel *)[gestureRecognizer view];
     NSArray *draggingArr;
     int draggingLabelIndex = -1;
     for (int i = 0; i < [_draggingLabels count]; i++)
@@ -762,7 +766,7 @@ float TOP_LABEL_SPACING = 50.0f;
     int swappingPanelIndex = -1;    // overall index of panel being swapped
     BOOL reorderUp = NO;            // YES if moving current band/stack above other or panel to the left, NO otherwise
     NSArray *swappingDragArr;       // information array for band/stack/panel being swapped
-    UILabel *swappingLab;           // label of band/stack/panel being swapped
+    DraggableLabel *swappingLab;           // label of band/stack/panel being swapped
     if ((yDiff < 0 || xDiff < 0) && draggingLabelIndex > 0)
     {
         swappingLabelIndex = draggingLabelIndex-1;
@@ -866,9 +870,10 @@ float TOP_LABEL_SPACING = 50.0f;
         else if (draggingLabelType == BAND)
         {
             float normalY;
-            if (isPortrait) normalY = point.y - (stackHeight * stackIndex);
-            else            normalY = point.y - (stackHeight * stackIndex + TOP_LABEL_SPACING);
+            if (isPortrait) normalY = point.y - (stackHeight * stackIndex) - ZOOMED_TIMELINE_HEIGHT;
+            else            normalY = point.y - (stackHeight * stackIndex) - ZOOMED_TIMELINE_HEIGHT - TOP_LABEL_SPACING;
             newIndex = normalY / (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING);            
+            NSLog(@"Newindex: %d, normalY: %f", newIndex, normalY);
         }
         
         // Make sure new index is not currently being dragged
@@ -952,13 +957,13 @@ float TOP_LABEL_SPACING = 50.0f;
 }
 
 /**
- *  Handle the resulting location of the dragged UILabel.
+ *  Handle the resulting location of the dragged DraggingLabel.
  *
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
-    UILabel *draggingLabel = (UILabel *)[gestureRecognizer view];
+    DraggableLabel *draggingLabel = (DraggableLabel *)[gestureRecognizer view];
     NSArray *draggingArr;
     for (NSArray *a in _draggingLabels)
     {
@@ -1149,7 +1154,7 @@ float TOP_LABEL_SPACING = 50.0f;
     // Resize panel labels
     for (int i = 0; i < data.panelNum; i++)
     {
-        UILabel *panelLabel = [_panelLabelArray objectAtIndex:i];
+        DraggableLabel *panelLabel = [_panelLabelArray objectAtIndex:i];
         CGRect labelF = CGRectMake(SIDE_LABEL_SPACING + (ZOOMED_BAND_WIDTH * i), 
                                    0.0f, 
                                    ZOOMED_BAND_WIDTH, 
@@ -1165,7 +1170,7 @@ float TOP_LABEL_SPACING = 50.0f;
         if (isPortrait) stackY = stackHeight * i;// + 1024.0f;
         else            stackY = TOP_LABEL_SPACING + stackHeight * i;// + 1024.0f;
 		CGRect labelF = CGRectMake(16.0f, stackY, 128.0f, ZOOMED_TIMELINE_HEIGHT);
-		UILabel *stackL = [_stackLabelArray objectAtIndex:i];
+		DraggableLabel *stackL = [_stackLabelArray objectAtIndex:i];
         stackL.frame = labelF;
         stackL.font = [UIFont fontWithName:@"Helvetica-Bold" size:_stackFontSize];
 		
@@ -1174,7 +1179,7 @@ float TOP_LABEL_SPACING = 50.0f;
         {
 			float bandY = j * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_TIMELINE_HEIGHT + stackY;
             labelF = CGRectMake(32.0f, bandY, 128.0f, ZOOMED_BAND_HEIGHT);
-			UILabel *bandL = [currentBandLabels objectAtIndex:j];
+			DraggableLabel *bandL = [currentBandLabels objectAtIndex:j];
             bandL.frame = labelF;
             bandL.font = [UIFont fontWithName:@"Helvetica" size:_bandFontSize];
         }

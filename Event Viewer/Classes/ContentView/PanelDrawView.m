@@ -69,6 +69,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         
         // Handler for event details
         UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+        [longPressRecognizer setMinimumPressDuration:0.2f];
         [self addGestureRecognizer:longPressRecognizer]; 
     }
     
