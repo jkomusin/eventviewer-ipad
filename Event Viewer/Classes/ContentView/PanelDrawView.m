@@ -243,12 +243,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  stackNum is the 0-based index of the currently dragged stack
  *  index is the new 0-based index of the stack being dragged
  */
-- (BOOL)reorderStack:(int)stackIndex withNewIndex:(int)index
-{
-    // Check to make sure we need to reorder (we may be outside the bounds of the stack)
-    if (index >= [_stackLayerArray count]) return NO;
-    if (stackIndex >= [_stackLayerArray count]) return NO;
-    
+- (void)reorderStack:(int)stackIndex withNewIndex:(int)index
+{    
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
     float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
@@ -306,8 +302,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     {
         b.stackNumber = index;
     }
-    
-    return YES;
 }
 
 /**
@@ -319,12 +313,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *
  *  Returns YES if the reordering occured, else NO
  */
-- (BOOL)reorderBandsAroundBand:(int)bandIndex inStack:(int)stackIndex withNewIndex:(int)index
-{
-    // Check to make sure we need to reorder (we may be outside the bounds of the stack)
-    if (index >= [[_bandLayerArray objectAtIndex:stackIndex] count]) return NO;
-    if (bandIndex >= [[_bandLayerArray objectAtIndex:stackIndex] count]) return NO;
-    
+- (void)reorderBandsAroundBand:(int)bandIndex inStack:(int)stackIndex withNewIndex:(int)index
+{    
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
     
@@ -377,8 +367,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     }
     
     _bandLayerArray = (NSArray *)bandLayerMutable;
-        
-    return YES;
 }
 
 

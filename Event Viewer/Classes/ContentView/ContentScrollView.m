@@ -454,8 +454,7 @@ float TOP_LABEL_SPACING = 50.0f;
     DraggableLabel *draggingLabel = [_panelLabelArray objectAtIndex:draggingIndex];
     DraggableLabel *otherLabel = [_panelLabelArray objectAtIndex:otherIndex];
     
-    float panelX = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + draggingIndex * ZOOMED_BAND_WIDTH;
-    if (isLeftHanded)   panelX = SIDE_LABEL_SPACING + draggingIndex * ZOOMED_BAND_WIDTH;
+    float panelX = draggingIndex * ZOOMED_BAND_WIDTH;
     CGRect labelF = otherLabel.frame;
     labelF.origin.x = panelX;
     otherLabel.frame = labelF;
@@ -759,8 +758,16 @@ float TOP_LABEL_SPACING = 50.0f;
     
     // Move label
     CGPoint point = [gestureRecognizer locationInView:self];
-    if (draggingLabelType == PANEL) point.y = draggingLabel.center.y;
-    else                            point.x = draggingLabel.center.x;
+    if (draggingLabelType == PANEL)
+    {
+        point.y = draggingLabel.center.y;
+        if (isLeftHanded)   point.x = point.x - SIDE_LABEL_SPACING;
+        else                point.x = point.x - (1.0f/4.0f * (768.0f - BAND_WIDTH_P));
+    }
+    else
+    {
+        point.x = draggingLabel.center.x;
+    }
     float yDiff = point.y - draggingLabel.center.y;
     float xDiff = point.x - draggingLabel.center.x;
     [draggingLabel setCenter:point];
@@ -861,14 +868,7 @@ float TOP_LABEL_SPACING = 50.0f;
         int newIndex;
         if (draggingLabelType == PANEL)
         {
-            float normalX;
-            if (isPortrait) normalX = point.x;
-            else            
-            {
-                if (isLeftHanded)   normalX = point.x - SIDE_LABEL_SPACING;
-                else                normalX = point.x - (1.0f/4.0f * (768.0f - BAND_WIDTH_P));
-            }
-            newIndex = normalX / ZOOMED_BAND_WIDTH;
+            newIndex = point.x / ZOOMED_BAND_WIDTH;
         }
         else if (draggingLabelType == STACK)
         {
@@ -902,64 +902,63 @@ float TOP_LABEL_SPACING = 50.0f;
         // Reorder
         if (draggingLabelType == PANEL && (newIndex != panelIndex) && (newIndex >= 0) && !beingDragged)
         {
-            if ([self reorderPanel:panelIndex withNewIndex:newIndex])
-            {
-                [self swapPanelLabels:panelIndex and:newIndex];
-                // Inform data delegate
-                [_dataDelegate swapPanel:panelIndex withPanel:newIndex];
-                
-                // Set new index in dragging array
-                NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
-                NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
-                [mutaDraggingArr replaceObjectAtIndex:4 withObject:[NSNumber numberWithInt:newIndex]];
-                
-                [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
-                _draggingLabels = (NSArray *)mutaDraggingLabels;
-            }
+            // Check for legal indices
+            if (panelIndex >= data.panelNum || newIndex >= data.panelNum) return;
+            
+            [self reorderPanel:panelIndex withNewIndex:newIndex];
+            [self swapPanelLabels:panelIndex and:newIndex];
+            // Inform data delegate
+            [_dataDelegate swapPanel:panelIndex withPanel:newIndex];
+            
+            // Set new index in dragging array
+            NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
+            NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
+            [mutaDraggingArr replaceObjectAtIndex:4 withObject:[NSNumber numberWithInt:newIndex]];
+            
+            [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
+            _draggingLabels = (NSArray *)mutaDraggingLabels;
         }
         else if (draggingLabelType == STACK && (newIndex != stackIndex) && (newIndex >= 0) && !beingDragged)
         {
-            if ([_drawDelegate reorderStack:stackIndex withNewIndex:newIndex])
+            // Check for legal indices
+            if (stackIndex >= data.stackNum || newIndex >= data.stackNum) return;
+
+            for (PanelZoomView *p in _panelZoomViews)
             {
-                for (int i = 1; i < [_panelZoomViews count]; i++)
-                {
-                    PanelZoomView *p = [_panelZoomViews objectAtIndex:i];
-                    [p.panelDrawView reorderStack:stackIndex withNewIndex:newIndex];
-                }
-                [self swapStackLabels:stackIndex and:newIndex];
-                // Inform data delegate that reordering is needed
-                [_dataDelegate swapStack:stackIndex withStack:newIndex];
-                
-                // Set new index in dragging array
-                NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
-                NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
-                [mutaDraggingArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:newIndex]];
-                
-                [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
-                _draggingLabels = (NSArray *)mutaDraggingLabels;
+                [p.panelDrawView reorderStack:stackIndex withNewIndex:newIndex];
             }
+            [self swapStackLabels:stackIndex and:newIndex];
+            // Inform data delegate that reordering is needed
+            [_dataDelegate swapStack:stackIndex withStack:newIndex];
+            
+            // Set new index in dragging array
+            NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
+            NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
+            [mutaDraggingArr replaceObjectAtIndex:3 withObject:[NSNumber numberWithInt:newIndex]];
+            
+            [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
+            _draggingLabels = (NSArray *)mutaDraggingLabels;
         }
         else if (draggingLabelType == BAND && (newIndex != bandIndex) && (newIndex >= 0) && !beingDragged)
         {                
-            if ([_drawDelegate reorderBandsAroundBand:bandIndex inStack:stackIndex withNewIndex:newIndex])
+            // Check for legal indices
+            if (bandIndex >= data.bandNum || newIndex >= data.bandNum) return;
+            
+            for (PanelZoomView *p in _panelZoomViews)
             {
-                for (int i = 1; i < [_panelZoomViews count]; i++)
-                {
-                    PanelZoomView *p = [_panelZoomViews objectAtIndex:i];
-                    [p.panelDrawView reorderBandsAroundBand:bandIndex inStack:stackIndex withNewIndex:newIndex];
-                }
-                [self swapAllBandLabels:bandIndex and:newIndex skippingStack:stackIndex areBothDragging:NO];
-                // Inform data delegate that reordering is needed
-                [_dataDelegate swapBand:bandIndex withBand:newIndex];
-                
-                // Set new index by replacing the dragging array
-                NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
-                NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
-                [mutaDraggingArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:newIndex]];
-                
-                [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
-                _draggingLabels = (NSArray *)mutaDraggingLabels;
+                [p.panelDrawView reorderBandsAroundBand:bandIndex inStack:stackIndex withNewIndex:newIndex];
             }
+            [self swapAllBandLabels:bandIndex and:newIndex skippingStack:stackIndex areBothDragging:NO];
+            // Inform data delegate that reordering is needed
+            [_dataDelegate swapBand:bandIndex withBand:newIndex];
+            
+            // Set new index by replacing the dragging array
+            NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
+            NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
+            [mutaDraggingArr replaceObjectAtIndex:2 withObject:[NSNumber numberWithInt:newIndex]];
+            
+            [mutaDraggingLabels replaceObjectAtIndex:draggingLabelIndex withObject:(NSArray *)mutaDraggingArr];
+            _draggingLabels = (NSArray *)mutaDraggingLabels;
         }
     }
     
@@ -1011,9 +1010,8 @@ float TOP_LABEL_SPACING = 50.0f;
     if (draggingLabelType == PANEL)
     {
         [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize]];
-         // Movel label to rest
-        if (isLeftHanded)   labelF.origin.x = SIDE_LABEL_SPACING + panelIndex * ZOOMED_BAND_WIDTH;
-        else                labelF.origin.x = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + panelIndex * ZOOMED_BAND_WIDTH;
+        // Movel label to rest
+        labelF.origin.x = panelIndex * ZOOMED_BAND_WIDTH;
     }
     else if (draggingLabelType == STACK)
     {
@@ -1068,30 +1066,26 @@ float TOP_LABEL_SPACING = 50.0f;
 #pragma mark -
 #pragma mark Panel management
 
-- (BOOL)reorderPanel:(int)panelIndex withNewIndex:(int)index
-{
-    if (panelIndex >= [_panelZoomViews count]) return NO;
-    if (index >= [_panelZoomViews count]) return NO;
-    
+- (void)reorderPanel:(int)panelIndex withNewIndex:(int)index
+{    
     PanelZoomView *p1 = [_panelZoomViews objectAtIndex:panelIndex];
     PanelZoomView *p2 = [_panelZoomViews objectAtIndex:index];
     CGRect p1Frame = p1.frame;
     CGRect p2Frame = p2.frame;
     
     [PanelZoomView beginAnimations:nil context:nil];
-//    [PanelZoomView setAnimationDuration:0.2f];
-//    [PanelZoomView setAnimationDelay:0.0f];
-//    [PanelZoomView setAnimationCurve:UIViewAnimationCurveLinear];
     p1.frame = p2Frame;
     p2.frame = p1Frame;
     // Check to show/hide primary panel view
     if (isPortrait && panelIndex == 0)
     {
+        NSLog(@"Hit 1");
         [self addSubview:p2];
         [p1 removeFromSuperview];
     }
     if (isPortrait && index == 0)
     {
+        NSLog(@"Hit 2");
         [self addSubview:p1];
         [p2 removeFromSuperview];
     }
@@ -1110,8 +1104,6 @@ float TOP_LABEL_SPACING = 50.0f;
     // Inform their drawing views of their new index
     p1.panelDrawView.currentPanel = index;
     p2.panelDrawView.currentPanel = panelIndex;    
-    
-    return YES;
 }
 
 
@@ -1156,8 +1148,7 @@ float TOP_LABEL_SPACING = 50.0f;
     newLabelF.size.height = _queryContentView.frame.size.height;// + 1024.0f;
     _sideLabelView.frame = newLabelF;
     newLabelF = _topLabelView.frame;
-/*    if (isLeftHanded) */  newLabelF.size.width = /*SIDE_LABEL_SPACING +*/ ZOOMED_BAND_WIDTH * data.panelNum;
-//    else                newLabelF.size.width = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + ZOOMED_BAND_WIDTH * data.panelNum;
+    newLabelF.size.width = ZOOMED_BAND_WIDTH * data.panelNum;
     _topLabelView.frame = newLabelF;
     
     _stackFontSize = (ZOOMED_TIMELINE_HEIGHT + 1.0f < 20.0f ? ZOOMED_TIMELINE_HEIGHT + 1.0f : 20.0f);
@@ -1167,11 +1158,10 @@ float TOP_LABEL_SPACING = 50.0f;
     for (int i = 0; i < data.panelNum; i++)
     {
         DraggableLabel *panelLabel = [_panelLabelArray objectAtIndex:i];
-        CGRect labelF = CGRectMake(/*(1.0f/4.0f * (768.0f - BAND_WIDTH_P)) +*/ (ZOOMED_BAND_WIDTH * i), 
+        CGRect labelF = CGRectMake((ZOOMED_BAND_WIDTH * i), 
                                    0.0f, 
                                    ZOOMED_BAND_WIDTH, 
                                    50.0f);
-//        if (isLeftHanded)   labelF.origin.x = SIDE_LABEL_SPACING + (ZOOMED_BAND_WIDTH * i);
         panelLabel.frame = labelF;
     }
     

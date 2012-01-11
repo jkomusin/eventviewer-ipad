@@ -50,7 +50,7 @@
 
 // Global layout parameters
 BOOL isPortrait = YES;  // Modified on change of device orientation
-BOOL isLeftHanded = YES; // Specifies where the labels should be draw on the device (right or left side)
+BOOL isLeftHanded = NO; // Specifies where the labels should be draw on the device (right or left side)
 // Global UI dimensions
 float BAND_HEIGHT = BAND_HEIGHT_P;
 float BAND_WIDTH = BAND_WIDTH_P;
@@ -552,20 +552,18 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
         }
         
         // Reorder
-        if ((newIndex != panelIndex) && (newIndex >= 0) && !beingDragged)
+        if ((newIndex != panelIndex) && (newIndex >= 0) && (newIndex < _queryData.panelNum) && !beingDragged && (panelIndex < _queryData.panelNum))
         {
-            if ([_contentScrollView reorderPanel:panelIndex withNewIndex:newIndex])
-            {
-                [self swapButton:panelIndex toIndex:newIndex];
-                [self swapPanel:panelIndex withPanel:newIndex];
-                
-                // Set new index in dragging array
-                NSMutableArray *mutaDraggingButtons = [_draggingButtons mutableCopy];
-                NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
-                [mutaDraggingArr replaceObjectAtIndex:1 withObject:[NSNumber numberWithInt:newIndex]];
-                [mutaDraggingButtons replaceObjectAtIndex:draggingButtonIndex withObject:(NSArray *)mutaDraggingArr];
-                _draggingButtons = (NSArray *)mutaDraggingButtons;
-            }
+            [_contentScrollView reorderPanel:panelIndex withNewIndex:newIndex];
+            [self swapButton:panelIndex toIndex:newIndex];
+            [self swapPanel:panelIndex withPanel:newIndex];
+            
+            // Set new index in dragging array
+            NSMutableArray *mutaDraggingButtons = [_draggingButtons mutableCopy];
+            NSMutableArray *mutaDraggingArr = [draggingArr mutableCopy];
+            [mutaDraggingArr replaceObjectAtIndex:1 withObject:[NSNumber numberWithInt:newIndex]];
+            [mutaDraggingButtons replaceObjectAtIndex:draggingButtonIndex withObject:(NSArray *)mutaDraggingArr];
+            _draggingButtons = (NSArray *)mutaDraggingButtons;
         }
     }
 }
