@@ -57,13 +57,14 @@
 @synthesize queryContentView = _queryContentView;
 
 OBJC_EXPORT BOOL isPortrait;                // Global variable set in ContentViewController to specify device orientation
+OBJC_EXPORT BOOL isLeftHanded;              // Global variable set in ContentViewController to specify user-handed-ness
 OBJC_EXPORT float BAND_HEIGHT;              // Globals set to sizes dependant on number of panels and size of display,
 OBJC_EXPORT float BAND_WIDTH;               //  for use in scaling and fitting entire display into view in landscape.
 OBJC_EXPORT float BAND_SPACING;             //  May be assumed to be the normalized, un-zoomed sizes in both landscape
 OBJC_EXPORT float TIMELINE_HEIGHT;          //  and portrait.
 
 // Spacing for panel, stack, and band label views
-float SIDE_LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3/4));
+float SIDE_LABEL_SPACING = (int)(((768.0 - BAND_WIDTH_P) * 3.0f/4.0f));   // The extra 1/4 left out of this provides an end cap on the opposite side of the panels
 float TOP_LABEL_SPACING = 50.0f;
 
 #pragma mark -
@@ -160,7 +161,8 @@ float TOP_LABEL_SPACING = 50.0f;
     {
         PanelZoomView *p = [mutaPanels objectAtIndex:i];
         CGRect frame = p.frame;
-        frame.origin.x = SIDE_LABEL_SPACING + (landBandW * i);
+        if (isLeftHanded)   frame.origin.x = SIDE_LABEL_SPACING + (landBandW * i);
+        if (!isLeftHanded)  frame.origin.x = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + (landBandW * i);
         if (isPortrait) frame.origin.y = 0.0f;
         else            frame.origin.y = TOP_LABEL_SPACING;
         p.frame = frame;
@@ -173,10 +175,11 @@ float TOP_LABEL_SPACING = 50.0f;
         i = [mutaPanels count];
         while (i < panelNum)
         {            
-            CGRect panelF = CGRectMake(SIDE_LABEL_SPACING + (landBandW * i),  // Has to be rounded to an integer to truncate the trailing floating-point errors that reuslt for the calculation, otherwise drawing will not be exact in iOS's drawing coordinates (in order to offset them by precisely 0.5 units)
+            CGRect panelF = CGRectMake((1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + (landBandW * i),
                                        0.0f,
                                        0.0f,
                                        0.0f);
+            if (isLeftHanded)   panelF.origin.x = SIDE_LABEL_SPACING + (landBandW * i);
             if (!isPortrait) panelF.origin.y = TOP_LABEL_SPACING;
             PanelZoomView *zoomView = [[PanelZoomView alloc] init];
             
@@ -334,10 +337,11 @@ float TOP_LABEL_SPACING = 50.0f;
             [sub removeFromSuperview];
     }
     // Resize top label view
-    CGRect lTopFrame = CGRectMake(0.0f, 
+    CGRect lTopFrame = CGRectMake((1.0f/4.0f * (768.0f - BAND_WIDTH_P)), 
                                   0.0f, 
                                   BAND_WIDTH * data.panelNum, 
                                   TOP_LABEL_SPACING);
+    if (isLeftHanded)   lTopFrame.origin.x = SIDE_LABEL_SPACING;
     _topLabelView.frame = lTopFrame;
     
 	// Remove old band & stack labels
@@ -347,10 +351,11 @@ float TOP_LABEL_SPACING = 50.0f;
 			[sub removeFromSuperview];
 	}
     // Resize side label view
-    CGRect lSideFrame = CGRectMake(0.0f,    
+    CGRect lSideFrame = CGRectMake(self.frame.size.width - SIDE_LABEL_SPACING,    
                                    0.0f, //-1024.0f,    // To cover excess when zoom-bouncing
                                    SIDE_LABEL_SPACING, 
                                    self.contentSize.height);// + 1024.0f);  // ^^^
+    if (isLeftHanded)   lSideFrame.origin.x = 0.0f;
     _sideLabelView.frame = lSideFrame;
     
     // Determine font sizing 
@@ -363,7 +368,7 @@ float TOP_LABEL_SPACING = 50.0f;
     NSMutableArray *newPanelLabels = [[NSMutableArray alloc] init];
     for (int i = 0; i < data.panelNum; i++)
     {
-        CGRect labelF = CGRectMake(SIDE_LABEL_SPACING + BAND_WIDTH * i, 0.0f, BAND_WIDTH, 50.0f);
+        CGRect labelF = CGRectMake((BAND_WIDTH * i), 0.0f, BAND_WIDTH, 50.0f);
         DraggableLabel *panelL = [[DraggableLabel alloc] initWithFrame:labelF];
         [panelL setTextAlignment:UITextAlignmentCenter];
         [panelL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize]];
@@ -449,7 +454,8 @@ float TOP_LABEL_SPACING = 50.0f;
     DraggableLabel *draggingLabel = [_panelLabelArray objectAtIndex:draggingIndex];
     DraggableLabel *otherLabel = [_panelLabelArray objectAtIndex:otherIndex];
     
-    float panelX = draggingIndex * ZOOMED_BAND_WIDTH + SIDE_LABEL_SPACING;
+    float panelX = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + draggingIndex * ZOOMED_BAND_WIDTH;
+    if (isLeftHanded)   panelX = SIDE_LABEL_SPACING + draggingIndex * ZOOMED_BAND_WIDTH;
     CGRect labelF = otherLabel.frame;
     labelF.origin.x = panelX;
     otherLabel.frame = labelF;
@@ -857,7 +863,11 @@ float TOP_LABEL_SPACING = 50.0f;
         {
             float normalX;
             if (isPortrait) normalX = point.x;
-            else            normalX = point.x - SIDE_LABEL_SPACING;
+            else            
+            {
+                if (isLeftHanded)   normalX = point.x - SIDE_LABEL_SPACING;
+                else                normalX = point.x - (1.0f/4.0f * (768.0f - BAND_WIDTH_P));
+            }
             newIndex = normalX / ZOOMED_BAND_WIDTH;
         }
         else if (draggingLabelType == STACK)
@@ -1002,7 +1012,8 @@ float TOP_LABEL_SPACING = 50.0f;
     {
         [draggingLabel setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize]];
          // Movel label to rest
-         labelF.origin.x = panelIndex * ZOOMED_BAND_WIDTH + SIDE_LABEL_SPACING;
+        if (isLeftHanded)   labelF.origin.x = SIDE_LABEL_SPACING + panelIndex * ZOOMED_BAND_WIDTH;
+        else                labelF.origin.x = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + panelIndex * ZOOMED_BAND_WIDTH;
     }
     else if (draggingLabelType == STACK)
     {
@@ -1145,7 +1156,8 @@ float TOP_LABEL_SPACING = 50.0f;
     newLabelF.size.height = _queryContentView.frame.size.height;// + 1024.0f;
     _sideLabelView.frame = newLabelF;
     newLabelF = _topLabelView.frame;
-    newLabelF.size.width = SIDE_LABEL_SPACING + ZOOMED_BAND_WIDTH * data.panelNum;
+/*    if (isLeftHanded) */  newLabelF.size.width = /*SIDE_LABEL_SPACING +*/ ZOOMED_BAND_WIDTH * data.panelNum;
+//    else                newLabelF.size.width = (1.0f/4.0f * (768.0f - BAND_WIDTH_P)) + ZOOMED_BAND_WIDTH * data.panelNum;
     _topLabelView.frame = newLabelF;
     
     _stackFontSize = (ZOOMED_TIMELINE_HEIGHT + 1.0f < 20.0f ? ZOOMED_TIMELINE_HEIGHT + 1.0f : 20.0f);
@@ -1155,10 +1167,11 @@ float TOP_LABEL_SPACING = 50.0f;
     for (int i = 0; i < data.panelNum; i++)
     {
         DraggableLabel *panelLabel = [_panelLabelArray objectAtIndex:i];
-        CGRect labelF = CGRectMake(SIDE_LABEL_SPACING + (ZOOMED_BAND_WIDTH * i), 
+        CGRect labelF = CGRectMake(/*(1.0f/4.0f * (768.0f - BAND_WIDTH_P)) +*/ (ZOOMED_BAND_WIDTH * i), 
                                    0.0f, 
                                    ZOOMED_BAND_WIDTH, 
                                    50.0f);
+//        if (isLeftHanded)   labelF.origin.x = SIDE_LABEL_SPACING + (ZOOMED_BAND_WIDTH * i);
         panelLabel.frame = labelF;
     }
     
@@ -1199,7 +1212,18 @@ float TOP_LABEL_SPACING = 50.0f;
     [self bringSubviewToFront:_topLabelView];
     
     newFrame = _sideLabelView.frame;
-    newFrame.origin.x = offset.x;
+    if (!isPortrait)
+    {
+        if (isLeftHanded)
+        {
+            newFrame.origin.x = offset.x;
+        }
+        else
+        {
+            newFrame.origin.x = offset.x + 1024.0f - SIDE_LABEL_SPACING;
+        }
+    }
+    
     _sideLabelView.frame = newFrame;
     [self bringSubviewToFront:_sideLabelView];
 }

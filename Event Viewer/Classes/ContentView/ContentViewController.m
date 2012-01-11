@@ -49,10 +49,9 @@
 
 
 // Global layout parameters
-//float BAND_HEIGHT = -1.0f;  // Height of bands in the interface
-//float BAND_WIDTH = -1.0f;   // Width of bands in the interface
 BOOL isPortrait = YES;  // Modified on change of device orientation
-
+BOOL isLeftHanded = YES; // Specifies where the labels should be draw on the device (right or left side)
+// Global UI dimensions
 float BAND_HEIGHT = BAND_HEIGHT_P;
 float BAND_WIDTH = BAND_WIDTH_P;
 float BAND_SPACING = BAND_SPACING_P;
