@@ -50,7 +50,7 @@
 
 // Global layout parameters
 BOOL isPortrait = YES;  // Modified on change of device orientation
-BOOL isLeftHanded = NO; // Specifies where the labels should be draw on the device (right or left side)
+BOOL isLeftHanded = YES; // Specifies where the labels should be draw on the device (left-hand side for left-handed people)
 // Global UI dimensions
 float BAND_HEIGHT = BAND_HEIGHT_P;
 float BAND_WIDTH = BAND_WIDTH_P;
@@ -108,7 +108,7 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     _colorArray = colors;
     
     // Scroll view for content
-    ContentScrollView *csv = [[ContentScrollView alloc] initWithPanelNum:_queryData.panelNum stackNum:_queryData.stackNum bandNum:_queryData.bandNum];
+    ContentScrollView *csv = [[ContentScrollView alloc] init]; //WithPanelNum:_queryData.panelNum stackNum:_queryData.stackNum bandNum:_queryData.bandNum];
     _contentScrollView = csv;
     [self.view addSubview:_contentScrollView];
     
@@ -117,7 +117,7 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     
     // QueryData model
     QueryData *qdata = [[QueryData alloc] init];
-    self.queryData = qdata;
+    _queryData = qdata;
     
     _zoomScale = 1.0f;
     
@@ -183,18 +183,10 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
  *  queryData is the new data model object
  */
 - (void)setQueryData:(QueryData *)queryData
-{
-/*
-    // Copy protocol
-    if (_queryData == queryData)
-    {
-        return;
-    }
-//    QueryData *oldValue = _queryData;
-    _queryData = [queryData copy];
-    ///////
-*/
+{   
     _queryData = queryData;
+    
+    NSLog(@"Number of stacks: %d", [_queryData stackNum]);
     
     // Reset color array
     [self initColorArray];
@@ -202,7 +194,7 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     [self resizeSubviews];
     
     // Update display with new data
-    if (_queryData.panelNum > 0)
+    if (_queryData.bandNum > 0)
         [self changeCurrentPanel:0];
     else
         [self changeCurrentPanel:-1];
@@ -372,7 +364,11 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
 {
     NSMutableArray *newColors = [[NSMutableArray alloc] init];
     
-    for (int i = 0; i < _queryData.panelNum; i++)
+    // Handle possibility of 0 panel-query
+    int panelNum = _queryData.panelNum;
+    if (panelNum == 0) panelNum = 1;
+    
+    for (int i = 0; i < panelNum; i++)
     {
         CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
         CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
@@ -591,10 +587,22 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
     int panelIndex = [[draggingArr objectAtIndex:1] intValue];
     
     // Set frame of now resting button
-    CGRect frame = CGRectMake(40.0f+(_panelScrubber.frame.size.width/(_queryData.panelNum-1.0f))*panelIndex, 
-                              50.0f, 
-                              100.0f, 
-                              20.0f);
+    CGRect frame;
+    if (_queryData.panelNum == 1)
+    {
+        frame = CGRectMake(90.0f+(_panelScrubber.frame.size.width/2.0f)-50.0f, 
+                           50.0f, 
+                           100.0f, 
+                           20.0f);
+
+    }
+    else
+    {
+        frame = CGRectMake(40.0f+(_panelScrubber.frame.size.width/(_queryData.panelNum-1.0f))*panelIndex, 
+                           50.0f, 
+                           100.0f, 
+                           20.0f);
+    }
     draggingButton.frame = frame;
     
     // Remove from dragging array
@@ -689,10 +697,16 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
  */
 - (void)swapBand:(int)i withBand:(int)j
 {
+    // Handle possibility of 0 panel or stack-query
+    int panelNum = _queryData.panelNum;
+    if (panelNum == 0) panelNum = 1;
+    int stackNum = _queryData.stackNum;
+    if (stackNum == 0) stackNum = 1;
+    
     // Reorder events
-    for (int p = 0; p < _queryData.panelNum; p++)
+    for (int p = 0; p < panelNum; p++)
     {
-        for (int s = 0; s < _queryData.stackNum; s++)
+        for (int s = 0; s < stackNum; s++)
         {
             NSMutableArray *mutableBands = [[[_queryData.eventArray objectAtIndex:p] objectAtIndex:s] mutableCopy];
             NSArray *tempBand = [mutableBands objectAtIndex:i];
@@ -719,7 +733,12 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
 {
     // Reorder events
     NSMutableArray *mutableEvents = [_queryData.eventArray mutableCopy];
-    for (int p = 0; p < _queryData.panelNum; p++)
+    
+    // Handle possibility fo 0 panel-query
+    int panelNum = _queryData.panelNum;
+    if (panelNum == 0) panelNum = 1;
+
+    for (int p = 0; p < panelNum; p++)
     {
         NSMutableArray *mutableStacks = [[_queryData.eventArray objectAtIndex:p] mutableCopy];
         NSArray *tempStack = [mutableStacks objectAtIndex:i];
@@ -942,13 +961,13 @@ float TIMELINE_HEIGHT = BAND_HEIGHT_P; // So that labels line up properly and sp
 // Ensure that the view controller supports rotation and that the split view can therefore show in both portrait and landscape.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
-    [self handleInterfaceRotationForOrientation:interfaceOrientation];
+//    [self handleInterfaceRotationForOrientation:interfaceOrientation];
     return YES;
 }
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-	[self configureView];
-}
+//- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+//{
+//	[self configureView];
+//}
 
 
 

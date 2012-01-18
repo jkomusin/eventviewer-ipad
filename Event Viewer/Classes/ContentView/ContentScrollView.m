@@ -70,7 +70,7 @@ float TOP_LABEL_SPACING = 50.0f;
 #pragma mark -
 #pragma mark Initialization
 
-- (id)initWithPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
+- (id)init //WithPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
 {
     if ((self = [super init])) 
     {        
@@ -95,7 +95,7 @@ float TOP_LABEL_SPACING = 50.0f;
         
         self.delegate = self;
         
-        [self sizeForPanelNum:panelNum stackNum:stackNum bandNum:bandNum];
+//        [self sizeForPanelNum:panelNum stackNum:stackNum bandNum:bandNum];
         
         NSArray *newDraggingArr = [[NSArray alloc] init];
         _draggingLabels = newDraggingArr;
@@ -124,6 +124,16 @@ float TOP_LABEL_SPACING = 50.0f;
  */
 - (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum
 {    
+    // Handle empty queries
+    BOOL noBands = NO;
+    if (panelNum == 0) panelNum = 1;
+    if (stackNum == 0) stackNum = 1;
+    if (bandNum == 0)
+    {
+        bandNum = 1;
+        noBands = YES;
+    }
+    
     // Scale UI layout constants
     float scale;
     float panelSpaceHoriz = 1024.0f - (768.0f - BAND_WIDTH_P);
@@ -208,7 +218,11 @@ float TOP_LABEL_SPACING = 50.0f;
     {
         [p removeFromSuperview];
     }
-    if (isPortrait && panelNum != 0)
+    
+    // Skip the rest of configuration if there is no query
+    if (noBands) return;
+    
+    if (isPortrait)
     {
         PanelZoomView *p = [_panelZoomViews objectAtIndex:0];
         [self addSubview:p];
@@ -220,9 +234,6 @@ float TOP_LABEL_SPACING = 50.0f;
             [self addSubview:p];
         }
     }
-    
-    // Skip the rest of configuration if there are no panels
-    if (panelNum == 0) return;
     
     // Resize all subviews
     for (PanelZoomView *p in _panelZoomViews)
@@ -288,9 +299,7 @@ float TOP_LABEL_SPACING = 50.0f;
  *  panelNum is the array index of the panel to switch the view to (0-indexed)
  */
 - (void)switchToPanel:(int)panelIndex
-{
-    NSLog(@"Here with index %d", panelIndex);
-    
+{    
     if (panelIndex == -1) return;
 
     PanelZoomView *p = [_panelZoomViews objectAtIndex:0];
@@ -424,6 +433,38 @@ float TOP_LABEL_SPACING = 50.0f;
         {
 			float bandY = j * (BAND_HEIGHT + BAND_SPACING) + TIMELINE_HEIGHT + stackY;
             labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT);
+			DraggableLabel *bandL = [[DraggableLabel alloc] initWithFrame:labelF];
+			[bandL setTextAlignment:UITextAlignmentRight];
+            [bandL setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize]];
+            [bandL setBackgroundColor:[UIColor clearColor]];
+            [bandL setTextColor:[UIColor whiteColor]];
+			NSString *meta = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j] name];
+			[bandL setText:meta];
+            
+            UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+            bDragGesture.delegate = self;
+            [bDragGesture setNumberOfTouchesRequired:1];
+            [bDragGesture setMinimumPressDuration:0.1f];
+            [bandL addGestureRecognizer:bDragGesture];
+            [bandL setUserInteractionEnabled:YES];
+            
+			[_sideLabelView addSubview:bandL];
+            [currentBandLabels addObject:bandL];
+        }
+        [newBandLabels addObject:(NSArray *)currentBandLabels];
+    }
+    
+    // Handle the case where there are no stacks, but bands
+    if (data.stackNum == 0 && data.bandNum > 0)
+    {
+        NSMutableArray *currentBandLabels = [[NSMutableArray alloc] init];
+		for (int j = 0; j < data.bandNum; j++)
+        {
+            float stackY;
+            if (isPortrait) stackY = 0.0f;// + 1024.0f;
+            else            stackY = TOP_LABEL_SPACING;// + 1024.0f;
+			float bandY = j * (BAND_HEIGHT + BAND_SPACING) + TIMELINE_HEIGHT + stackY;
+            CGRect labelF = CGRectMake(32.0f, bandY, 128.0f, BAND_HEIGHT);
 			DraggableLabel *bandL = [[DraggableLabel alloc] initWithFrame:labelF];
 			[bandL setTextAlignment:UITextAlignmentRight];
             [bandL setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize]];
@@ -883,7 +924,6 @@ float TOP_LABEL_SPACING = 50.0f;
             if (isPortrait) normalY = point.y - (stackHeight * stackIndex) - ZOOMED_TIMELINE_HEIGHT;
             else            normalY = point.y - (stackHeight * stackIndex) - ZOOMED_TIMELINE_HEIGHT - TOP_LABEL_SPACING;
             newIndex = normalY / (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING);            
-            NSLog(@"Newindex: %d, normalY: %f", newIndex, normalY);
         }
         
         // Make sure new index is not currently being dragged
@@ -1186,6 +1226,24 @@ float TOP_LABEL_SPACING = 50.0f;
             bandL.frame = labelF;
             bandL.font = [UIFont fontWithName:@"Helvetica" size:_bandFontSize];
         }
+    }
+    
+    // Handle the case where there are no stacks
+    if (data.stackNum == 0 && data.bandNum > 0)
+    {
+        float stackY;
+        if (isPortrait) stackY = 0.0f;// + 1024.0f;
+        else            stackY = TOP_LABEL_SPACING;// + 1024.0f;
+        NSArray *currentBandLabels = [_bandLabelArray objectAtIndex:0];
+		for (int j = 0; j < data.bandNum; j++)
+        {
+			float bandY = j * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_TIMELINE_HEIGHT + stackY;
+            CGRect labelF = CGRectMake(32.0f, bandY, 128.0f, ZOOMED_BAND_HEIGHT);
+			DraggableLabel *bandL = [currentBandLabels objectAtIndex:j];
+            bandL.frame = labelF;
+            bandL.font = [UIFont fontWithName:@"Helvetica" size:_bandFontSize];
+        }
+
     }
 }
 

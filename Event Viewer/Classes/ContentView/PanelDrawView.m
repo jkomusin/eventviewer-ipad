@@ -293,6 +293,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     [mutaStackLayerArr replaceObjectAtIndex:stackIndex withObject:oldStack];
     _stackLayerArray = (NSArray *)mutaStackLayerArr;
     
+    // Reposition layers within band array
+    NSMutableArray *mutaBandLayerArr = [_bandLayerArray mutableCopy];
+    NSArray *temp = [mutaBandLayerArr objectAtIndex:index];
+    [mutaBandLayerArr replaceObjectAtIndex:index withObject:[mutaBandLayerArr objectAtIndex:stackIndex]];
+    [mutaBandLayerArr replaceObjectAtIndex:stackIndex withObject:temp];
+    _bandLayerArray = (NSArray *)mutaBandLayerArr;
+    
     // Inform band layers of their new stack indices
     for (BandLayer *b in oldStack.sublayers)
     {
@@ -420,6 +427,10 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (NSArray *)findEventsAtPoint:(CGPoint)location
 {
+    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Event *test = [[[[data.eventArray objectAtIndex:0] objectAtIndex:0] objectAtIndex:0] objectAtIndex:0];
+    NSLog(@"Test event x: %f", [test x]);
+    
     NSMutableArray *results = [[NSMutableArray alloc] init];
     for (int i = 0; i < [_bandLayerArray count]; i++)
     {
@@ -434,7 +445,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
             if (CGRectContainsPoint(bFrame, location))
             {                
                 // We've found the layer, now find the Event(s) in the current panel and each overlay
-                QueryData *data = [_dataDelegate delegateRequestsQueryData];
+//                QueryData *data = [_dataDelegate delegateRequestsQueryData];
                 NSMutableArray *overlays = [[_dataDelegate delegateRequestsOverlays] mutableCopy];
                 [overlays addObject:[NSNumber numberWithInt:_currentPanel]];
                 BOOL currentOverlaid = NO;
@@ -550,7 +561,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     [CATransaction begin];
     [CATransaction setDisableActions: YES];
     // Resize stack layers
-    for (int i = 0; i < data.stackNum; i++)
+    for (int i = 0; i < [_stackLayerArray count]; i++)
     {
         CATiledLayer *stackLayer = [_stackLayerArray objectAtIndex:i];
         float stackY = stackHeight * i + temp_TIMELINE_HEIGHT;
@@ -560,7 +571,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         
         // Resize band layers
         NSArray *bandArray = [_bandLayerArray objectAtIndex:i];
-        for (int j = 0; j < data.bandNum; j++)
+        for (int j = 0; j < [[stackLayer sublayers] count]; j++)
         {
             BandLayer *bandLayer = [bandArray objectAtIndex:j];
             float bandY = j * (temp_BAND_HEIGHT + temp_BAND_SPACING);
@@ -627,7 +638,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 			CGContextStrokeRect(context, monthF);
 			
 			// Labels
-			for (int i = 0; i <= data.stackNum; i++)
+			for (int i = 0; i <= [_stackLayerArray count]; i++)
 			{
 				float stackY = stackHeight * i;
 				NSString *month = [months objectAtIndex:m];

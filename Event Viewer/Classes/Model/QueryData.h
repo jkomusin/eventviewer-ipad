@@ -2,8 +2,8 @@
 #import <Foundation/Foundation.h>
 
 // Number of objects to create during stress testing
-#define TEST_STACKS 4   // Number of stacks in each panel
-#define TEST_BANDS 5    // Number of bands in each stack
+#define TEST_STACKS 0   // Number of stacks in each panel
+#define TEST_BANDS 15    // Number of bands in each stack
 
 
 /**

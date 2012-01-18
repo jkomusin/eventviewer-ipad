@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0331700814BCC64700C9B287 /* DraggableLabel.m */; };
 		0344847B14B1139100537F77 /* Meta.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Meta.m */; };
+		03A78B0614C0951E00DEE1C0 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A78B0514C0951E00DEE1C0 /* icon.png */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
@@ -39,6 +40,7 @@
 		0331700814BCC64700C9B287 /* DraggableLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableLabel.m; path = "UI Subclasses/DraggableLabel.m"; sourceTree = "<group>"; };
 		0344847914B1139100537F77 /* Meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Meta.h; path = Model/Meta.h; sourceTree = "<group>"; };
 		0344847A14B1139100537F77 /* Meta.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Meta.m; path = Model/Meta.m; sourceTree = "<group>"; };
+		03A78B0514C0951E00DEE1C0 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		03D2750614A3E6F900C91945 /* EventInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventInfo.h; path = ContentView/EventInfo.h; sourceTree = "<group>"; };
 		03D2750714A3E6F900C91945 /* EventInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventInfo.m; path = ContentView/EventInfo.m; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -160,6 +162,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				03A78B0514C0951E00DEE1C0 /* icon.png */,
 				84BA23811452071E009566D9 /* Images */,
 				28AD735F0D9D9599002E5188 /* MainWindow.xib */,
 				2804203B108E9BAB000629CD /* DetailView.xib */,
@@ -301,6 +304,7 @@
 				84BA23871452088B009566D9 /* scrubber.png in Resources */,
 				CA4B926A149997AC00280E90 /* blue.png in Resources */,
 				CA4B926B149997AC00280E90 /* grey.png in Resources */,
+				03A78B0614C0951E00DEE1C0 /* icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +337,53 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		03A78B0814C096BB00DEE1C0 /* Ad Hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Joshua Komusin (X8YJ6R8G5H)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_ENABLE_OBJC_GC = unsupported;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
+				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = YES;
+				GCC_WARN_SHADOW = YES;
+				GCC_WARN_SIGN_COMPARE = NO;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_PARAMETER = NO;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "5304C60B-A119-4BA9-A6CC-5665431A1ED3";
+				RUN_CLANG_STATIC_ANALYZER = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 2;
+			};
+			name = "Ad Hoc";
+		};
+		03A78B0914C096BB00DEE1C0 /* Ad Hoc */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "Event Viewer_Prefix.pch";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = "Event Viewer-Info.plist";
+				PRODUCT_NAME = "Event Viewer";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = "Ad Hoc";
+		};
 		1D6058940D05DD3E006BFB54 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -372,7 +423,7 @@
 				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Joshua Komusin (X8YJ6R8G5H)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -389,7 +440,8 @@
 				GCC_WARN_UNUSED_PARAMETER = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
-				RUN_CLANG_STATIC_ANALYZER = YES;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "5304C60B-A119-4BA9-A6CC-5665431A1ED3";
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -401,7 +453,7 @@
 				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Joshua Komusin (X8YJ6R8G5H)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -419,7 +471,8 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				RUN_CLANG_STATIC_ANALYZER = YES;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "5304C60B-A119-4BA9-A6CC-5665431A1ED3";
+				RUN_CLANG_STATIC_ANALYZER = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 2;
 			};
@@ -433,6 +486,7 @@
 			buildConfigurations = (
 				1D6058940D05DD3E006BFB54 /* Debug */,
 				1D6058950D05DD3E006BFB54 /* Release */,
+				03A78B0914C096BB00DEE1C0 /* Ad Hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -442,6 +496,7 @@
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
 				C01FCF5008A954540054247B /* Release */,
+				03A78B0814C096BB00DEE1C0 /* Ad Hoc */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

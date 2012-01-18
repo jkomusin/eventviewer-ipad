@@ -219,7 +219,7 @@
  */
 - (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"Selected row, initializing test data . . .");
+    NSLog(@"Selected row, initializing test data (%d panels) . . .", indexPath.row);
     //when selected, create number of test panels and update view
     QueryData *newData = [[QueryData alloc] initTestWithPanels:indexPath.row];
     

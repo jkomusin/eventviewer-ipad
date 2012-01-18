@@ -71,6 +71,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (void)drawEventsForPanel:(int)panelIndex fromArray:(NSArray *)eventArray inContext:(CGContextRef)context
 {
+    NSLog(@"StackNum: %d, BandNum: %d", _stackNumber, _bandNumber);
     NSArray *eArr = [[[eventArray objectAtIndex:panelIndex] objectAtIndex:_stackNumber] objectAtIndex:_bandNumber];
     float zoomScale = [_drawDelegate delegateRequestsZoomscale];
     CGContextSetFillColorWithColor(context, [_dataDelegate getColorForPanel:panelIndex].CGColor);

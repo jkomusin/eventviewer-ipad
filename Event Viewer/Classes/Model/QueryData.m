@@ -57,35 +57,39 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     if ((self = [self init]))
     {
         NSMutableArray *mutablePanels = [[NSMutableArray alloc] init];
-        for (char c = 'A'; c < ('A' + panels); c++)
+        for (char p = 'A'; p < ('A' + panels); p++)
         {
-            NSString *new = [[NSString alloc] initWithFormat:@"Panel %c", c];
+            NSString *new = [[NSString alloc] initWithFormat:@"Panel %c", p];
             Meta *newM = [[Meta alloc] initWithName:new];
             [mutablePanels addObject:newM];
         }
+        
         NSMutableArray *mutableStacks = [[NSMutableArray alloc] init];
-        for (char c = 'A'; c < ('A' + TEST_STACKS); c++)
+        for (char s = 'A'; s < ('A' + TEST_STACKS); s++)
         {
-            NSString *new = [[NSString alloc] initWithFormat:@"Stack %c", c];
+            NSString *new = [[NSString alloc] initWithFormat:@"Stack %c", s];
             Meta *newM = [[Meta alloc] initWithName:new];
             [mutableStacks addObject:newM];
         }
+        
         NSMutableArray *mutableBands = [[NSMutableArray alloc] init];
-        for (char c = 'A'; c < ('A' + TEST_BANDS); c++)
+        for (char b = 'A'; b < ('A' + TEST_BANDS); b++)
         {
-            NSString *new = [[NSString alloc] initWithFormat:@"Band %c", c];
+            NSString *new = [[NSString alloc] initWithFormat:@"Band %c", b];
             Meta *newM = [[Meta alloc] initWithName:new];
             [mutableBands addObject:newM];
         }
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
-        NSArray *panelArray = [NSArray arrayWithArray:mutablePanels];
-        [mutableMetas setObject:panelArray forKey:@"Panels"];
-        NSArray *stackArray = [NSArray arrayWithArray:mutableStacks];
-        [mutableMetas setObject:stackArray forKey:@"Stacks"];
-        NSArray *bandArray = [NSArray arrayWithArray:mutableBands];
-        [mutableMetas setObject:bandArray forKey:@"Bands"];
+        [mutableMetas setObject:(NSArray *)mutablePanels forKey:@"Panels"];
+        [mutableMetas setObject:(NSArray *)mutableStacks forKey:@"Stacks"];
+        [mutableMetas setObject:(NSArray *)mutableBands forKey:@"Bands"];
         
-        _selectedMetas = mutableMetas;
+        _selectedMetas = (NSDictionary *)mutableMetas;
+        
+        // Handle tests for 0 panels or stacks
+        if (panels == 0) panels = 1;
+        int stackNumber = TEST_STACKS;
+        if (stackNumber == 0) stackNumber = 1;
         
         //create Events with date arithmetic
         NSDateComponents *components = [[NSDateComponents alloc] init];
@@ -95,7 +99,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (int p = 0; p < panels; p++)
         {
             NSMutableArray *newPanels = [[NSMutableArray alloc] init];
-            for (int s = 0; s < TEST_STACKS; s++)
+            for (int s = 0; s < stackNumber; s++)
             {
                 NSMutableArray *newStacks = [[NSMutableArray alloc] init];
                 for (int b = 0; b < TEST_BANDS; b++)
@@ -184,12 +188,10 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 }
 - (int)stackNum
 {
-    if ([self panelNum] == 0) return 0;
     return [(NSArray *)[_selectedMetas objectForKey:@"Stacks"] count];
 }
 - (int)bandNum
 {
-    if ([self panelNum] == 0) return 0;
     return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
 }
 

@@ -62,7 +62,7 @@ enum UI_OBJECT
 - (IBAction)toggleMasterBeforeDetail:(id)sender;
 ///////
 
-@property (nonatomic, copy) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
+@property (nonatomic, strong) QueryData *queryData;   // Model object containing and managing all data forming the current query and its results
 
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)configureView;
