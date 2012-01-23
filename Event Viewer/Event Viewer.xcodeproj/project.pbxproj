@@ -11,6 +11,9 @@
 		0344847B14B1139100537F77 /* Meta.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Meta.m */; };
 		03A78B0614C0951E00DEE1C0 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A78B0514C0951E00DEE1C0 /* icon.png */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
+		03DE3C7F14CCF6FF0054FB1D /* QueryView.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C7E14CCF6FF0054FB1D /* QueryView.m */; };
+		03DE3C8614CCFDCC0054FB1D /* ContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8314CCFDCC0054FB1D /* ContentViewController.m */; };
+		03DE3C8714CCFDCC0054FB1D /* QueryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8514CCFDCC0054FB1D /* QueryViewController.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
@@ -43,6 +46,12 @@
 		03A78B0514C0951E00DEE1C0 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		03D2750614A3E6F900C91945 /* EventInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventInfo.h; path = ContentView/EventInfo.h; sourceTree = "<group>"; };
 		03D2750714A3E6F900C91945 /* EventInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventInfo.m; path = ContentView/EventInfo.m; sourceTree = "<group>"; };
+		03DE3C7D14CCF6FF0054FB1D /* QueryView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryView.h; path = QueryView/QueryView.h; sourceTree = "<group>"; };
+		03DE3C7E14CCF6FF0054FB1D /* QueryView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryView.m; path = QueryView/QueryView.m; sourceTree = "<group>"; };
+		03DE3C8214CCFDCC0054FB1D /* ContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContentViewController.h; path = ViewControllers/ContentViewController.h; sourceTree = "<group>"; };
+		03DE3C8314CCFDCC0054FB1D /* ContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContentViewController.m; path = ViewControllers/ContentViewController.m; sourceTree = "<group>"; };
+		03DE3C8414CCFDCC0054FB1D /* QueryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryViewController.h; path = ViewControllers/QueryViewController.h; sourceTree = "<group>"; };
+		03DE3C8514CCFDCC0054FB1D /* QueryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryViewController.m; path = ViewControllers/QueryViewController.m; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -116,10 +125,26 @@
 			name = AppDelegation;
 			sourceTree = "<group>";
 		};
+		03DE3C8114CCFD480054FB1D /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				849AA9921450F78F00F93059 /* QueryViewController.h */,
+				03DE3C8214CCFDCC0054FB1D /* ContentViewController.h */,
+				03DE3C8314CCFDCC0054FB1D /* ContentViewController.m */,
+				03DE3C8414CCFDCC0054FB1D /* QueryViewController.h */,
+				03DE3C8514CCFDCC0054FB1D /* QueryViewController.m */,
+				849AA9931450F78F00F93059 /* QueryViewController.m */,
+				849AA98F1450F78900F93059 /* ContentViewController.h */,
+				849AA9901450F78900F93059 /* ContentViewController.m */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
 				033EC73214B5F26000E2D45A /* AppDelegation */,
+				03DE3C8114CCFD480054FB1D /* ViewControllers */,
 				84DD27AD1450F7C000E15113 /* QueryView */,
 				84DD27AF1450F7CA00E15113 /* ContentView */,
 				0331700514BCB93900C9B287 /* UI Subclasses */,
@@ -195,8 +220,8 @@
 		84DD27AD1450F7C000E15113 /* QueryView */ = {
 			isa = PBXGroup;
 			children = (
-				849AA9921450F78F00F93059 /* QueryViewController.h */,
-				849AA9931450F78F00F93059 /* QueryViewController.m */,
+				03DE3C7D14CCF6FF0054FB1D /* QueryView.h */,
+				03DE3C7E14CCF6FF0054FB1D /* QueryView.m */,
 			);
 			name = QueryView;
 			sourceTree = "<group>";
@@ -204,8 +229,6 @@
 		84DD27AF1450F7CA00E15113 /* ContentView */ = {
 			isa = PBXGroup;
 			children = (
-				849AA98F1450F78900F93059 /* ContentViewController.h */,
-				849AA9901450F78900F93059 /* ContentViewController.m */,
 				847D130A1454818D00B1DA76 /* ContentScrollView.h */,
 				847D130B1454818D00B1DA76 /* ContentScrollView.m */,
 				844EB51F1466117D00711EC6 /* PanelZoomView.h */,
@@ -331,6 +354,9 @@
 				03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */,
 				0344847B14B1139100537F77 /* Meta.m in Sources */,
 				0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */,
+				03DE3C7F14CCF6FF0054FB1D /* QueryView.m in Sources */,
+				03DE3C8614CCFDCC0054FB1D /* ContentViewController.m in Sources */,
+				03DE3C8714CCFDCC0054FB1D /* QueryViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

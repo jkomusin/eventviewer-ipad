@@ -695,7 +695,13 @@
 
 - (IBAction)showMasterPopover:(id)sender
 {
-	if (_hiddenPopoverController && !(_hiddenPopoverController.popoverVisible)) {
+    if (self.isLandscape)
+    {
+        // Show full master view in landscape
+        [self toggleMasterView:sender];
+    }
+	else if (_hiddenPopoverController && !(_hiddenPopoverController.popoverVisible)) 
+    {
 		// Inform delegate.
 		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:popoverController:willPresentViewController:)]) {
 			[(NSObject <MGSplitViewControllerDelegate> *)_delegate splitViewController:self 

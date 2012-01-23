@@ -82,7 +82,7 @@
 			borderRect.origin.y = CGRectGetMaxY(bounds) - borderThickness;
 			UIRectFill(borderRect);
 		}
-		
+        
 		// Draw grip.
 		[self drawGripThumbInRect:bounds];
 	}

@@ -10,8 +10,8 @@
 
 typedef enum _MGSplitViewDividerStyle {
 	// These names have been chosen to be conceptually similar to those of NSSplitView on Mac OS X.
-	MGSplitViewDividerStyleThin			= 0, // Thin divider, like UISplitViewController (default).
-	MGSplitViewDividerStylePaneSplitter	= 1  // Thick divider, drawn with a grey gradient and a grab-strip.
+	MGSplitViewDividerStyleThin			= 1, // Thin divider, like UISplitViewController (default).
+	MGSplitViewDividerStylePaneSplitter	= 0  // Thick divider, drawn with a grey gradient and a grab-strip.
 } MGSplitViewDividerStyle;
 
 @class MGSplitDividerView;
