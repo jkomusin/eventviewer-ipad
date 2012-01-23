@@ -7,23 +7,11 @@
 //
 
 #import "SecondaryViewController.h"
+#import "PrimaryViewController.h"
 
 #import "MGSplitViewController.h"
 #import "MGSplitDividerView.h"
 #import "MGSplitCornersView.h"
-
-#define MG_DEFAULT_SPLIT_POSITION		320.0	// default width of master view in UISplitViewController.
-#define MG_DEFAULT_SPLIT_WIDTH			1.0		// default width of split-gutter in UISplitViewController.
-#define MG_DEFAULT_CORNER_RADIUS		5.0		// default corner-radius of overlapping split-inner corners on the master and detail views.
-#define MG_DEFAULT_CORNER_COLOR			[UIColor blackColor]	// default color of intruding inner corners (and divider background).
-
-#define MG_PANESPLITTER_CORNER_RADIUS	0.0		// corner-radius of split-inner corners for MGSplitViewDividerStylePaneSplitter style.
-#define MG_PANESPLITTER_SPLIT_WIDTH		25.0	// width of split-gutter for MGSplitViewDividerStylePaneSplitter style.
-
-#define MG_MIN_VIEW_WIDTH				200.0	// minimum width a view is allowed to become as a result of changing the splitPosition.
-
-#define MG_ANIMATION_CHANGE_SPLIT_ORIENTATION	@"ChangeSplitOrientation"	// Animation ID for internal use.
-#define MG_ANIMATION_CHANGE_SUBVIEWS_ORDER		@"ChangeSubviewsOrder"	// Animation ID for internal use.
 
 
 @interface MGSplitViewController (MGPrivateMethods)
@@ -680,7 +668,17 @@
 		_reconfigurePopup = YES;
 		[self reconfigureForMasterInPopover:NO];
 		[self layoutSubviews];
+        
+        // Show query builder
+        PrimaryViewController *vController = (PrimaryViewController *)self.detailViewController;
+        [vController showQueryBuilder];
 	}
+    else
+    {
+        // Hide query builder
+        PrimaryViewController *vController = (PrimaryViewController *)self.detailViewController;
+        [vController hideQueryBuilder];
+    }
 	
 	// This action functions on the current primary orientation; it is independent of the other primary orientation.
 	[UIView beginAnimations:@"toggleMaster" context:nil];
