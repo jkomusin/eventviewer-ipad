@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 /**
- *  Object representation of a Meta to encapsulate all associated information
+ *  Object representation of a "Meta" constraint to encapsulate all associated information
  */
 @interface Meta : NSObject
 

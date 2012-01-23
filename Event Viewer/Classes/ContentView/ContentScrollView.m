@@ -12,7 +12,7 @@
 #import "PanelZoomView.h"
 #import "PanelDrawView.h"
 #import "BandLayer.h"
-#import "QueryData.h"
+#import "Query.h"
 #import "Meta.h"
 
 @interface ContentScrollView ()
@@ -337,7 +337,7 @@ float TOP_LABEL_SPACING = 50.0f;
  */
 - (void)createLabels
 {
-	QueryData *data = [_dataDelegate delegateRequestsQueryData];
+	Query *data = [_dataDelegate delegateRequestsQueryData];
 	
     // Remove old panel labels
     for (UIView *sub in _topLabelView.subviews)
@@ -516,7 +516,7 @@ float TOP_LABEL_SPACING = 50.0f;
  */
 - (void)swapStackLabels:(int)draggingIndex and:(int)otherIndex
 {
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_BAND_HEIGHT + ZOOMED_TIMELINE_HEIGHT;
     
     DraggableLabel *draggingLabel = [_stackLabelArray objectAtIndex:draggingIndex];
@@ -546,7 +546,7 @@ float TOP_LABEL_SPACING = 50.0f;
  */
 - (void)swapAllBandLabels:(int)draggingIndex and:(int)otherIndex skippingStack:(int)skipStackIndex areBothDragging:(BOOL)bothDragging
 {
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_BAND_HEIGHT + ZOOMED_TIMELINE_HEIGHT;
     NSMutableArray *bandLabelsMutable = [_bandLabelArray mutableCopy];
     for (int i = 0; i < [bandLabelsMutable count]; i++)
@@ -904,7 +904,7 @@ float TOP_LABEL_SPACING = 50.0f;
     //  Handle swapping with non-dragging label
    else   
     {
-        QueryData *data = [_dataDelegate delegateRequestsQueryData];
+        Query *data = [_dataDelegate delegateRequestsQueryData];
         float stackHeight = (data.bandNum-1.0f) * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_BAND_HEIGHT + ZOOMED_TIMELINE_HEIGHT;
         int newIndex;
         if (draggingLabelType == PANEL)
@@ -1027,7 +1027,7 @@ float TOP_LABEL_SPACING = 50.0f;
     int panelIndex = [[draggingArr objectAtIndex:4] intValue];
     int stackIndex = [[draggingArr objectAtIndex:3] intValue];
     int bandIndex = [[draggingArr objectAtIndex:2] intValue];
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_BAND_HEIGHT + ZOOMED_TIMELINE_HEIGHT;
     
     // Find the type of layer we're dragging
@@ -1171,7 +1171,7 @@ float TOP_LABEL_SPACING = 50.0f;
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView
 {
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     ZOOMED_BAND_WIDTH = BAND_WIDTH * scrollView.zoomScale;
     ZOOMED_BAND_HEIGHT = BAND_HEIGHT * scrollView.zoomScale;
     ZOOMED_BAND_SPACING = BAND_SPACING * scrollView.zoomScale;

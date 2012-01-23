@@ -9,9 +9,10 @@
 /* Begin PBXBuildFile section */
 		0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0331700814BCC64700C9B287 /* DraggableLabel.m */; };
 		0344847B14B1139100537F77 /* Meta.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Meta.m */; };
+		03993F2214CD033A00045B24 /* QueryTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 03993F2114CD033A00045B24 /* QueryTree.m */; };
 		03A78B0614C0951E00DEE1C0 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A78B0514C0951E00DEE1C0 /* icon.png */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
-		03DE3C7F14CCF6FF0054FB1D /* QueryView.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C7E14CCF6FF0054FB1D /* QueryView.m */; };
+		03DE3C7F14CCF6FF0054FB1D /* QueryBuilderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */; };
 		03DE3C8614CCFDCC0054FB1D /* PrimaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8314CCFDCC0054FB1D /* PrimaryViewController.m */; };
 		03DE3C8714CCFDCC0054FB1D /* SecondaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8514CCFDCC0054FB1D /* SecondaryViewController.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
@@ -29,7 +30,7 @@
 		849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA98B1450F78000F93059 /* MGSplitViewController.m */; };
 		84A7E5D11466FF6B006A6022 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 84A7E5D01466FF6B006A6022 /* Event.m */; };
 		84BA23871452088B009566D9 /* scrubber.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BA23861452088A009566D9 /* scrubber.png */; };
-		84E626651451FC58007DDF98 /* QueryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 84E626641451FC58007DDF98 /* QueryData.m */; };
+		84E626651451FC58007DDF98 /* Query.m in Sources */ = {isa = PBXBuildFile; fileRef = 84E626641451FC58007DDF98 /* Query.m */; };
 		CA191096149840E6004C8C4B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA191095149840E6004C8C4B /* QuartzCore.framework */; };
 		CA1910C914984471004C8C4B /* BandLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = CA1910C814984471004C8C4B /* BandLayer.m */; };
 		CA4B926A149997AC00280E90 /* blue.png in Resources */ = {isa = PBXBuildFile; fileRef = CA4B9268149997AC00280E90 /* blue.png */; };
@@ -41,14 +42,16 @@
 		0331700814BCC64700C9B287 /* DraggableLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DraggableLabel.m; path = "UI Subclasses/DraggableLabel.m"; sourceTree = "<group>"; };
 		0344847914B1139100537F77 /* Meta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Meta.h; path = Model/Meta.h; sourceTree = "<group>"; };
 		0344847A14B1139100537F77 /* Meta.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Meta.m; path = Model/Meta.m; sourceTree = "<group>"; };
+		03993F2014CD033A00045B24 /* QueryTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryTree.h; path = Model/QueryTree.h; sourceTree = "<group>"; };
+		03993F2114CD033A00045B24 /* QueryTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryTree.m; path = Model/QueryTree.m; sourceTree = "<group>"; };
 		03A78B0514C0951E00DEE1C0 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		03D2750614A3E6F900C91945 /* EventInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventInfo.h; path = ContentView/EventInfo.h; sourceTree = "<group>"; };
 		03D2750714A3E6F900C91945 /* EventInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventInfo.m; path = ContentView/EventInfo.m; sourceTree = "<group>"; };
-		03DE3C7D14CCF6FF0054FB1D /* QueryView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryView.h; path = QueryView/QueryView.h; sourceTree = "<group>"; };
-		03DE3C7E14CCF6FF0054FB1D /* QueryView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryView.m; path = QueryView/QueryView.m; sourceTree = "<group>"; };
-		03DE3C8214CCFDCC0054FB1D /* PrimaryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; name = PrimaryViewController.h; path = ViewControllers/PrimaryViewController.h; sourceTree = "<group>"; };
+		03DE3C7D14CCF6FF0054FB1D /* QueryBuilderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryBuilderView.h; path = QueryView/QueryBuilderView.h; sourceTree = "<group>"; };
+		03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryBuilderView.m; path = QueryView/QueryBuilderView.m; sourceTree = "<group>"; };
+		03DE3C8214CCFDCC0054FB1D /* PrimaryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PrimaryViewController.h; path = ViewControllers/PrimaryViewController.h; sourceTree = "<group>"; };
 		03DE3C8314CCFDCC0054FB1D /* PrimaryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PrimaryViewController.m; path = ViewControllers/PrimaryViewController.m; sourceTree = "<group>"; };
-		03DE3C8414CCFDCC0054FB1D /* SecondaryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; name = SecondaryViewController.h; path = ViewControllers/SecondaryViewController.h; sourceTree = "<group>"; };
+		03DE3C8414CCFDCC0054FB1D /* SecondaryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SecondaryViewController.h; path = ViewControllers/SecondaryViewController.h; sourceTree = "<group>"; };
 		03DE3C8514CCFDCC0054FB1D /* SecondaryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SecondaryViewController.m; path = ViewControllers/SecondaryViewController.m; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -75,8 +78,8 @@
 		84A7E5CF1466FF6B006A6022 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = Model/Event.h; sourceTree = "<group>"; };
 		84A7E5D01466FF6B006A6022 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Event.m; path = Model/Event.m; sourceTree = "<group>"; };
 		84BA23861452088A009566D9 /* scrubber.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scrubber.png; path = Images/scrubber.png; sourceTree = "<group>"; };
-		84E626631451FC58007DDF98 /* QueryData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryData.h; path = Model/QueryData.h; sourceTree = "<group>"; };
-		84E626641451FC58007DDF98 /* QueryData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = QueryData.m; path = Model/QueryData.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		84E626631451FC58007DDF98 /* Query.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Query.h; path = Model/Query.h; sourceTree = "<group>"; };
+		84E626641451FC58007DDF98 /* Query.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = Query.m; path = Model/Query.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		8D1107310486CEB800E47090 /* Event Viewer-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Event Viewer-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		C9CDF7A211FDA7890016C1C5 /* README.markdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; lineEnding = 0; path = README.markdown; sourceTree = "<group>"; };
 		CA191095149840E6004C8C4B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -210,8 +213,8 @@
 		84DD27AD1450F7C000E15113 /* QueryView */ = {
 			isa = PBXGroup;
 			children = (
-				03DE3C7D14CCF6FF0054FB1D /* QueryView.h */,
-				03DE3C7E14CCF6FF0054FB1D /* QueryView.m */,
+				03DE3C7D14CCF6FF0054FB1D /* QueryBuilderView.h */,
+				03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */,
 			);
 			name = QueryView;
 			sourceTree = "<group>";
@@ -236,12 +239,14 @@
 		84E626611451FC26007DDF98 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				84E626631451FC58007DDF98 /* QueryData.h */,
-				84E626641451FC58007DDF98 /* QueryData.m */,
-				84A7E5CF1466FF6B006A6022 /* Event.h */,
-				84A7E5D01466FF6B006A6022 /* Event.m */,
+				03993F2014CD033A00045B24 /* QueryTree.h */,
+				03993F2114CD033A00045B24 /* QueryTree.m */,
 				0344847914B1139100537F77 /* Meta.h */,
 				0344847A14B1139100537F77 /* Meta.m */,
+				84E626631451FC58007DDF98 /* Query.h */,
+				84E626641451FC58007DDF98 /* Query.m */,
+				84A7E5CF1466FF6B006A6022 /* Event.h */,
+				84A7E5D01466FF6B006A6022 /* Event.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -333,7 +338,7 @@
 				849AA98C1450F78000F93059 /* MGSplitCornersView.m in Sources */,
 				849AA98D1450F78000F93059 /* MGSplitDividerView.m in Sources */,
 				849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */,
-				84E626651451FC58007DDF98 /* QueryData.m in Sources */,
+				84E626651451FC58007DDF98 /* Query.m in Sources */,
 				847D130C1454818D00B1DA76 /* ContentScrollView.m in Sources */,
 				847D131614548CC000B1DA76 /* PanelDrawView.m in Sources */,
 				844EB5211466117D00711EC6 /* PanelZoomView.m in Sources */,
@@ -342,9 +347,10 @@
 				03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */,
 				0344847B14B1139100537F77 /* Meta.m in Sources */,
 				0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */,
-				03DE3C7F14CCF6FF0054FB1D /* QueryView.m in Sources */,
+				03DE3C7F14CCF6FF0054FB1D /* QueryBuilderView.m in Sources */,
 				03DE3C8614CCFDCC0054FB1D /* PrimaryViewController.m in Sources */,
 				03DE3C8714CCFDCC0054FB1D /* SecondaryViewController.m in Sources */,
+				03993F2214CD033A00045B24 /* QueryTree.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

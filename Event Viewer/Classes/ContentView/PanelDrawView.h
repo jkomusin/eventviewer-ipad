@@ -10,7 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 @class Event;
-@class QueryData;
+@class Query;
 @class BandLayer;
 @class ContentScrollView;
 @protocol DataDelegate;
@@ -43,7 +43,7 @@
 - (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum;
 - (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum;
 
-- (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
+- (void)drawTimelinesForData:(Query *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 
 - (void)doneZooming;
 - (void)zoomToScale:(float)zoomScale;

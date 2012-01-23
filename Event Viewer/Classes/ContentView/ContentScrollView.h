@@ -10,7 +10,7 @@
 
 @class PanelZoomView;
 @class ContentView;
-@class QueryData;
+@class Query;
 @protocol DataDelegate;
 @protocol DrawDelegate;
 

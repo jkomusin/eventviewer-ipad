@@ -8,7 +8,7 @@
 
 #import "PrimaryViewController.h"
 #import "PanelDrawView.h"
-#import "QueryData.h"
+#import "Query.h"
 #import "BandLayer.h"
 #import "Event.h"
 
@@ -31,7 +31,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 - (void)drawInContext:(CGContextRef)context
 {            
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     
     CGRect bandDrawF = CGRectMake(0.0f, 0.0f, self.bounds.size.width, self.bounds.size.height);
     bandDrawF = CGRectInset(bandDrawF, 0.5f, 0.5f);

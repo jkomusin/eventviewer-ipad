@@ -11,7 +11,7 @@
 #import "PanelDrawView.h"
 #import "PanelZoomView.h"
 #import "BandLayer.h"
-#import "QueryData.h"
+#import "Query.h"
 #import "EventInfo.h"
 #import "Event.h"
 
@@ -249,7 +249,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
     float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
     
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
     
     NSMutableArray *mutaStackLayerArr = [_stackLayerArray mutableCopy];
@@ -427,7 +427,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (NSArray *)findEventsAtPoint:(CGPoint)location
 {
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     Event *test = [[[[data.eventArray objectAtIndex:0] objectAtIndex:0] objectAtIndex:0] objectAtIndex:0];
     NSLog(@"Test event x: %f", [test x]);
     
@@ -547,7 +547,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
     float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
     
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
     
 //    CGSize stackTiles = ((CATiledLayer *)[_stackLayerArray lastObject]).tileSize;
@@ -593,7 +593,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (void)drawRect:(CGRect)rect 
 {    
-    QueryData *data = [_dataDelegate delegateRequestsQueryData];
+    Query *data = [_dataDelegate delegateRequestsQueryData];
   	CGContextRef context = UIGraphicsGetCurrentContext();
 	CGContextSetLineWidth(context, 1.0f);
 	
@@ -618,7 +618,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *
  *	data is a copy of the current QueryData object
  */
-- (void)drawTimelinesForData:(QueryData *)data inContext:(CGContextRef)context withMonthWidth:(float)width
+- (void)drawTimelinesForData:(Query *)data inContext:(CGContextRef)context withMonthWidth:(float)width
 {    
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
