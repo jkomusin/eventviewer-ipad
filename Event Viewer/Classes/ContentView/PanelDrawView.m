@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
 //
 
-#import "ContentViewController.h"
+#import "PrimaryViewController.h"
 #import "ContentScrollView.h"
 #import "PanelDrawView.h"
 #import "PanelZoomView.h"

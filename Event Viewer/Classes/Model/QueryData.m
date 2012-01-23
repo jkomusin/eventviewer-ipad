@@ -1,5 +1,5 @@
 
-#import "ContentViewController.h"
+#import "PrimaryViewController.h"
 #import "ContentScrollView.h"
 #import "QueryData.h"
 #import "Event.h"

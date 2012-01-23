@@ -5,8 +5,8 @@
 {
     UIWindow *window;
     MGSplitViewController *splitViewController;
-    QueryViewController *rootViewController;
-    ContentViewController *detailViewController;
+    SecondaryViewController *rootViewController;
+    PrimaryViewController *detailViewController;
 }
 
 @synthesize window, splitViewController, rootViewController, detailViewController;

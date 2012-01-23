@@ -12,8 +12,8 @@
 		03A78B0614C0951E00DEE1C0 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A78B0514C0951E00DEE1C0 /* icon.png */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
 		03DE3C7F14CCF6FF0054FB1D /* QueryView.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C7E14CCF6FF0054FB1D /* QueryView.m */; };
-		03DE3C8614CCFDCC0054FB1D /* ContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8314CCFDCC0054FB1D /* ContentViewController.m */; };
-		03DE3C8714CCFDCC0054FB1D /* QueryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8514CCFDCC0054FB1D /* QueryViewController.m */; };
+		03DE3C8614CCFDCC0054FB1D /* PrimaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8314CCFDCC0054FB1D /* PrimaryViewController.m */; };
+		03DE3C8714CCFDCC0054FB1D /* SecondaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8514CCFDCC0054FB1D /* SecondaryViewController.m */; };
 		1D3623260D0F684500981E51 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* AppDelegate.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
@@ -27,8 +27,6 @@
 		849AA98C1450F78000F93059 /* MGSplitCornersView.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9871450F78000F93059 /* MGSplitCornersView.m */; };
 		849AA98D1450F78000F93059 /* MGSplitDividerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9891450F78000F93059 /* MGSplitDividerView.m */; };
 		849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA98B1450F78000F93059 /* MGSplitViewController.m */; };
-		849AA9911450F78900F93059 /* ContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9901450F78900F93059 /* ContentViewController.m */; };
-		849AA9941450F78F00F93059 /* QueryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 849AA9931450F78F00F93059 /* QueryViewController.m */; };
 		84A7E5D11466FF6B006A6022 /* Event.m in Sources */ = {isa = PBXBuildFile; fileRef = 84A7E5D01466FF6B006A6022 /* Event.m */; };
 		84BA23871452088B009566D9 /* scrubber.png in Resources */ = {isa = PBXBuildFile; fileRef = 84BA23861452088A009566D9 /* scrubber.png */; };
 		84E626651451FC58007DDF98 /* QueryData.m in Sources */ = {isa = PBXBuildFile; fileRef = 84E626641451FC58007DDF98 /* QueryData.m */; };
@@ -48,10 +46,10 @@
 		03D2750714A3E6F900C91945 /* EventInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventInfo.m; path = ContentView/EventInfo.m; sourceTree = "<group>"; };
 		03DE3C7D14CCF6FF0054FB1D /* QueryView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryView.h; path = QueryView/QueryView.h; sourceTree = "<group>"; };
 		03DE3C7E14CCF6FF0054FB1D /* QueryView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryView.m; path = QueryView/QueryView.m; sourceTree = "<group>"; };
-		03DE3C8214CCFDCC0054FB1D /* ContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ContentViewController.h; path = ViewControllers/ContentViewController.h; sourceTree = "<group>"; };
-		03DE3C8314CCFDCC0054FB1D /* ContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ContentViewController.m; path = ViewControllers/ContentViewController.m; sourceTree = "<group>"; };
-		03DE3C8414CCFDCC0054FB1D /* QueryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryViewController.h; path = ViewControllers/QueryViewController.h; sourceTree = "<group>"; };
-		03DE3C8514CCFDCC0054FB1D /* QueryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryViewController.m; path = ViewControllers/QueryViewController.m; sourceTree = "<group>"; };
+		03DE3C8214CCFDCC0054FB1D /* PrimaryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; name = PrimaryViewController.h; path = ViewControllers/PrimaryViewController.h; sourceTree = "<group>"; };
+		03DE3C8314CCFDCC0054FB1D /* PrimaryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = PrimaryViewController.m; path = ViewControllers/PrimaryViewController.m; sourceTree = "<group>"; };
+		03DE3C8414CCFDCC0054FB1D /* SecondaryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; name = SecondaryViewController.h; path = ViewControllers/SecondaryViewController.h; sourceTree = "<group>"; };
+		03DE3C8514CCFDCC0054FB1D /* SecondaryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SecondaryViewController.m; path = ViewControllers/SecondaryViewController.m; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -74,10 +72,6 @@
 		849AA9891450F78000F93059 /* MGSplitDividerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MGSplitDividerView.m; path = MGSplitView/MGSplitDividerView.m; sourceTree = "<group>"; };
 		849AA98A1450F78000F93059 /* MGSplitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MGSplitViewController.h; path = MGSplitView/MGSplitViewController.h; sourceTree = "<group>"; };
 		849AA98B1450F78000F93059 /* MGSplitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = MGSplitViewController.m; path = MGSplitView/MGSplitViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		849AA98F1450F78900F93059 /* ContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = ContentViewController.h; path = ContentView/ContentViewController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		849AA9901450F78900F93059 /* ContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = ContentViewController.m; path = ContentView/ContentViewController.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		849AA9921450F78F00F93059 /* QueryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryViewController.h; path = QueryView/QueryViewController.h; sourceTree = "<group>"; };
-		849AA9931450F78F00F93059 /* QueryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryViewController.m; path = QueryView/QueryViewController.m; sourceTree = "<group>"; };
 		84A7E5CF1466FF6B006A6022 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Event.h; path = Model/Event.h; sourceTree = "<group>"; };
 		84A7E5D01466FF6B006A6022 /* Event.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Event.m; path = Model/Event.m; sourceTree = "<group>"; };
 		84BA23861452088A009566D9 /* scrubber.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = scrubber.png; path = Images/scrubber.png; sourceTree = "<group>"; };
@@ -128,14 +122,10 @@
 		03DE3C8114CCFD480054FB1D /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
-				849AA9921450F78F00F93059 /* QueryViewController.h */,
-				03DE3C8214CCFDCC0054FB1D /* ContentViewController.h */,
-				03DE3C8314CCFDCC0054FB1D /* ContentViewController.m */,
-				03DE3C8414CCFDCC0054FB1D /* QueryViewController.h */,
-				03DE3C8514CCFDCC0054FB1D /* QueryViewController.m */,
-				849AA9931450F78F00F93059 /* QueryViewController.m */,
-				849AA98F1450F78900F93059 /* ContentViewController.h */,
-				849AA9901450F78900F93059 /* ContentViewController.m */,
+				03DE3C8214CCFDCC0054FB1D /* PrimaryViewController.h */,
+				03DE3C8314CCFDCC0054FB1D /* PrimaryViewController.m */,
+				03DE3C8414CCFDCC0054FB1D /* SecondaryViewController.h */,
+				03DE3C8514CCFDCC0054FB1D /* SecondaryViewController.m */,
 			);
 			name = ViewControllers;
 			sourceTree = "<group>";
@@ -343,8 +333,6 @@
 				849AA98C1450F78000F93059 /* MGSplitCornersView.m in Sources */,
 				849AA98D1450F78000F93059 /* MGSplitDividerView.m in Sources */,
 				849AA98E1450F78000F93059 /* MGSplitViewController.m in Sources */,
-				849AA9911450F78900F93059 /* ContentViewController.m in Sources */,
-				849AA9941450F78F00F93059 /* QueryViewController.m in Sources */,
 				84E626651451FC58007DDF98 /* QueryData.m in Sources */,
 				847D130C1454818D00B1DA76 /* ContentScrollView.m in Sources */,
 				847D131614548CC000B1DA76 /* PanelDrawView.m in Sources */,
@@ -355,8 +343,8 @@
 				0344847B14B1139100537F77 /* Meta.m in Sources */,
 				0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */,
 				03DE3C7F14CCF6FF0054FB1D /* QueryView.m in Sources */,
-				03DE3C8614CCFDCC0054FB1D /* ContentViewController.m in Sources */,
-				03DE3C8714CCFDCC0054FB1D /* QueryViewController.m in Sources */,
+				03DE3C8614CCFDCC0054FB1D /* PrimaryViewController.m in Sources */,
+				03DE3C8714CCFDCC0054FB1D /* SecondaryViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

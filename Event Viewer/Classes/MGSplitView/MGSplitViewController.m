@@ -6,7 +6,7 @@
 //  Copyright 2010 Instinctive Code.
 //
 
-#import "QueryViewController.h"
+#import "SecondaryViewController.h"
 
 #import "MGSplitViewController.h"
 #import "MGSplitDividerView.h"
