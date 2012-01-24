@@ -103,7 +103,7 @@
 #pragma mark Drag-and-drop Handling
 
 /**
- *  Initial entry point for a drag-and-drop gesture.
+ *  Initial entry point for a drag-and-drop gesture related to dragging a tableCell "Meta".
  *  Deals with all actions occurring inside the PanGestureRecognizer.
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
@@ -164,7 +164,7 @@
         draggingCell = nil;
     }
     
-    CGRect frame = CGRectMake(origin.x, origin.y, cell.frame.size.width, cell.frame.size.height);
+    CGRect frame = CGRectMake(origin.x, origin.y, cell.frame.size.width + 20.0f, cell.frame.size.height + 20.0f);
     
     draggingCell = [[UITableViewCell alloc] init];
     draggingCell.selectionStyle = UITableViewCellSelectionStyleBlue;
@@ -190,8 +190,6 @@
         [draggingCell setCenter:CGPointMake([draggingCell center].x + translation.x,
                                            [draggingCell center].y + translation.y)];
         
-        
-        
         [gestureRecognizer setTranslation:CGPointZero inView:[draggingCell superview]];
     }
 }
@@ -206,6 +204,11 @@
     if ([_detailViewController pointIsInsideScrubber:gestureRecognizer])
     {
         [_detailViewController addNewPanel];
+    }
+    
+    if ([_detailViewController pointIsInsideBuilder:gestureRecognizer])
+    {
+        NSLog(@"Dropped inside query builder!");
     }
     
     [draggingCell removeFromSuperview];

@@ -69,6 +69,7 @@ enum UI_OBJECT
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)configureView;
 - (BOOL)pointIsInsideScrubber:(UIPanGestureRecognizer *)recognizer;
+- (BOOL)pointIsInsideBuilder:(UIPanGestureRecognizer *)recognizer;
 - (void)changeCurrentPanel:(int)panelIndex;
 
 - (void)showQueryBuilder;
