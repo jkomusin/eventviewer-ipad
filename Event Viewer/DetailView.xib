@@ -36,14 +36,14 @@
 				<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 			</object>
 			<object class="IBUIView" id="647120888">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<object class="IBUILabel" id="483876647">
 						<reference key="NSNextResponder" ref="647120888"/>
 						<int key="NSvFlags">298</int>
-						<string key="NSFrame">{{20, 475}, {728, 21}}</string>
+						<string key="NSFrame">{{78, 335}, {728, 21}}</string>
 						<reference key="NSSuperview" ref="647120888"/>
 						<object class="NSColor" key="IBUIBackgroundColor" id="33107367">
 							<int key="NSColorSpace">3</int>
@@ -118,6 +118,7 @@
 					</object>
 				</object>
 				<string key="NSFrame">{{0, 20}, {768, 1004}}</string>
+				<reference key="NSSuperview"/>
 				<reference key="NSNextKeyView" ref="410698538"/>
 				<reference key="IBUIBackgroundColor" ref="117007193"/>
 				<bool key="IBUIClearsContextBeforeDrawing">NO</bool>
@@ -182,9 +183,9 @@
 						<reference key="object" ref="647120888"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="483876647"/>
 							<reference ref="410698538"/>
 							<reference ref="408066207"/>
+							<reference ref="483876647"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>

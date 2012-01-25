@@ -9,7 +9,7 @@
  *
  *  Used in Event Viewer to display the tree of queriable constraints.
  */
-@interface SecondaryViewController : UITableViewController 
+@interface SecondaryViewController : UINavigationController <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) MGSplitViewController *splitViewController;
 @property (nonatomic, strong) IBOutlet PrimaryViewController *detailViewController;

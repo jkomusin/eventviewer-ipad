@@ -32,14 +32,25 @@
  */
 - (id)initWithCoder:(NSCoder *)coder
 {
-    if ((self = [super initWithCoder:coder]))
+    if ((self = [super init]))//]WithCoder:coder]))
     {        
+        CGRect tableFrame = self.view.frame;
+        tableFrame.origin.y = tableFrame.origin.y + 44.0f;
+        tableFrame.size.height = tableFrame.size.height = 44.0f;
+        UITableView *newTable = [[UITableView alloc] initWithFrame:self.view.frame];
+        newTable.dataSource = self;
+        newTable.delegate = self;
+        self.view = newTable;
+        
+        // Reposition table to make space for navigation bar
+        UIEdgeInsets inset = UIEdgeInsetsMake(44.0f, 0.0f, 0.0f, 0.0f);
+        newTable.contentInset = inset;
+        
+        // Create gesture recognizer
         UIPanGestureRecognizer* dragGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
         [dragGesture setMaximumNumberOfTouches:2];
         [dragGesture setMinimumNumberOfTouches:2];
         [self.view addGestureRecognizer:dragGesture];
-        
-		self.title = @"Select constraints:";
         
         // Initialize toolbar
         UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] 
@@ -56,15 +67,11 @@
         
         UINavigationBar *naviBar = [[UINavigationBar alloc] init];
         naviBar.items = [NSArray arrayWithObject:navItem];
-        naviBar.frame = CGRectMake(0.0f, 0.0f, 320.0f, 44.0f);
+        naviBar.frame = CGRectMake(0.0f, -44.0f, 320.0f, 44.0f);
         naviBar.tintColor = [UIColor blackColor];
         [self.view addSubview:naviBar];
         [self.view bringSubviewToFront:naviBar];
         _naviBar = naviBar;
-        
-        // Reposition table to make space for navigation bar
-        UIEdgeInsets inset = UIEdgeInsetsMake(44.0f, 0.0f, 0.0f, 0.0f);
-        self.tableView.contentInset = inset;
     }
     
     return self;
@@ -74,7 +81,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.clearsSelectionOnViewWillAppear = NO;
+//    self.clearsSelectionOnViewWillAppear = NO;
     self.contentSizeForViewInPopover = CGSizeMake(320.0f, 600.0f);
     
 //    // Reposition table to make space for navigation bar
@@ -135,9 +142,9 @@
  */
 - (void)startDragging:(UIPanGestureRecognizer *)gestureRecognizer
 {    
-    CGPoint point = [gestureRecognizer locationInView:self.tableView];
-    NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:point];
-    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    CGPoint point = [gestureRecognizer locationInView:self.view];
+    NSIndexPath* indexPath = [(UITableView *)self.view indexPathForRowAtPoint:point];
+    UITableViewCell* cell = [(UITableView *)self.view cellForRowAtIndexPath:indexPath];
     if(cell != nil)
     {
         CGPoint cellRelative = [gestureRecognizer locationInView:cell];
