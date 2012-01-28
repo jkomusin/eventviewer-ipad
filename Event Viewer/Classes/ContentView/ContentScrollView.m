@@ -13,7 +13,7 @@
 #import "PanelDrawView.h"
 #import "BandLayer.h"
 #import "Query.h"
-#import "Meta.h"
+#import "Constraint.h"
 
 @interface ContentScrollView ()
 - (void)createLabels;
@@ -383,7 +383,7 @@ float TOP_LABEL_SPACING = 50.0f;
         [panelL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_panelFontSize]];
         [panelL setBackgroundColor:[UIColor clearColor]];
         [panelL setTextColor:[UIColor whiteColor]];
-        NSString *panelM = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Panels"] objectAtIndex:i] name];
+        NSString *panelM = [(Constraint *)[(NSArray *)[data.selectedMetas objectForKey:@"Panels"] objectAtIndex:i] name];
         [panelL setText:panelM];
         
         UILongPressGestureRecognizer* pDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
@@ -414,7 +414,7 @@ float TOP_LABEL_SPACING = 50.0f;
 		[stackL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:_stackFontSize]];
         [stackL setBackgroundColor:[UIColor clearColor]];
         [stackL setTextColor:[UIColor whiteColor]];
-		NSString *stackM = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i] name];
+		NSString *stackM = [(Constraint *)[(NSArray *)[data.selectedMetas objectForKey:@"Stacks"] objectAtIndex:i] name];
         NSString *newStackM = [NSString stringWithFormat:@"\t\t\t%@", stackM];
 		[stackL setText:newStackM];
         
@@ -438,7 +438,7 @@ float TOP_LABEL_SPACING = 50.0f;
             [bandL setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize]];
             [bandL setBackgroundColor:[UIColor clearColor]];
             [bandL setTextColor:[UIColor whiteColor]];
-			NSString *meta = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j] name];
+			NSString *meta = [(Constraint *)[(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j] name];
 			[bandL setText:meta];
             
             UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
@@ -470,7 +470,7 @@ float TOP_LABEL_SPACING = 50.0f;
             [bandL setFont:[UIFont fontWithName:@"Helvetica" size:_bandFontSize]];
             [bandL setBackgroundColor:[UIColor clearColor]];
             [bandL setTextColor:[UIColor whiteColor]];
-			NSString *meta = [(Meta *)[(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j] name];
+			NSString *meta = [(Constraint *)[(NSArray *)[data.selectedMetas objectForKey:@"Bands"] objectAtIndex:j] name];
 			[bandL setText:meta];
             
             UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];

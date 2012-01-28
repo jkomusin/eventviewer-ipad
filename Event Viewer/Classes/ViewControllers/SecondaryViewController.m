@@ -2,6 +2,7 @@
 #import "SecondaryViewController.h"
 #import "PrimaryViewController.h"
 #import "QueryBuilderView.h"
+#import "QueryTableCell.h"
 #import "Query.h"
 
 @implementation UINavigationBar (CustomImage)
@@ -246,14 +247,16 @@
     static NSString *CellIdentifier = @"CellIdentifier";
     
     // Dequeue or create a cell of the appropriate type.
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-        cell.accessoryType = UITableViewCellAccessoryNone;
+    QueryTableCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) 
+    {
+        cell = [[QueryTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
+        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
     // Configure the cell.
     cell.textLabel.text = [NSString stringWithFormat:@"%d Panels", indexPath.row];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%d detail text", indexPath.row];
     
     return cell;
 }

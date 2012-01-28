@@ -9,5 +9,20 @@
 #import "QueryTree.h"
 
 @implementation QueryTree
+{
+    NSMutableArray *constraintArray;    // Array of all constraints in the current query tree
+    int currentDepth;                   // Current depth the drill-down constraint tree is at
+}
+
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [[UITableViewCell alloc] init];
+}
 
 @end

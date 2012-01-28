@@ -44,13 +44,24 @@ enum UI_OBJECT
 
 @end
 
+/**
+ *  Delegate protocol to provide notifications of login status.
+ */
+@protocol LoginDelegate
+@required
+- (void)loginToDatabaseSucceeded;
+- (void)loginToDatabaseFailed;
+
+@end
+
 
 /**
  *  "Primary" ViewController displayed in the MGUISplitViewController
  *
  *  Used in Event Viewer to display the results of a query, as well as the query-building interface.
  */
-@interface PrimaryViewController : UIViewController <UIPopoverControllerDelegate, UIGestureRecognizerDelegate, MGSplitViewControllerDelegate, DataDelegate> 
+@interface PrimaryViewController : UIViewController 
+    <UIPopoverControllerDelegate, UIGestureRecognizerDelegate, MGSplitViewControllerDelegate, DataDelegate, LoginDelegate> 
 
 // MGUISplitViewController public properties
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;

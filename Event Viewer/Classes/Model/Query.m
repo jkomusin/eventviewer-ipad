@@ -3,7 +3,7 @@
 #import "ContentScrollView.h"
 #import "Query.h"
 #import "Event.h"
-#import "Meta.h"
+#import "Constraint.h"
 
 #define MY_MALLOC(x)    my_malloc( #x, x )
 #define MY_FREE(x)      my_free(x)
@@ -60,7 +60,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (char p = 'A'; p < ('A' + panels); p++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Panel %c", p];
-            Meta *newM = [[Meta alloc] initWithName:new];
+            Constraint *newM = [[Constraint alloc] initWithName:new];
             [mutablePanels addObject:newM];
         }
         
@@ -68,7 +68,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (char s = 'A'; s < ('A' + TEST_STACKS); s++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Stack %c", s];
-            Meta *newM = [[Meta alloc] initWithName:new];
+            Constraint *newM = [[Constraint alloc] initWithName:new];
             [mutableStacks addObject:newM];
         }
         
@@ -76,7 +76,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (char b = 'A'; b < ('A' + TEST_BANDS); b++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Band %c", b];
-            Meta *newM = [[Meta alloc] initWithName:new];
+            Constraint *newM = [[Constraint alloc] initWithName:new];
             [mutableBands addObject:newM];
         }
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
