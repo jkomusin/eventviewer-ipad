@@ -12,6 +12,7 @@
 #define TIMELINE_HEIGHT_P 64.0f
 
 
+@class SecondaryViewController;
 @class QueryViewController;
 @class QueryBuilderView;
 @class Query;
@@ -74,8 +75,12 @@ enum UI_OBJECT
 - (IBAction)toggleMasterBeforeDetail:(id)sender;
 ///////
 
+@property (nonatomic, strong) SecondaryViewController *masterViewController;    // Other controller in split view
+
 @property (nonatomic, strong) QueryBuilderView *queryView;  // View for building and submitting a query
 @property (nonatomic, strong) Query *queryData;   // Model object containing and managing all data forming the current query and its results
+
+- (void)loginToDefault;
 
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)configureView;

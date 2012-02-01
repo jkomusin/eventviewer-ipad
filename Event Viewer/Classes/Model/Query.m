@@ -60,7 +60,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (char p = 'A'; p < ('A' + panels); p++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Panel %c", p];
-            Constraint *newM = [[Constraint alloc] initWithName:new];
+            Constraint *newM = [[Constraint alloc] initWithName:new description:@""];
             [mutablePanels addObject:newM];
         }
         
@@ -68,7 +68,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (char s = 'A'; s < ('A' + TEST_STACKS); s++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Stack %c", s];
-            Constraint *newM = [[Constraint alloc] initWithName:new];
+            Constraint *newM = [[Constraint alloc] initWithName:new description:@""];
             [mutableStacks addObject:newM];
         }
         
@@ -76,7 +76,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         for (char b = 'A'; b < ('A' + TEST_BANDS); b++)
         {
             NSString *new = [[NSString alloc] initWithFormat:@"Band %c", b];
-            Constraint *newM = [[Constraint alloc] initWithName:new];
+            Constraint *newM = [[Constraint alloc] initWithName:new description:@""];
             [mutableBands addObject:newM];
         }
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];

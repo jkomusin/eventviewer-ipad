@@ -19,9 +19,11 @@
 enum ConnectionType
 {
     LOGIN = 0,
-    CONSTRAINT = 1,
-    EVENT = 2,
-    EVENT_COUNT = 3
+    EVENT = 1,
+    EVENT_COUNT = 2,
+    LOCATION = 3,
+    RELATION = 4,
+    META = 5
 };
 
 
@@ -29,10 +31,15 @@ enum ConnectionType
  *  URLConnection with custom properties to specify the type of connection, along with identifying information.
  */
 @interface DatabaseConnection : NSURLConnection
+{
+    
+}
 
 @property (nonatomic, assign) enum ConnectionType type; // Type of data requested by this connection
 @property (nonatomic, assign) int panelIndex;           // Optional index of the panel whose events were requested by this connection
 @property (nonatomic, assign) int stackIndex;           // Optional index of the stack whose events were requested by this connection
 @property (nonatomic, assign) int bandIndex;            // Optional index of the band whose events were requested by this connection
+
+- (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate ofType:(enum ConnectionType)type;
 
 @end

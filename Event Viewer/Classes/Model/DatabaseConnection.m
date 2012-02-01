@@ -9,7 +9,23 @@
 #import "DatabaseConnection.h"
 
 @implementation DatabaseConnection
+{
+    
+}
 
-@synthesize type, panelIndex, stackIndex, bandIndex;
+@synthesize type = _type;
+@synthesize panelIndex = _panelIndex;
+@synthesize stackIndex = _stackIndex;
+@synthesize bandIndex = _bandIndex;
+
+- (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate ofType:(enum ConnectionType)type
+{
+    if ((self = [super initWithRequest:request delegate:delegate]))
+    {
+        self.type = type;
+    }
+    
+    return self;
+}
 
 @end

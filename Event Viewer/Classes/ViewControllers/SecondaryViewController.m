@@ -2,22 +2,27 @@
 #import "SecondaryViewController.h"
 #import "PrimaryViewController.h"
 #import "QueryBuilderView.h"
-#import "QueryTableCell.h"
+#import "QueryTree.h"
 #import "Query.h"
 
-@implementation UINavigationBar (CustomImage)
-- (void)drawRect:(CGRect)rect {
-    self.backgroundColor = [UIColor blackColor];
-}
+
+@interface SecondaryViewController ()
+
+- (void)addNavButtonsToTopTable;
+- (void)upOneLevel;
+- (void)upToRoot;
+
 @end
+
 
 @implementation SecondaryViewController
 {
     MGSplitViewController *splitViewController;     // Master MGUISplitViewController
     PrimaryViewController *detailViewController;    // ViewController displayed in the "primary" view of the MGUISplitViewController
     
-    UITableViewCell *draggingCell;                  // Table cell currently being dragged, used as visually moving cell
-    UINavigationBar *_naviBar;                      // Table navigation bar
+    QueryTree *_queryTree;                          // Data model for the constraint table
+    
+    UITableViewCell *_draggingCell;                 // Table cell currently being dragged, used as visually moving cell
 }
 
 @synthesize splitViewController = _splitViewController;
@@ -33,46 +38,24 @@
  */
 - (id)initWithCoder:(NSCoder *)coder
 {
-    if ((self = [super init]))//]WithCoder:coder]))
+    if ((self = [super init]))
     {        
-        CGRect tableFrame = self.view.frame;
-        tableFrame.origin.y = tableFrame.origin.y + 44.0f;
-        tableFrame.size.height = tableFrame.size.height = 44.0f;
-        UITableView *newTable = [[UITableView alloc] initWithFrame:self.view.frame];
-        newTable.dataSource = self;
-        newTable.delegate = self;
-        self.view = newTable;
+        self.navigationBar.tintColor = [UIColor blackColor];
         
-        // Reposition table to make space for navigation bar
-        UIEdgeInsets inset = UIEdgeInsetsMake(44.0f, 0.0f, 0.0f, 0.0f);
-        newTable.contentInset = inset;
+        _detailViewController.masterViewController = self;
+            
+        // Create initial table
+        UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+        newTable.tableView.delegate = self;
+        newTable.title = @"Categories";
+        newTable.clearsSelectionOnViewWillAppear = YES;
+        [self pushViewController:newTable animated:NO];
         
         // Create gesture recognizer
         UIPanGestureRecognizer* dragGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
         [dragGesture setMaximumNumberOfTouches:2];
         [dragGesture setMinimumNumberOfTouches:2];
         [self.view addGestureRecognizer:dragGesture];
-        
-        // Initialize toolbar
-        UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] 
-                                 initWithBarButtonSystemItem:UIBarButtonSystemItemRewind 
-                                 target:self action:nil];
-        UIBarButtonItem *rightItem = [[UIBarButtonItem alloc]
-                                      initWithBarButtonSystemItem:UIBarButtonSystemItemReply
-                                      target:self action:nil];
-        
-        UINavigationItem* navItem = [[UINavigationItem alloc] init];
-        navItem.leftBarButtonItem = leftItem;
-        navItem.rightBarButtonItem = rightItem;
-        navItem.title = @"Your title";
-        
-        UINavigationBar *naviBar = [[UINavigationBar alloc] init];
-        naviBar.items = [NSArray arrayWithObject:navItem];
-        naviBar.frame = CGRectMake(0.0f, -44.0f, 320.0f, 44.0f);
-        naviBar.tintColor = [UIColor blackColor];
-        [self.view addSubview:naviBar];
-        [self.view bringSubviewToFront:naviBar];
-        _naviBar = naviBar;
     }
     
     return self;
@@ -82,28 +65,17 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-//    self.clearsSelectionOnViewWillAppear = NO;
     self.contentSizeForViewInPopover = CGSizeMake(320.0f, 600.0f);
-    
-//    // Reposition table to make space for navigation bar
-//    UIEdgeInsets inset = UIEdgeInsetsMake(44.0f, 0.0f, 0.0f, 0.0f);
-//    self.tableView.contentInset = inset;
 }
 
 
-// Ensure that the view controller supports rotation and that the split view can therefore show in both portrait and landscape.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    return YES;
-}
-
-
-- (void)selectFirstRow
+- (void)initQueryTreeWithHandler:(DatabaseHandler *)dbHandler
 {
-//	if ([self.tableView numberOfSections] > 0 && [self.tableView numberOfRowsInSection:0] > 0) {
-//		NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-//		[self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionTop];
-//		[self tableView:self.tableView didSelectRowAtIndexPath:indexPath];
-//	}
+    _queryTree = [[QueryTree alloc] initWithHandler:dbHandler];
+    _queryTree.treeDelegate = self;
+    UITableViewController *top = (UITableViewController *)self.topViewController;
+    top.tableView.dataSource = _queryTree;
+    top.title = [_queryTree getCurrentTitle];
 }
 
 
@@ -144,8 +116,8 @@
 - (void)startDragging:(UIPanGestureRecognizer *)gestureRecognizer
 {    
     CGPoint point = [gestureRecognizer locationInView:self.view];
-    NSIndexPath* indexPath = [(UITableView *)self.view indexPathForRowAtPoint:point];
-    UITableViewCell* cell = [(UITableView *)self.view cellForRowAtIndexPath:indexPath];
+    NSIndexPath* indexPath = [(UITableView *)self.topViewController.view indexPathForRowAtPoint:point];
+    UITableViewCell* cell = [(UITableView *)self.topViewController.view cellForRowAtIndexPath:indexPath];
     if(cell != nil)
     {
         CGPoint cellRelative = [gestureRecognizer locationInView:cell];
@@ -166,39 +138,39 @@
  */
 - (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)origin
 {
-    if(draggingCell != nil)
+    if(_draggingCell != nil)
     {
-        [draggingCell removeFromSuperview];
-        draggingCell = nil;
+        [_draggingCell removeFromSuperview];
+        _draggingCell = nil;
     }
     
     CGRect frame = CGRectMake(origin.x, origin.y, cell.frame.size.width + 20.0f, cell.frame.size.height + 20.0f);
     
-    draggingCell = [[UITableViewCell alloc] init];
-    draggingCell.selectionStyle = UITableViewCellSelectionStyleBlue;
-    draggingCell.textLabel.text = cell.textLabel.text;
-    draggingCell.textLabel.textColor = cell.textLabel.textColor;
-    draggingCell.highlighted = YES;
-    draggingCell.frame = frame;
-    draggingCell.alpha = 0.8;
+    _draggingCell = [[UITableViewCell alloc] init];
+    _draggingCell.selectionStyle = UITableViewCellSelectionStyleBlue;
+    _draggingCell.textLabel.text = cell.textLabel.text;
+    _draggingCell.textLabel.textColor = cell.textLabel.textColor;
+    _draggingCell.highlighted = YES;
+    _draggingCell.frame = frame;
+    _draggingCell.alpha = 0.8;
 
-    [_detailViewController.view addSubview:draggingCell];
+    [_detailViewController.view addSubview:_draggingCell];
 }
 
 /**
- *  Move the temporary draggingCell to the new location specified by the gesture recognizer's new point.
+ *  Move the temporary _draggingCell to the new location specified by the gesture recognizer's new point.
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)doDrag:(UIPanGestureRecognizer *)gestureRecognizer
 {
-    if(draggingCell != nil)
+    if(_draggingCell != nil)
     {
-        CGPoint translation = [gestureRecognizer translationInView:[draggingCell superview]];
-        [draggingCell setCenter:CGPointMake([draggingCell center].x + translation.x,
-                                           [draggingCell center].y + translation.y)];
+        CGPoint translation = [gestureRecognizer translationInView:[_draggingCell superview]];
+        [_draggingCell setCenter:CGPointMake([_draggingCell center].x + translation.x,
+                                           [_draggingCell center].y + translation.y)];
         
-        [gestureRecognizer setTranslation:CGPointZero inView:[draggingCell superview]];
+        [gestureRecognizer setTranslation:CGPointZero inView:[_draggingCell superview]];
     }
 }
 
@@ -219,75 +191,106 @@
         NSLog(@"Dropped inside query builder!");
     }
     
-    [draggingCell removeFromSuperview];
-    draggingCell = nil;
+    [_draggingCell removeFromSuperview];
+    _draggingCell = nil;
 }
 
 
 #pragma mark -
-#pragma mark Table view data source
+#pragma mark Table view navigation
 
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)aTableView
+/**
+ *  Adds custom naviagtion buttons to the top table view in the stack
+ */
+- (void)addNavButtonsToTopTable
 {
-    // Return the number of sections.
-    return 1;
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] 
+                                 initWithBarButtonSystemItem:UIBarButtonSystemItemRewind 
+                                 target:self action:@selector(upToRoot)];
+    UIBarButtonItem *leftItem = [[UIBarButtonItem alloc]
+                                  initWithBarButtonSystemItem:UIBarButtonSystemItemReply
+                                  target:self action:@selector(upOneLevel)];
+    self.topViewController.navigationItem.rightBarButtonItem = rightItem;
+    self.topViewController.navigationItem.leftBarButtonItem = leftItem;
 }
 
-
-- (NSInteger)tableView:(UITableView *)aTableView numberOfRowsInSection:(NSInteger)section
+/**
+ *  Pops the top table off the stack (navigates backwards one level up the tree)
+ */
+- (void)upOneLevel
 {
-    // Return the number of rows in the section.
-    return 10;
+    [_queryTree drillUpOne];
+    [self popViewControllerAnimated:YES];    
 }
 
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+/**
+ *  Pops all tables off the stack (navigates back to the root of the tree)
+ */
+- (void)upToRoot
 {
-    static NSString *CellIdentifier = @"CellIdentifier";
-    
-    // Dequeue or create a cell of the appropriate type.
-    QueryTableCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil) 
-    {
-        cell = [[QueryTableCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
-        cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-    }
-    
-    // Configure the cell.
-    cell.textLabel.text = [NSString stringWithFormat:@"%d Panels", indexPath.row];
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"%d detail text", indexPath.row];
-    
-    return cell;
+    [_queryTree drillUpToRoot];
+    [self popToRootViewControllerAnimated:YES];
 }
 
 
 #pragma mark -
-#pragma mark Table view delegate
+#pragma mark Table view delegation
+
 
 /**
  *  Fired when a row is selected in the query table
  */
 - (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"Selected row, initializing test data (%d panels) . . .", indexPath.row);
-    //when selected, create number of test panels and update view
-    Query *newData = [[Query alloc] initTestWithPanels:indexPath.row];
+    [_queryTree drillDownToIndex:indexPath.row];
     
-    NSLog(@"Test data initialized!");
-    _detailViewController.queryData = newData;
+    // Create new table
+    UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
+    newTable.title = [_queryTree getCurrentTitle];
+    newTable.tableView.dataSource = _queryTree;
+    newTable.tableView.delegate = self;
+    newTable.clearsSelectionOnViewWillAppear = YES;
+    
+    // Add loading indicator
+    CGRect progressF = CGRectMake((self.view.frame.size.width / 2.0f) - 25.0f, (self.view.frame.size.height / 2.0f) - 25.0f, 50.0f, 50.0f);
+    UIActivityIndicatorView *progress= [[UIActivityIndicatorView alloc] initWithFrame:progressF];
+    progress.activityIndicatorViewStyle = UIActivityIndicatorViewStyleWhiteLarge;
+    [progress startAnimating];
+    [newTable.tableView addSubview:progress];
+    
+    [self pushViewController:newTable animated:YES];
+    [self addNavButtonsToTopTable];
 }
 
-/**
- *  Fired whenever the table view is scrolled.
- */
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+
+#pragma mark -
+#pragma mark Query Tree delegation
+
+
+- (void)treeDidUpdateData
 {
-    // Keep the navigation bar pinned to the top of the tableview
-    CGRect frame = _naviBar.frame;
-    frame.origin.y = scrollView.contentOffset.y;
-    _naviBar.frame = frame;
-    [self.view bringSubviewToFront:_naviBar];
+    UITableView *tableView = ((UITableViewController *)self.topViewController).tableView;
+    for (UIView *v in [tableView subviews])
+    {
+        if ([v isKindOfClass:[UIActivityIndicatorView class]])
+        {
+            [v removeFromSuperview];
+        }
+    }
+    
+    [tableView reloadData];
+}
+
+
+#pragma mark -
+#pragma mark Misc
+
+
+// Ensure that the view controller supports rotation and that the split view can therefore show in both portrait and landscape.
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
+{
+    return YES;
 }
 
 

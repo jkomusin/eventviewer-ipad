@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DatabaseConnection.h"
 
 @class Query;
 @protocol LoginDelegate;
@@ -21,11 +22,15 @@
  *      - The Query should be the delegate only for the return of queries for events
  */
 @interface DatabaseHandler : NSObject <NSURLConnectionDataDelegate>
+{
+    
+}
 
 @property (nonatomic, strong) id<LoginDelegate> loginDelegate;
 
 - (id)initWithURL:(NSString *)url username:(NSString *)user password:(NSString *)pass delegate:(id<LoginDelegate>)delegate;
-- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate;
+
+- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type;
 - (void) getEventCountForQuery:(Query *)query;
 
 @end

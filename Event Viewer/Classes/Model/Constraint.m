@@ -11,12 +11,18 @@
 @implementation Constraint
 
 @synthesize name = _name;
+@synthesize description = _description;
+@synthesize identifier = _identifier;
+@synthesize type = _type;
+//@synthesize ids = _ids;
 
-- (id)initWithName:(NSString *)name
+- (id)initWithName:(NSString *)name description:(NSString *)desc
 {
     if ((self = [super init]))
     { 
         _name = name;
+        _description = desc;
+//        _ids = [[NSDictionary alloc] init];
     }
     
     return self;

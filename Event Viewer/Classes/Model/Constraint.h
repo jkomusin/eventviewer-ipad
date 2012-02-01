@@ -14,7 +14,11 @@
 @interface Constraint : NSObject
 
 @property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong) NSString *description;
+@property (nonatomic, assign) int identifier;
+@property (nonatomic, strong) NSString *type;
+//@property (nonatomic, strong) NSDictionary *ids;
 
-- (id)initWithName:(NSString *)name;
+- (id)initWithName:(NSString *)name description:(NSString *)desc;
 
 @end

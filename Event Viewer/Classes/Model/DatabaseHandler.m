@@ -10,7 +10,6 @@
 #import "DatabaseConnection.h"
 #import "PrimaryViewController.h"
 #import "Query.h"
-#import "JSONKit.h"
 
 @interface DatabaseHandler ()
 
@@ -21,7 +20,6 @@
 
 @implementation DatabaseHandler
 {
-    JSONDecoder *_jsonHandler;   // JSON decoder to handle the results of queries
     NSString *_servletURL;       // URL of the servlet, or 'get.php' script
     
     NSMutableData *_response;    // The response of the current login query
@@ -53,8 +51,7 @@
                                                 cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                             timeoutInterval:60.0];
     
-    DatabaseConnection *loginConnection=[[DatabaseConnection alloc] initWithRequest:loginRequest delegate:self];
-    [loginConnection setType:LOGIN];
+    (void) [[DatabaseConnection alloc] initWithRequest:loginRequest delegate:self ofType:LOGIN];
 }
 
 
@@ -69,9 +66,16 @@
  *  Data will be returned to the delegate by the delegate methods:
  *  connection:didReceiveResponse:, connection:didReceiveData:, connection:didFailWithError: and connectionDidFinishLoading:
  */
-- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate
+- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
 {
-
+    NSLog(@"Querying with parameters: %@ and type: %d", params, type);
+    
+    NSString *queryURL = [NSString stringWithFormat:@"%@?%@", _servletURL, params];
+    NSURLRequest *dbRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:queryURL]
+                                                cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                                            timeoutInterval:60.0];
+    
+    (void) [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
 }
 
 - (void) getEventCountForQuery:(Query *)query
@@ -89,6 +93,17 @@
  */
 - (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
+    NSLog(@"Type of query: %d", connection.type);
+    if (connection.type != LOGIN)
+    {
+        NSString *type;
+        if (connection.type == LOCATION)  type = @"LOCATION";
+        if (connection.type == RELATION)  type = @"RELATION";
+        if (connection.type == META)  type = @"META";
+        if (connection.type == EVENT)       type = @"EVENT";
+        if (connection.type == EVENT_COUNT) type = @"EVENT_COUNT";
+        NSLog(@"ERROR: Connection of type '%@' handled by DatabaseHandler. Expected 'LOGIN'", type);
+    }
     _response = [[NSMutableData alloc] init];
 }
 
@@ -123,7 +138,7 @@
  */
 - (void)connection:(DatabaseConnection *)connection didFailWithError:(NSError *)error
 {
-    NSLog(@"Connection failed! Error - %@ %@",
+    NSLog(@"Login connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey]);
 }

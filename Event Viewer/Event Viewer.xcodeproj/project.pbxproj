@@ -10,10 +10,8 @@
 		0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0331700814BCC64700C9B287 /* DraggableLabel.m */; };
 		0344847B14B1139100537F77 /* Constraint.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Constraint.m */; };
 		03993F2214CD033A00045B24 /* QueryTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 03993F2114CD033A00045B24 /* QueryTree.m */; };
-		03A2526E14D484D500C3BAB7 /* QueryTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A2526D14D484D500C3BAB7 /* QueryTableCell.m */; };
 		03A2527214D4879900C3BAB7 /* DetailView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A2527014D4879900C3BAB7 /* DetailView.xib */; };
 		03A2527314D4879900C3BAB7 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A2527114D4879900C3BAB7 /* MainWindow.xib */; };
-		03A2527714D4880100C3BAB7 /* QueryTableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A2527614D4880100C3BAB7 /* QueryTableCell.xib */; };
 		03A2527A14D491EB00C3BAB7 /* DatabaseHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A2527914D491EB00C3BAB7 /* DatabaseHandler.m */; };
 		03A2528314D493AE00C3BAB7 /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A2528114D493AE00C3BAB7 /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		03A2528414D493AE00C3BAB7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 03A2528214D493AE00C3BAB7 /* README.md */; };
@@ -50,11 +48,8 @@
 		0344847A14B1139100537F77 /* Constraint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Constraint.m; path = Model/Constraint.m; sourceTree = "<group>"; };
 		03993F2014CD033A00045B24 /* QueryTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryTree.h; path = Model/QueryTree.h; sourceTree = "<group>"; };
 		03993F2114CD033A00045B24 /* QueryTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryTree.m; path = Model/QueryTree.m; sourceTree = "<group>"; };
-		03A2526C14D484D500C3BAB7 /* QueryTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryTableCell.h; path = QueryView/QueryTableCell.h; sourceTree = "<group>"; };
-		03A2526D14D484D500C3BAB7 /* QueryTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryTableCell.m; path = QueryView/QueryTableCell.m; sourceTree = "<group>"; };
 		03A2527014D4879900C3BAB7 /* DetailView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DetailView.xib; path = IBViews/DetailView.xib; sourceTree = "<group>"; };
 		03A2527114D4879900C3BAB7 /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = MainWindow.xib; path = IBViews/MainWindow.xib; sourceTree = "<group>"; };
-		03A2527614D4880100C3BAB7 /* QueryTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = QueryTableCell.xib; path = IBViews/QueryTableCell.xib; sourceTree = "<group>"; };
 		03A2527814D491EB00C3BAB7 /* DatabaseHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DatabaseHandler.h; path = Model/DatabaseHandler.h; sourceTree = "<group>"; };
 		03A2527914D491EB00C3BAB7 /* DatabaseHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DatabaseHandler.m; path = Model/DatabaseHandler.m; sourceTree = "<group>"; };
 		03A2528014D493AE00C3BAB7 /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JSONKit.h; path = JSON/JSONKit.h; sourceTree = "<group>"; };
@@ -141,7 +136,6 @@
 		03A2526F14D4877E00C3BAB7 /* IBViews */ = {
 			isa = PBXGroup;
 			children = (
-				03A2527614D4880100C3BAB7 /* QueryTableCell.xib */,
 				03A2527014D4879900C3BAB7 /* DetailView.xib */,
 				03A2527114D4879900C3BAB7 /* MainWindow.xib */,
 			);
@@ -250,8 +244,6 @@
 			children = (
 				03DE3C7D14CCF6FF0054FB1D /* QueryBuilderView.h */,
 				03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */,
-				03A2526C14D484D500C3BAB7 /* QueryTableCell.h */,
-				03A2526D14D484D500C3BAB7 /* QueryTableCell.m */,
 			);
 			name = QueryView;
 			sourceTree = "<group>";
@@ -365,7 +357,6 @@
 				03A78B0614C0951E00DEE1C0 /* icon.png in Resources */,
 				03A2527214D4879900C3BAB7 /* DetailView.xib in Resources */,
 				03A2527314D4879900C3BAB7 /* MainWindow.xib in Resources */,
-				03A2527714D4880100C3BAB7 /* QueryTableCell.xib in Resources */,
 				03A2528414D493AE00C3BAB7 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -395,7 +386,6 @@
 				03DE3C8614CCFDCC0054FB1D /* PrimaryViewController.m in Sources */,
 				03DE3C8714CCFDCC0054FB1D /* SecondaryViewController.m in Sources */,
 				03993F2214CD033A00045B24 /* QueryTree.m in Sources */,
-				03A2526E14D484D500C3BAB7 /* QueryTableCell.m in Sources */,
 				03A2527A14D491EB00C3BAB7 /* DatabaseHandler.m in Sources */,
 				03A2528314D493AE00C3BAB7 /* JSONKit.m in Sources */,
 				03A252B414D4A25700C3BAB7 /* DatabaseConnection.m in Sources */,
@@ -445,6 +435,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Event Viewer_Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "Event Viewer-Info.plist";
 				PRODUCT_NAME = "Event Viewer";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -463,6 +454,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Event Viewer_Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "Event Viewer-Info.plist";
 				PRODUCT_NAME = "Event Viewer";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -478,6 +470,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Event Viewer_Prefix.pch";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_FILE = "Event Viewer-Info.plist";
 				PRODUCT_NAME = "Event Viewer";
 				RUN_CLANG_STATIC_ANALYZER = YES;
