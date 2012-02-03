@@ -243,6 +243,12 @@
  */
 - (void)tableView:(UITableView *)aTableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    UITableViewCell *cell = [aTableView cellForRowAtIndexPath:indexPath];
+    if (cell.accessoryType == UITableViewCellAccessoryNone)
+    {
+        return;
+    }
+    
     [_queryTree drillDownToIndex:indexPath.row];
     
     // Create new table
@@ -252,12 +258,15 @@
     newTable.tableView.delegate = self;
     newTable.clearsSelectionOnViewWillAppear = YES;
     
-    // Add loading indicator
-    CGRect progressF = CGRectMake((self.view.frame.size.width / 2.0f) - 25.0f, (self.view.frame.size.height / 2.0f) - 25.0f, 50.0f, 50.0f);
+    // Add loading indicator    
+    CGRect progressF = CGRectMake(self.contentSizeForViewInPopover.width - 80.0f, // Put it next to the 'up to root' button
+                                  0.0f, 
+                                  44.0f, 
+                                  44.0f);
     UIActivityIndicatorView *progress= [[UIActivityIndicatorView alloc] initWithFrame:progressF];
-    progress.activityIndicatorViewStyle = UIActivityIndicatorViewStyleWhiteLarge;
+    progress.activityIndicatorViewStyle = UIActivityIndicatorViewStyleWhite;
     [progress startAnimating];
-    [newTable.tableView addSubview:progress];
+    [self.navigationBar addSubview:progress];
     
     [self pushViewController:newTable animated:YES];
     [self addNavButtonsToTopTable];
@@ -271,7 +280,7 @@
 - (void)treeDidUpdateData
 {
     UITableView *tableView = ((UITableViewController *)self.topViewController).tableView;
-    for (UIView *v in [tableView subviews])
+    for (UIView *v in [self.navigationBar subviews])
     {
         if ([v isKindOfClass:[UIActivityIndicatorView class]])
         {

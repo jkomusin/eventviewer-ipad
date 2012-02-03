@@ -181,8 +181,9 @@
     // Configure the cell.
     cell.textLabel.text = con.name;
     cell.detailTextLabel.text = con.description;
-    // Check if there is another level of constraints after this one
-//    if ([_constraintArray count] > (_currentDepth + 1))
+    
+    // Add the indicator of a subcategory under this category if not a 'leaf node'
+    if (!con.leaf)
     {
         [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
     }
@@ -269,6 +270,9 @@
     [self initTree];
 }
 
+/**
+ *  Drill down one level in the tree within the 'Events' branch
+ */
 - (void)drillDownEventsThroughIndex:(int)index
 {
     if (_currentDepth == 1) // Find relations
@@ -284,15 +288,35 @@
     }
     else
     {
+        NSLog(@"ERROR: Undefined depth in event branch: %d", _currentDepth);
+    }
+}
+
+/**
+ *  Drill down one level in the tree within the 'Locations' branch
+ */
+- (void)drillDownLocationsThroughIndex:(int)index
+{
+    if (_currentDepth == 1) // Find root categories
+    {
+        NSString *params = [NSString stringWithFormat:@"method=getRootCategories"];
+        [_dbHandler queryWithParameters:params fromDelegate:self ofType:LOCATION];
+    }
+    else if (_currentDepth > 1) // Find subcategories
+    {
+        Constraint *c = [[_constraintArray objectAtIndex:_currentDepth-1] objectAtIndex:index];
+        NSString *params = [NSString stringWithFormat:@"method=getSubCategories&category_id=%d", c.identifier];
+        [_dbHandler queryWithParameters:params fromDelegate:self ofType:LOCATION];
+    }
+    else
+    {
         NSLog(@"ERROR: Undefined depth in location branch: %d", _currentDepth);
     }
 }
 
-- (void)drillDownLocationsThroughIndex:(int)index
-{
-    
-}
-
+/**
+ *  Drill down one level in the tree within the 'Times' branch
+ */
 - (void)drillDownTimesThroughIndex:(int)index
 {
     
@@ -373,6 +397,41 @@
             c.type = [_titleArray objectAtIndex:(_currentDepth - 1)];
             NSString *metaKey = [NSString stringWithFormat:@"%@_id", c.type];
             c.identifier = [(NSString *)[dict objectForKey:metaKey] intValue];
+            c.leaf = YES;
+            
+            [[_constraintArray objectAtIndex:_currentDepth] addObject:c];
+        }
+    }
+    else if (connection.type == LOCATION)
+    {
+        for (NSDictionary *dict in jsonArr)
+        {
+            Constraint *c = [[Constraint alloc] initWithName:(NSString *)[dict objectForKey:@"name"]
+                                                 description:@""];
+            
+            if (c.name == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
+            {
+                c.name = @"<null>";
+            }
+            
+            int location = [(NSString *)[dict objectForKey:@"location_id"] intValue];
+            if (location == 1)  // Not a 'leaf' location (has subcategories)
+            {
+                c.type = @"category";
+                c.identifier = [(NSString *)[dict objectForKey:@"category_id"] intValue];
+                if (c.identifier == 0) // There was no 'category_id', instead use 'child_id'
+                {
+                    c.identifier = [(NSString *)[dict objectForKey:@"child_id"] intValue];
+                }
+                NSLog(@"Constraint with id: %d", c.identifier);
+                c.leaf = NO;
+            }
+            else // 'Leaf' location (no subcategories)
+            {
+                c.type = @"location";
+                c.identifier = location;
+                c.leaf = YES;
+            }
             
             [[_constraintArray objectAtIndex:_currentDepth] addObject:c];
         }

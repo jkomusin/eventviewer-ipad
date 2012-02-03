@@ -14,7 +14,8 @@
 @synthesize description = _description;
 @synthesize identifier = _identifier;
 @synthesize type = _type;
-//@synthesize ids = _ids;
+@synthesize leaf = _leaf;
+
 
 - (id)initWithName:(NSString *)name description:(NSString *)desc
 {
@@ -22,7 +23,6 @@
     { 
         _name = name;
         _description = desc;
-//        _ids = [[NSDictionary alloc] init];
     }
     
     return self;

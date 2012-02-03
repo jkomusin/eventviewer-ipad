@@ -13,11 +13,14 @@
  */
 @interface Constraint : NSObject
 
-@property (nonatomic, strong) NSString *name;
-@property (nonatomic, strong) NSString *description;
-@property (nonatomic, assign) int identifier;
-@property (nonatomic, strong) NSString *type;
-//@property (nonatomic, strong) NSDictionary *ids;
+@property (nonatomic, strong) NSString *name;           // Name of the constraint
+@property (nonatomic, strong) NSString *description;    // Description of the constraint
+@property (nonatomic, assign) int identifier;           // id number of the constraint for use in queries
+@property (nonatomic, strong) NSString *type;           // Type of constraint, to be affixed with '_id' in queries, possibilities include:
+                                                        //  category, location, type, condition
+
+@property (nonatomic, assign) BOOL leaf;                // Whether or not this constraint has subconstraints under it (if it is a leaf in the tree)
+
 
 - (id)initWithName:(NSString *)name description:(NSString *)desc;
 
