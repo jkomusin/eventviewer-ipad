@@ -299,9 +299,9 @@
 // Ensure that the view controller supports rotation and that the split view can therefore show in both portrait and landscape.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
 {
-    return YES;
+    // Set to return 'NO' for landscape orientations to fix bug where loading the app in landscape would cause issues with popping the nav controller
+    return (UIInterfaceOrientationIsPortrait(interfaceOrientation) ? YES : NO);
 }
-
 
 
 @end
