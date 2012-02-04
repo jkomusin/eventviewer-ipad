@@ -30,7 +30,9 @@
 
 
 @implementation MGSplitViewController
-
+{
+    UIInterfaceOrientation _currentOrientation; // To fix issues with orientation
+}
 
 #pragma mark -
 #pragma mark Orientation helpers
@@ -62,7 +64,7 @@
 
 - (BOOL)isLandscape
 {
-	return UIInterfaceOrientationIsLandscape(self.interfaceOrientation);
+	return UIInterfaceOrientationIsLandscape(_currentOrientation);
 }
 
 
@@ -75,7 +77,7 @@
 
 - (BOOL)shouldShowMaster
 {
-	return [self shouldShowMasterForInterfaceOrientation:self.interfaceOrientation];
+	return [self shouldShowMasterForInterfaceOrientation:_currentOrientation];
 }
 
 
@@ -157,6 +159,7 @@
 {
 	[self.masterViewController willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
 	[self.detailViewController willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
+    _currentOrientation = toInterfaceOrientation;
 }
 
 
@@ -181,6 +184,7 @@
 	// Re-tile views.
 	_reconfigurePopup = YES;
 	[self layoutSubviewsForInterfaceOrientation:toInterfaceOrientation withAnimation:YES];
+    _currentOrientation = toInterfaceOrientation;
 }
 
 
@@ -464,13 +468,13 @@
 
 - (void)layoutSubviewsWithAnimation:(BOOL)animate
 {
-	[self layoutSubviewsForInterfaceOrientation:self.interfaceOrientation withAnimation:animate];
+	[self layoutSubviewsForInterfaceOrientation:_currentOrientation withAnimation:animate];
 }
 
 
 - (void)layoutSubviews
 {
-	[self layoutSubviewsForInterfaceOrientation:self.interfaceOrientation withAnimation:YES];
+	[self layoutSubviewsForInterfaceOrientation:_currentOrientation withAnimation:YES];
 }
 
 
@@ -838,7 +842,7 @@
 	// Check to see if delegate wishes to constrain the position.
 	float newPosn = posn;
 	BOOL constrained = NO;
-	CGSize fullSize = [self splitViewSizeForOrientation:self.interfaceOrientation];
+	CGSize fullSize = [self splitViewSizeForOrientation:_currentOrientation];
 	if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:constrainSplitPosition:splitViewSize:)]) {
 		newPosn = [_delegate splitViewController:self constrainSplitPosition:newPosn splitViewSize:fullSize];
 		constrained = YES; // implicitly trust delegate's response.
