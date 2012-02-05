@@ -38,7 +38,6 @@ typedef enum _MGSplitViewDividerStyle {
 	BOOL _vertical;
 	BOOL _masterBeforeDetail;
 	NSMutableArray *_viewControllers;
-	UIBarButtonItem *_barButtonItem; // To be compliant with wacky UISplitViewController behaviour.
     UIPopoverController *_hiddenPopoverController; // Popover used to hold the master view if it's not always visible.
 	MGSplitDividerView *_dividerView; // View that draws the divider between the master and detail views.
 	NSArray *_cornerViews; // Views to draw the inner rounded corners between master and detail views.
@@ -55,6 +54,8 @@ typedef enum _MGSplitViewDividerStyle {
 @property (nonatomic, assign) float splitPosition; // starting position of split in pixels, relative to top/left (depending on .isVertical setting) if masterBeforeDetail is YES, else relative to bottom/right.
 @property (nonatomic, assign) float splitWidth; // width of split in pixels.
 @property (nonatomic, assign) BOOL allowsDraggingDivider; // whether to let the user drag the divider to alter the split position (default NO).
+
+@property (nonatomic, strong) UIBarButtonItem *barButtonItem; // To be compliant with wacky UISplitViewController behaviour.
 
 @property (nonatomic, copy) NSArray *viewControllers; // array of UIViewControllers; master is at index 0, detail is at index 1.
 @property (nonatomic, strong) IBOutlet UINavigationController *masterViewController; // convenience.

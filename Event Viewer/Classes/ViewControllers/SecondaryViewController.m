@@ -7,10 +7,14 @@
 
 
 @interface SecondaryViewController ()
-
 - (void)addNavButtonsToTopTable;
 - (void)upOneLevel;
 - (void)upToRoot;
+
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)makeDraggingCellWithCell:(UITableViewCell*)cell atOrigin:(CGPoint)origin withRecognizer:(UILongPressGestureRecognizer *)recognizer;
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
 @end
 
@@ -21,8 +25,6 @@
     PrimaryViewController *detailViewController;    // ViewController displayed in the "primary" view of the MGUISplitViewController
     
     QueryTree *_queryTree;                          // Data model for the constraint table
-    
-    UITableViewCell *_draggingCell;                 // Table cell currently being dragged, used as visually moving cell
 }
 
 @synthesize splitViewController = _splitViewController;
@@ -34,7 +36,6 @@
 
 /**
  *  Init function called by views loaded in by Interface Builder.
- *  Initializes drag-and-drop recognizer.
  */
 - (id)initWithCoder:(NSCoder *)coder
 {
@@ -50,12 +51,6 @@
         newTable.title = @"Categories";
         newTable.clearsSelectionOnViewWillAppear = YES;
         [self pushViewController:newTable animated:NO];
-        
-        // Create gesture recognizer
-        UIPanGestureRecognizer* dragGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
-        [dragGesture setMaximumNumberOfTouches:2];
-        [dragGesture setMinimumNumberOfTouches:2];
-        [self.view addGestureRecognizer:dragGesture];
     }
     
     return self;
@@ -88,7 +83,7 @@
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)handleDragging:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     switch ([gestureRecognizer state]) 
     {
@@ -113,21 +108,13 @@
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)startDragging:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
-    CGPoint point = [gestureRecognizer locationInView:self.view];
-    NSIndexPath* indexPath = [(UITableView *)self.topViewController.view indexPathForRowAtPoint:point];
-    UITableViewCell* cell = [(UITableView *)self.topViewController.view cellForRowAtIndexPath:indexPath];
-    if(cell != nil)
-    {
-        CGPoint cellRelative = [gestureRecognizer locationInView:cell];
-        CGPoint origin = [gestureRecognizer locationInView:_detailViewController.view];
-        origin.x -= cellRelative.x;
-        origin.y -= cellRelative.y;
-        
-        [self initDraggingCellWithCell:cell AtOrigin:origin];
-        cell.highlighted = NO;
-    }
+    UITableViewCell* cell = (UITableViewCell *)gestureRecognizer.view;
+    cell.highlighted = NO;
+    CGPoint origin = [gestureRecognizer locationInView:_detailViewController.view];
+    
+    [self makeDraggingCellWithCell:cell atOrigin:origin withRecognizer:gestureRecognizer];
 }
 
 /**
@@ -136,25 +123,29 @@
  *  cell is the table cell in the table view that has begun to be dragged.
  *  origin is the point representing the absolute origin of the point in the MGUISplitViewController.
  */
-- (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)origin
-{
-    if(_draggingCell != nil)
-    {
-        [_draggingCell removeFromSuperview];
-        _draggingCell = nil;
-    }
+- (void)makeDraggingCellWithCell:(UITableViewCell*)cell atOrigin:(CGPoint)origin withRecognizer:(UILongPressGestureRecognizer *)recognizer
+{    
+    static NSString *cellIdentifier = @"Constraint";    
     
-    CGRect frame = CGRectMake(origin.x, origin.y, cell.frame.size.width + 20.0f, cell.frame.size.height + 20.0f);
+    UITableViewCell *draggingCell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
+    draggingCell.selectionStyle = UITableViewCellSelectionStyleBlue;
+    draggingCell.textLabel.text = cell.textLabel.text;
+    draggingCell.textLabel.textColor = cell.textLabel.textColor;
+    draggingCell.detailTextLabel.text = cell.detailTextLabel.text;
+    draggingCell.detailTextLabel.textColor = cell.detailTextLabel.textColor;
+    draggingCell.highlighted = YES;
+    draggingCell.center = origin;
+    draggingCell.alpha = 0.8f;
     
-    _draggingCell = [[UITableViewCell alloc] init];
-    _draggingCell.selectionStyle = UITableViewCellSelectionStyleBlue;
-    _draggingCell.textLabel.text = cell.textLabel.text;
-    _draggingCell.textLabel.textColor = cell.textLabel.textColor;
-    _draggingCell.highlighted = YES;
-    _draggingCell.frame = frame;
-    _draggingCell.alpha = 0.8;
-
-    [_detailViewController.view addSubview:_draggingCell];
+    // Move current recognizer to this new cell, and add a new one to the old cell
+    [draggingCell addGestureRecognizer:recognizer];
+    [cell removeGestureRecognizer:recognizer];
+    UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+    [dragGesture setNumberOfTouchesRequired:1];
+    [dragGesture setMinimumPressDuration:0.5f];
+    [cell addGestureRecognizer:dragGesture];
+    
+    [_detailViewController.view addSubview:draggingCell];
 }
 
 /**
@@ -162,16 +153,11 @@
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)doDrag:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    if(_draggingCell != nil)
-    {
-        CGPoint translation = [gestureRecognizer translationInView:[_draggingCell superview]];
-        [_draggingCell setCenter:CGPointMake([_draggingCell center].x + translation.x,
-                                           [_draggingCell center].y + translation.y)];
-        
-        [gestureRecognizer setTranslation:CGPointZero inView:[_draggingCell superview]];
-    }
+    UITableViewCell *draggingCell = (UITableViewCell *)gestureRecognizer.view;
+
+    [draggingCell setCenter:[gestureRecognizer locationInView:_detailViewController.view]];
 }
 
 /**
@@ -179,7 +165,7 @@
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)stopDragging:(UIPanGestureRecognizer *)gestureRecognizer
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
     if ([_detailViewController pointIsInsideScrubber:gestureRecognizer])
     {
@@ -190,9 +176,8 @@
     {
         NSLog(@"Dropped inside query builder!");
     }
-    
-    [_draggingCell removeFromSuperview];
-    _draggingCell = nil;
+
+    [(UITableViewCell *)gestureRecognizer.view removeFromSuperview];
 }
 
 

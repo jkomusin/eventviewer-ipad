@@ -152,6 +152,14 @@
     if (cell == nil) 
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
+        
+//        UIPanGestureRecognizer* dragGesture = [[UIPanGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
+//        [dragGesture setMaximumNumberOfTouches:2];
+//        [dragGesture setMinimumNumberOfTouches:2];
+        UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
+        [dragGesture setNumberOfTouchesRequired:1];
+        [dragGesture setMinimumPressDuration:0.5f];
+        [cell addGestureRecognizer:dragGesture];
     }
     
     Constraint *con = [[_constraintArray objectAtIndex:_currentDepth] objectAtIndex:indexPath.row];

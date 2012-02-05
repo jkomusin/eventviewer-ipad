@@ -31,6 +31,8 @@
 
 @implementation MGSplitViewController
 
+@synthesize barButtonItem = _barButtonItem;
+
 
 #pragma mark -
 #pragma mark Orientation helpers
@@ -237,6 +239,15 @@
 	if (_reconfigurePopup) {
 		[self reconfigureForMasterInPopover:![self shouldShowMasterForInterfaceOrientation:theOrientation]];
 	}
+    
+    if (UIInterfaceOrientationIsPortrait(theOrientation))
+    {
+        _barButtonItem.enabled = NO;
+    }
+    else
+    {
+        _barButtonItem.enabled = YES;
+    }
 	
 	// Layout the master, detail and divider views appropriately, adding/removing subviews as needed.
 	// First obtain relevant geometry.

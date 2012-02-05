@@ -12,6 +12,7 @@
 @protocol TreeDelegate
 @required
 - (void)treeDidUpdateData;
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
 @end
 
@@ -27,11 +28,5 @@
 @property (nonatomic, strong) IBOutlet PrimaryViewController *detailViewController;
 
 - (void)initQueryTreeWithHandler:(DatabaseHandler *)dbHandler;
-
-- (void)handleDragging:(UIPanGestureRecognizer *)gestureRecognizer;
-- (void)startDragging:(UIPanGestureRecognizer *)gestureRecognizer;
-- (void)initDraggingCellWithCell:(UITableViewCell*)cell AtOrigin:(CGPoint)point;
-- (void)doDrag:(UIPanGestureRecognizer *)gestureRecognizer;
-- (void)stopDragging:(UIPanGestureRecognizer *)gestureRecognizer;
 
 @end
