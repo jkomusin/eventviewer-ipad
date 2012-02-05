@@ -20,9 +20,6 @@
 - (void)initTree;
 - (void)initTitleArray;
 
-- (void)queryForRootCategories;
-- (void)queryForSubCategoriesWithID:(int)categoryID;
-
 - (void)drillUpOne;
 - (void)drillUpToRoot;
 - (void)drillDownLocationsThroughIndex:(int)index;
@@ -45,6 +42,8 @@
     DatabaseHandler *_dbHandler;        // Handler for the database, assumed to be logged in
     JSONDecoder *_jsonParser;           // Decoder of returned JSON packets
     NSMutableData *_response;           // The response of the current login query
+    
+    NSArray *_months;                   // Array to hold names of months
 }
 
 @synthesize treeDelegate = _treeDelegate;
@@ -61,6 +60,8 @@
     {
         _dbHandler = dbHandler;
         _jsonParser = [[JSONDecoder alloc] init];
+        
+        _months = [NSArray arrayWithObjects:@"January", @"February", @"March", @"April", @"May", @"June", @"July", @"August", @"September", @"October", @"November", @"December", nil];
         
         [self initTree];
     }
@@ -130,29 +131,6 @@
 
 
 #pragma mark -
-#pragma mark Constraint querying
-
-/**
- *  Query for the root location constraints
- */
-- (void)queryForRootCategories
-{
-    NSString *params = @"method=getRootCategories";
-    [_dbHandler queryWithParameters:params fromDelegate:self ofType:LOCATION];
-}
-
-/**
- *  Query for subcategories in the location tree.
- *
- *  categoryID is the category we are opening to reveal subcategories
- */
-- (void)queryForSubCategoriesWithID:(int)categoryID
-{
-    
-}
-
-
-#pragma mark -
 #pragma mark Table View data sourcing
 
 /**
@@ -206,6 +184,7 @@
     Constraint *c = [[_constraintArray objectAtIndex:_currentDepth] objectAtIndex:index];
     [_titleArray addObject:c.name];
     
+    // Add new array for the new level
     NSMutableArray *newHeight = [[NSMutableArray alloc] init];
     [_constraintArray addObject:newHeight];
     
@@ -319,7 +298,58 @@
  */
 - (void)drillDownTimesThroughIndex:(int)index
 {
+    NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
     
+    if (_currentDepth == 1) // Create root categories
+    {
+        Constraint *years = [[Constraint alloc] initWithName:@"Years" description:@""];
+        years.leaf = NO;
+        [currentConstraints addObject:years];
+        Constraint *months = [[Constraint alloc] initWithName:@"Months" description:@""];
+        months.leaf = NO;
+        [currentConstraints addObject:months];
+        Constraint *days = [[Constraint alloc] initWithName:@"Days" description:@""];
+        days.leaf = NO;
+        [currentConstraints addObject:days];
+    }
+    else if (_currentDepth == 2)
+    {
+        Constraint *scaleConstraint = [[_constraintArray objectAtIndex:_currentDepth-1] objectAtIndex:index];
+        NSString *scale = scaleConstraint.name;
+        if ([scale isEqualToString:@"Years"])
+        {
+            NSString *params = @"method=timerange";
+            [_dbHandler queryWithParameters:params fromDelegate:self ofType:TIME];
+        }
+        else if ([scale isEqualToString:@"Months"])
+        {
+            for (NSString *m in _months)
+            {
+                Constraint *c = [[Constraint alloc] initWithName:m description:@""];
+                c.leaf = YES;
+                [currentConstraints addObject:c];
+            }
+        }
+        else if ([scale isEqualToString:@"Days"])
+        {
+            for (int i = 1; i <= 31; i++)
+            {
+                Constraint *c = [[Constraint alloc] initWithName:[NSString stringWithFormat:@"%d", i] description:@""];
+                c.leaf = YES;
+                [currentConstraints addObject:c];
+            }
+        }
+        else
+        {
+            NSLog(@"ERROR: Undefined time scale: %@", scale);
+        }
+    }
+    else
+    {
+        NSLog(@"ERROR: Undefined depth in time branch: %d", _currentDepth);
+    }
+    
+    [_treeDelegate treeDidUpdateData];
 }
 
 
@@ -332,7 +362,7 @@
  */
 - (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    if (connection.type != LOCATION && connection.type != RELATION && connection.type != META)
+    if (connection.type != LOCATION && connection.type != RELATION && connection.type != META && connection.type != TIME)
     {
         NSString *type;
         if (connection.type == LOGIN)       type = @"LOGIN";
@@ -361,6 +391,8 @@
     NSLog(@"Retrieved JSON array:");
     NSLog(@"%@", jsonArr);
     
+    NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
+    
     if (connection.type == RELATION)
     {
         NSDictionary *dict = (NSDictionary *)jsonArr;
@@ -374,7 +406,7 @@
             else
             {
                 Constraint *c = [[Constraint alloc] initWithName:keyString description:(NSString *)[dict objectForKey:key]];
-                [[_constraintArray objectAtIndex:_currentDepth] addObject:c];
+                [currentConstraints addObject:c];
             }
         }
     }
@@ -399,7 +431,7 @@
             c.identifier = [(NSString *)[dict objectForKey:metaKey] intValue];
             c.leaf = YES;
             
-            [[_constraintArray objectAtIndex:_currentDepth] addObject:c];
+            [currentConstraints addObject:c];
         }
     }
     else if (connection.type == LOCATION)
@@ -433,7 +465,22 @@
                 c.leaf = YES;
             }
             
-            [[_constraintArray objectAtIndex:_currentDepth] addObject:c];
+            [currentConstraints addObject:c];
+        }
+    }
+    else if (connection.type == TIME)
+    {
+        NSString *start = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:0] objectForKey:@"start"];
+        NSString *end = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:1] objectForKey:@"end"];
+        
+        int startNum = [(NSString *)[start substringWithRange:NSMakeRange(0, 4)] intValue];
+        int endNum = [(NSString *)[end substringWithRange:NSMakeRange(0, 4)] intValue];
+        
+        for (int i = endNum; i >= startNum; i--)
+        {
+            Constraint *c = [[Constraint alloc] initWithName:[NSString stringWithFormat:@"%d", i] description:@""];
+            c.leaf = YES;
+            [currentConstraints addObject:c];
         }
     }
     

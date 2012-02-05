@@ -89,7 +89,7 @@ enum UI_OBJECT
 - (void)changeCurrentPanel:(int)panelIndex;
 
 - (void)showQueryBuilder;
-- (void)hideQueryBuilder;
+- (void)hideQueryBuilderAndRemove:(BOOL)remove;
 
 - (void)initScrubber;
 - (void)scrubberMoved:(id)sender;

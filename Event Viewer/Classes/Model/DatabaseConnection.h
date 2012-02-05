@@ -23,7 +23,8 @@ enum ConnectionType
     EVENT_COUNT = 2,
     LOCATION = 3,
     RELATION = 4,
-    META = 5
+    META = 5,
+    TIME = 6
 };
 
 

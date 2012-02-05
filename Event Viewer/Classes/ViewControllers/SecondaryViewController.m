@@ -246,16 +246,15 @@
     UITableViewCell *cell = [aTableView cellForRowAtIndexPath:indexPath];
     if (cell.accessoryType == UITableViewCellAccessoryNone)
     {
+        [cell setSelected:NO];
         return;
     }
     
-    [_queryTree drillDownToIndex:indexPath.row];
-    
     // Create new table
     UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
-    newTable.title = [_queryTree getCurrentTitle];
     newTable.tableView.dataSource = _queryTree;
     newTable.tableView.delegate = self;
+    newTable.title = cell.textLabel.text;
     newTable.clearsSelectionOnViewWillAppear = YES;
     
     // Add loading indicator    
@@ -270,6 +269,8 @@
     
     [self pushViewController:newTable animated:YES];
     [self addNavButtonsToTopTable];
+    
+    [_queryTree drillDownToIndex:indexPath.row];
 }
 
 

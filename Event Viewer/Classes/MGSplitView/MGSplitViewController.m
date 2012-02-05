@@ -677,7 +677,7 @@
     {
         // Hide query builder
         PrimaryViewController *vController = (PrimaryViewController *)self.detailViewController;
-        [vController hideQueryBuilder];
+        [vController hideQueryBuilderAndRemove:YES];
     }
 	
 	// This action functions on the current primary orientation; it is independent of the other primary orientation.
