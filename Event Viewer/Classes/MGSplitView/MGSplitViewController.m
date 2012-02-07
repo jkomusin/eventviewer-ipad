@@ -240,6 +240,8 @@
 		[self reconfigureForMasterInPopover:![self shouldShowMasterForInterfaceOrientation:theOrientation]];
 	}
     
+    
+    // Handle the disabling of the Query button in portrait, and enabling in landscape
     if (UIInterfaceOrientationIsPortrait(theOrientation))
     {
         _barButtonItem.enabled = NO;
@@ -580,9 +582,6 @@
 																willShowViewController:self.masterViewController 
 															 invalidatingBarButtonItem:_barButtonItem];
 		}
-		
-		// Destroy _barButtonItem.
-		_barButtonItem = nil;
 		
 		// Move master view.
 		UIView *masterView = self.masterViewController.view;

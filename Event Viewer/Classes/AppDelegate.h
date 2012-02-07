@@ -13,7 +13,7 @@
 @property (nonatomic, strong) IBOutlet UIWindow *window;
 
 @property (nonatomic, strong) IBOutlet MGSplitViewController *splitViewController;
-@property (nonatomic, strong) IBOutlet SecondaryViewController *rootViewController;
-@property (nonatomic, strong) IBOutlet PrimaryViewController *detailViewController;
+@property (nonatomic, strong) IBOutlet SecondaryViewController *secondaryViewController;
+@property (nonatomic, strong) IBOutlet PrimaryViewController *primaryViewController;
 
 @end

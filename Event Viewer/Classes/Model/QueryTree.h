@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @class DatabaseHandler;
+@class Constraint;
 @protocol TreeDelegate;
 
 
@@ -44,6 +45,7 @@ enum TreeCategory
 
 - (id)initWithHandler:(DatabaseHandler *)dbHandler;
 - (NSString *)getCurrentTitle;
+- (Constraint *)getConstraintAtIndex:(NSInteger)index;
 
 - (void)drillDownToIndex:(int)index;
 - (void)drillUpOne;

@@ -10,13 +10,14 @@
  *  Data model containing all "meta" categories that have been selected in the currently submitted query, along with all events returned by the query.
  *  Handles all interfacing with the database for the current query and the parsing of the returned events.
  */
-@interface Query : NSObject
+@interface Query : NSObject <UITableViewDataSource>
 
 /**
  *  Immutable dictionary with keys: "Bands", "Stacks", "Panels". 
  *  Each key points to an array of all parameters of the current query for the key's category.
  */
 @property (nonatomic, copy) NSDictionary *selectedMetas;
+
 /**
  *  Immutable 4-dimensional array of all events resulting from the current query.
  *  In traditional array notation, i.e. 'eventArray[][][][]':
@@ -26,11 +27,13 @@
  *  - [][][][x] specifies the event number
  */
 @property (nonatomic, copy) NSArray *eventArray;   
+
 /**
  *  4-dimensional array similar to eventArray's mapping.
  *  Instead contains two floats for each event as normalized drawing dimensions for event rects.
  */
 //@property () float ****eventFloats;
+
 /**
  *	Smallest unit of time in the current query, determines scale of timelines.
  *	Value must be an integer from -1 - 3, where:

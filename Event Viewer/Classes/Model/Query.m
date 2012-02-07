@@ -197,6 +197,66 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 
 #pragma mark -
+#pragma mark Query builder data source
+/**
+ *  We assume that the only table views accessing these methods are the tables within the query builder.
+ *  We also assume that each table has its 'tag' property set to an identifying number to specify if it is either the band, stack, or panel table.
+ */
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    NSArray *dataArr;
+    if (tableView.tag == BAND)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Bands"];
+    }
+    else if (tableView.tag == STACK)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Stacks"];
+    }
+    else if (tableView.tag == PANEL)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Panels"];
+    }
+    
+    return [dataArr count];
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *cellIdentifier = @"BuilderConstraint";
+    
+    NSArray *dataArr;
+    if (tableView.tag == BAND)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Bands"];
+    }
+    else if (tableView.tag == STACK)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Stacks"];
+    }
+    else if (tableView.tag == PANEL)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Panels"];
+    }
+    
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    if (cell == nil) 
+    {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
+    }
+    
+    Constraint *con = [dataArr objectAtIndex:indexPath.row];
+    
+    // Configure the cell.
+    cell.textLabel.text = con.name;
+    cell.detailTextLabel.text = con.description;
+    
+    return cell;
+}
+
+
+#pragma mark -
 #pragma mark (Experimental) C-style Arrays
 
 // Cusom malloc

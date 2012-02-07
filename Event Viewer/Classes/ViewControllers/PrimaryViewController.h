@@ -16,7 +16,7 @@
 @class QueryViewController;
 @class QueryBuilderView;
 @class Query;
-@class ContentScrollView;
+@class Constraint;
 
 /**
  *  Enumeration for the three primary interface objects: bands, stacks, and panels
@@ -75,7 +75,7 @@ enum UI_OBJECT
 - (IBAction)toggleMasterBeforeDetail:(id)sender;
 ///////
 
-@property (nonatomic, strong) SecondaryViewController *masterViewController;    // Other controller in split view
+@property (nonatomic, strong) SecondaryViewController *secondaryViewController;    // Other controller in split view
 
 @property (nonatomic, strong) QueryBuilderView *queryView;  // View for building and submitting a query
 @property (nonatomic, strong) Query *queryData;   // Model object containing and managing all data forming the current query and its results
@@ -84,9 +84,8 @@ enum UI_OBJECT
 
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)configureView;
-- (BOOL)pointIsInsideScrubber:(UIGestureRecognizer *)recognizer;
-- (BOOL)pointIsInsideBuilder:(UIGestureRecognizer *)recognizer;
-- (void)changeCurrentPanel:(int)panelIndex;
+
+- (void)droppedViewWithGestureRecognizer:(UIGestureRecognizer *)recognizer forConstraint:(Constraint *)constraint;
 
 - (void)showQueryBuilder;
 - (void)hideQueryBuilderAndRemove:(BOOL)remove;
@@ -95,6 +94,7 @@ enum UI_OBJECT
 - (void)scrubberMoved:(id)sender;
 - (void)scrubberStopped:(id)sender;
 - (void)buttonPressed:(id)sender;
+- (void)changeCurrentPanel:(int)panelIndex;
 
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
@@ -102,7 +102,6 @@ enum UI_OBJECT
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)swapButton:(int)i toIndex:(int)j;
 
-- (void)addNewPanel;
 - (void)resizeSubviews;
 
 @end

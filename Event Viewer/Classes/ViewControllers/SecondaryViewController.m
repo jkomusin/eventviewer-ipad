@@ -1,5 +1,6 @@
 
 #import "SecondaryViewController.h"
+#import "MGSplitViewController.h"
 #import "PrimaryViewController.h"
 #import "QueryBuilderView.h"
 #import "QueryTree.h"
@@ -28,7 +29,7 @@
 }
 
 @synthesize splitViewController = _splitViewController;
-@synthesize detailViewController = _detailViewController;
+@synthesize primaryViewController = _primaryViewController;
 
 
 #pragma mark -
@@ -43,11 +44,13 @@
     {        
         self.navigationBar.tintColor = [UIColor blackColor];
         
-        _detailViewController.masterViewController = self;
+        _primaryViewController.secondaryViewController = self;
             
         // Create initial table
         UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
         newTable.tableView.delegate = self;
+        [newTable.tableView setAllowsMultipleSelection:YES];
+        [newTable.tableView setAllowsMultipleSelectionDuringEditing:YES];
         newTable.title = @"Categories";
         newTable.clearsSelectionOnViewWillAppear = YES;
         [self pushViewController:newTable animated:NO];
@@ -60,7 +63,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.contentSizeForViewInPopover = CGSizeMake(320.0f, 600.0f);
+    self.contentSizeForViewInPopover = CGSizeMake(MG_DEFAULT_SPLIT_POSITION, 600.0f);
 }
 
 
@@ -112,7 +115,7 @@
 {    
     UITableViewCell* cell = (UITableViewCell *)gestureRecognizer.view;
     cell.highlighted = NO;
-    CGPoint origin = [gestureRecognizer locationInView:_detailViewController.view];
+    CGPoint origin = [gestureRecognizer locationInView:_primaryViewController.view];
     
     [self makeDraggingCellWithCell:cell atOrigin:origin withRecognizer:gestureRecognizer];
 }
@@ -136,6 +139,7 @@
     draggingCell.highlighted = YES;
     draggingCell.center = origin;
     draggingCell.alpha = 0.8f;
+    draggingCell.tag = cell.tag;
     
     // Move current recognizer to this new cell, and add a new one to the old cell
     [draggingCell addGestureRecognizer:recognizer];
@@ -145,7 +149,7 @@
     [dragGesture setMinimumPressDuration:0.5f];
     [cell addGestureRecognizer:dragGesture];
     
-    [_detailViewController.view addSubview:draggingCell];
+    [_primaryViewController.view addSubview:draggingCell];
 }
 
 /**
@@ -157,25 +161,20 @@
 {
     UITableViewCell *draggingCell = (UITableViewCell *)gestureRecognizer.view;
 
-    [draggingCell setCenter:[gestureRecognizer locationInView:_detailViewController.view]];
+    [draggingCell setCenter:[gestureRecognizer locationInView:_primaryViewController.view]];
 }
 
 /**
  *  Handle the resulting location of the dragged table cell, depending on where hit-tests register.
+ *  We assume that the table cell being dragged's tag property is set to the index of the constraint it specifies.
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
-    if ([_detailViewController pointIsInsideScrubber:gestureRecognizer])
-    {
-        [_detailViewController addNewPanel];
-    }
+    Constraint *c = [_queryTree getConstraintAtIndex:gestureRecognizer.view.tag];
     
-    if ([_detailViewController pointIsInsideBuilder:gestureRecognizer])
-    {
-        NSLog(@"Dropped inside query builder!");
-    }
+    [_primaryViewController droppedViewWithGestureRecognizer:gestureRecognizer forConstraint:c];
 
     [(UITableViewCell *)gestureRecognizer.view removeFromSuperview];
 }
@@ -239,6 +238,8 @@
     UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
     newTable.tableView.dataSource = _queryTree;
     newTable.tableView.delegate = self;
+    [newTable.tableView setAllowsMultipleSelection:YES];
+    [newTable.tableView setAllowsMultipleSelectionDuringEditing:YES];
     newTable.title = cell.textLabel.text;
     newTable.clearsSelectionOnViewWillAppear = YES;
     

@@ -129,6 +129,11 @@
     return [_titleArray objectAtIndex:_currentDepth];
 }
 
+- (Constraint *)getConstraintAtIndex:(NSInteger)index
+{
+    return (Constraint *)[(NSArray *)[_constraintArray objectAtIndex:_currentDepth] objectAtIndex:index];
+}
+
 
 #pragma mark -
 #pragma mark Table View data sourcing
@@ -152,13 +157,10 @@
     if (cell == nil) 
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
-        
-//        UIPanGestureRecognizer* dragGesture = [[UIPanGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
-//        [dragGesture setMaximumNumberOfTouches:2];
-//        [dragGesture setMinimumNumberOfTouches:2];
+
         UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
         [dragGesture setNumberOfTouchesRequired:1];
-        [dragGesture setMinimumPressDuration:0.5f];
+        [dragGesture setMinimumPressDuration:0.25f];
         [cell addGestureRecognizer:dragGesture];
     }
     
@@ -167,6 +169,8 @@
     // Configure the cell.
     cell.textLabel.text = con.name;
     cell.detailTextLabel.text = con.description;
+    // Store the index f the constraint in the cell's tag
+    cell.tag = indexPath.row;
     
     // Add the indicator of a subcategory under this category if not a 'leaf node'
     if (!con.leaf)
