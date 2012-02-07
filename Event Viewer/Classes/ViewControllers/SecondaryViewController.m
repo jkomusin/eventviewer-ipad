@@ -29,7 +29,7 @@
 }
 
 @synthesize splitViewController = _splitViewController;
-@synthesize primaryViewController = _primaryViewController;
+@synthesize detailViewController = _detailViewController;
 
 
 #pragma mark -
@@ -44,13 +44,11 @@
     {        
         self.navigationBar.tintColor = [UIColor blackColor];
         
-        _primaryViewController.secondaryViewController = self;
+        _detailViewController.masterViewController = self;
             
         // Create initial table
         UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
         newTable.tableView.delegate = self;
-        [newTable.tableView setAllowsMultipleSelection:YES];
-        [newTable.tableView setAllowsMultipleSelectionDuringEditing:YES];
         newTable.title = @"Categories";
         newTable.clearsSelectionOnViewWillAppear = YES;
         [self pushViewController:newTable animated:NO];
@@ -115,7 +113,7 @@
 {    
     UITableViewCell* cell = (UITableViewCell *)gestureRecognizer.view;
     cell.highlighted = NO;
-    CGPoint origin = [gestureRecognizer locationInView:_primaryViewController.view];
+    CGPoint origin = [gestureRecognizer locationInView:_detailViewController.view];
     
     [self makeDraggingCellWithCell:cell atOrigin:origin withRecognizer:gestureRecognizer];
 }
@@ -149,7 +147,7 @@
     [dragGesture setMinimumPressDuration:0.5f];
     [cell addGestureRecognizer:dragGesture];
     
-    [_primaryViewController.view addSubview:draggingCell];
+    [_detailViewController.view addSubview:draggingCell];
 }
 
 /**
@@ -161,12 +159,11 @@
 {
     UITableViewCell *draggingCell = (UITableViewCell *)gestureRecognizer.view;
 
-    [draggingCell setCenter:[gestureRecognizer locationInView:_primaryViewController.view]];
+    [draggingCell setCenter:[gestureRecognizer locationInView:_detailViewController.view]];
 }
 
 /**
  *  Handle the resulting location of the dragged table cell, depending on where hit-tests register.
- *  We assume that the table cell being dragged's tag property is set to the index of the constraint it specifies.
  *
  *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
  */
@@ -174,7 +171,7 @@
 {
     Constraint *c = [_queryTree getConstraintAtIndex:gestureRecognizer.view.tag];
     
-    [_primaryViewController droppedViewWithGestureRecognizer:gestureRecognizer forConstraint:c];
+    [_detailViewController droppedViewWithGestureRecognizer:gestureRecognizer forConstraint:c];
 
     [(UITableViewCell *)gestureRecognizer.view removeFromSuperview];
 }
@@ -238,8 +235,6 @@
     UITableViewController *newTable = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
     newTable.tableView.dataSource = _queryTree;
     newTable.tableView.delegate = self;
-    [newTable.tableView setAllowsMultipleSelection:YES];
-    [newTable.tableView setAllowsMultipleSelectionDuringEditing:YES];
     newTable.title = cell.textLabel.text;
     newTable.clearsSelectionOnViewWillAppear = YES;
     

@@ -25,7 +25,7 @@
 @interface SecondaryViewController : UINavigationController <UITableViewDelegate, TreeDelegate>
 
 @property (nonatomic, strong) MGSplitViewController *splitViewController;
-@property (nonatomic, strong) IBOutlet PrimaryViewController *primaryViewController;
+@property (nonatomic, strong) IBOutlet PrimaryViewController *detailViewController;
 
 - (void)initQueryTreeWithHandler:(DatabaseHandler *)dbHandler;
 
