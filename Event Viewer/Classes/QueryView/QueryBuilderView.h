@@ -18,8 +18,10 @@
     
 }
 
+@property (nonatomic, assign) BOOL queryHasChanged;
+
 - (void)initQueryTablesWithDataSource:(id<UITableViewDataSource>)source;
 
-- (void)droppedConstraint:(Constraint *)constraint atPoint:(CGPoint)point;
+- (void)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer;
 
 @end

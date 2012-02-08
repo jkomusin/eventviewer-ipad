@@ -113,6 +113,7 @@
 {    
     UITableViewCell* cell = (UITableViewCell *)gestureRecognizer.view;
     cell.highlighted = NO;
+    
     CGPoint origin = [gestureRecognizer locationInView:_detailViewController.view];
     
     [self makeDraggingCellWithCell:cell atOrigin:origin withRecognizer:gestureRecognizer];

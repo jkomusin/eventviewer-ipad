@@ -24,19 +24,24 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 {
     if ((self = [super init]))
     {        
-        //initialize _selectedMetas with empty arrays for specified keys
+        // Initialize _selectedMetas with empty arrays for specified keys
         NSMutableDictionary *mutableMetas = [[NSMutableDictionary alloc] init];
-        
-        NSArray *panelArray = [NSArray arrayWithObjects:nil];
+        NSMutableArray *panelArray = [NSMutableArray arrayWithObjects:nil];
         [mutableMetas setObject:panelArray forKey:@"Panels"];
-        NSArray *stackArray = [NSArray arrayWithObjects:nil];
+        NSMutableArray *stackArray = [NSMutableArray arrayWithObjects:nil];
         [mutableMetas setObject:stackArray forKey:@"Stacks"];
-        NSArray *bandArray = [NSArray arrayWithObjects:nil];
+        NSMutableArray *bandArray = [NSMutableArray arrayWithObjects:nil];
         [mutableMetas setObject:bandArray forKey:@"Bands"];
-        
         _selectedMetas = mutableMetas;
         
-        NSArray *emptyEvents = [[NSArray alloc] init];
+        // Initialize _eventArray with empty arrays
+        NSMutableArray *emptyEvents = [[NSMutableArray alloc] init];
+        NSMutableArray *emptyStacks = [[NSMutableArray alloc] init];
+        NSMutableArray *emptyBands = [[NSMutableArray alloc] init];
+        NSMutableArray *emptyBandEvents = [[NSMutableArray alloc] init];
+        [emptyEvents addObject:emptyStacks];
+        [emptyStacks addObject:emptyBands];
+        [emptyBands addObject:emptyBandEvents];
         _eventArray = emptyEvents;
         
         //_eventFloats = create4D(2, 2, 2, 2);
@@ -181,6 +186,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 /**
  *  Count accessors
+ *
+ *  NOTE: Should not be used as the basis for indices into the event array, as there are initially one array per category in the event array.
  */
 - (int)panelNum
 {
@@ -193,6 +200,104 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 - (int)bandNum
 {
     return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
+}
+
+
+#pragma mark -
+#pragma mark Constraint management
+
+/**
+ *  Add a Constraint to a specified UI element category.
+ *  Also update all other data structures related to constraints.
+ *
+ *  constraint is the Constraint object being appended to the arrays of Constraints.
+ *  category references whether the Constraint is being added to the Bands, Stacks, or Panels categories.
+ */
+- (void)addConstraint:(Constraint *)constraint toArray:(enum UI_OBJECT)category
+{
+    // Get panel numbers from the number of arrays rather than the selected constraint numbers
+    int panelNum = [_eventArray count];
+    int stackNum = [[_eventArray objectAtIndex:0] count];
+    int bandNum = [[[_eventArray objectAtIndex:0] objectAtIndex:0] count];
+    
+    // Add constraint to appropriate array, and allocate event arrays, skipping adding event arrays 
+    //  if we are adding the first of a type of constraint, as the event array has been initialized
+    //  with one array per category.
+    if (category == BAND)
+    {
+        // Add constraint to selected constraint array
+        NSMutableArray *arr = [_selectedMetas objectForKey:@"Bands"];
+        [arr addObject:constraint];
+        
+        // Allocate room for event arrays associated with new constraint if this is not the first
+        if (self.bandNum != 0)
+        {
+            for (int i = 0; i < panelNum; i++)
+            {
+                for (int j = 0; j < stackNum; j++)
+                {
+                    NSMutableArray *newBand = [[NSMutableArray alloc] init];
+                    [[[_eventArray objectAtIndex:i] objectAtIndex:j] addObject:newBand];
+                }
+            }
+        }
+    }
+    else if (category == STACK)
+    {
+        // Add constraint to selected constraint array
+        NSMutableArray *arr = [_selectedMetas objectForKey:@"Stacks"];
+        [arr addObject:constraint];
+        
+        // Allocate room for event arrays associated with new constraint if this is not the first
+        if (self.stackNum != 0)
+        {
+            for (int i = 0; i < panelNum; i++)
+            {
+                NSMutableArray *newStack = [[NSMutableArray alloc] init];
+                for (int k = 0; k < bandNum; k++)
+                {
+                    NSMutableArray *newBand = [[NSMutableArray alloc] init];
+                    [newStack addObject:newBand];
+                }
+                
+                [[_eventArray objectAtIndex:i] addObject:newStack];
+            }
+        }
+    }
+    else if (category == PANEL)
+    {
+        // Add constraint to selected constraint array
+        NSMutableArray *arr = [_selectedMetas objectForKey:@"Panels"];
+        [arr addObject:constraint];
+        
+        // Allocate room for event arrays associated with new constraint if this is not the first
+        if (self.panelNum != 0)
+        {
+            NSMutableArray *newPanel = [[NSMutableArray alloc] init];
+            for (int j = 0; j < stackNum; j++)
+            {
+                NSMutableArray *newStack = [[NSMutableArray alloc] init];
+                for (int k = 0; k < bandNum; k++)
+                {
+                    NSMutableArray *newBand = [[NSMutableArray alloc] init];
+                    [newStack addObject:newBand];
+                }
+                
+                [newPanel addObject:newStack];
+            }
+            
+            [_eventArray addObject:newPanel];
+        }
+    }
+    else
+    {
+        NSLog(@"ERROR: Invalid UI category index: %d", category);
+    }
+    
+    NSLog(@"\nNumber of bands: %d \nNumber of stacks: %d \nNumber of panels: %d", 
+          [[[_eventArray objectAtIndex:0] objectAtIndex:0] count],
+          [[_eventArray objectAtIndex:0] count],
+          [_eventArray count]);
 }
 
 
@@ -317,7 +422,7 @@ float ****create4D ( int max_x, int max_y, int max_r, int max_c )
 {
     Query *copy = [[Query alloc] init];
     NSDictionary *newMetas = [[NSDictionary alloc] initWithDictionary:_selectedMetas copyItems:YES];
-    NSArray *newEvents = [[NSArray alloc] initWithArray:_eventArray copyItems:YES];
+    NSMutableArray *newEvents = [[NSMutableArray alloc] initWithArray:_eventArray copyItems:YES];
     
     copy.selectedMetas = newMetas;
     copy.eventArray = newEvents;

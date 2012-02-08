@@ -14,7 +14,7 @@
 
 /**
  *  Immutable dictionary with keys: "Bands", "Stacks", "Panels". 
- *  Each key points to an array of all parameters of the current query for the key's category.
+ *  Each key points to a mutable array of all parameters of the current query for the key's category.
  */
 @property (nonatomic, copy) NSDictionary *selectedMetas;
 
@@ -26,7 +26,7 @@
  *  - [][][x][] specifies the band number
  *  - [][][][x] specifies the event number
  */
-@property (nonatomic, copy) NSArray *eventArray;   
+@property (nonatomic, copy) NSMutableArray *eventArray;   
 
 /**
  *  4-dimensional array similar to eventArray's mapping.
@@ -46,9 +46,12 @@
 @property (nonatomic, assign) int timeScale;
 
 - (id) initTestWithPanels:(int)panels;
+
 - (int)panelNum;
 - (int)stackNum;
 - (int)bandNum;
+
+- (void)addConstraint:(Constraint *)constraint toArray:(enum UI_OBJECT)category;
 
 // (Experimental) Pure C implementation of a 4-dimensional array (to attempt a speed-up of C-style for-loop iterations)
 float ****create4D ( int max_x, int max_y, int max_r, int max_c );

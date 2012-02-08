@@ -10,6 +10,7 @@
 #import "MGSplitViewController.h"
 #import "PrimaryViewController.h"
 #import "Constraint.h"
+#import "Query.h"
 
 // Global UI layout parameters
 OBJC_EXPORT float SIDE_LABEL_SPACING;
@@ -21,6 +22,9 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     UITableView *_stackTable;    // The group of tables containing the seleced constraints
     UITableView *_panelTable;    //
 }
+
+@synthesize queryHasChanged = _queryHasChanged;
+
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -64,6 +68,8 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
         [panelL setTextColor:[UIColor whiteColor]];
         [panelL setText:@"Panels"];
         [self addSubview:panelL];
+        
+        _queryHasChanged = NO;
     }
     
     return self;
@@ -118,19 +124,31 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 #pragma mark -
 #pragma mark Drop management
 
-- (void)droppedConstraint:(Constraint *)constraint atPoint:(CGPoint)point
+- (void)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer
 {
-    if ([_bandTable pointInside:point withEvent:nil])
+    if ([_bandTable pointInside:[recognizer locationInView:_bandTable] withEvent:nil])
     {
-        NSLog(@"Constraint with name '%@' is inside Bands table!", constraint.name);
+        Query *currentQuery = (Query *)_bandTable.dataSource;
+        [currentQuery addConstraint:constraint toArray:BAND];
+        
+        [_bandTable reloadData];
+        _queryHasChanged = YES;
     }
-    else if ([_stackTable pointInside:point withEvent:nil])
+    else if ([_stackTable pointInside:[recognizer locationInView:_stackTable] withEvent:nil])
     {
-        NSLog(@"Constraint with name '%@' is inside Stacks table!", constraint.name);        
+        Query *currentQuery = (Query *)_stackTable.dataSource;
+        [currentQuery addConstraint:constraint toArray:STACK];
+        
+        [_stackTable reloadData];
+        _queryHasChanged = YES;
     }
-    else if ([_panelTable pointInside:point withEvent:nil])
+    else if ([_panelTable pointInside:[recognizer locationInView:_panelTable] withEvent:nil])
     {
-        NSLog(@"Constraint with name '%@' is inside Panels table!", constraint.name);        
+        Query *currentQuery = (Query *)_panelTable.dataSource;
+        [currentQuery addConstraint:constraint toArray:PANEL];
+        
+        [_panelTable reloadData];
+        _queryHasChanged = YES;
     }
 }
 

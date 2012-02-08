@@ -323,6 +323,8 @@
         Constraint *days = [[Constraint alloc] initWithName:@"Days" description:@""];
         days.leaf = NO;
         [currentConstraints addObject:days];
+        
+        [_treeDelegate treeDidUpdateData];
     }
     else if (_currentDepth == 2)
     {
@@ -341,6 +343,8 @@
                 c.leaf = YES;
                 [currentConstraints addObject:c];
             }
+            
+            [_treeDelegate treeDidUpdateData];
         }
         else if ([scale isEqualToString:@"Days"])
         {
@@ -350,6 +354,8 @@
                 c.leaf = YES;
                 [currentConstraints addObject:c];
             }
+            
+            [_treeDelegate treeDidUpdateData];
         }
         else
         {
@@ -360,8 +366,6 @@
     {
         NSLog(@"ERROR: Undefined depth in time branch: %d", _currentDepth);
     }
-    
-    [_treeDelegate treeDidUpdateData];
 }
 
 
