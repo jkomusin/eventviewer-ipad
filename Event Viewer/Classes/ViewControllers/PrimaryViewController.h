@@ -51,7 +51,7 @@ enum UI_OBJECT
 @protocol LoginDelegate
 @required
 - (void)loginToDatabaseSucceeded;
-- (void)loginToDatabaseFailed;
+- (void)loginToDatabaseFailedWithError:(NSString *)error;
 
 @end
 

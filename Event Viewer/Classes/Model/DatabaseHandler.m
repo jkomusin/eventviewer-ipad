@@ -128,8 +128,7 @@
     }
     else
     {
-        [_loginDelegate loginToDatabaseFailed];
-        NSLog(@"Failed login response: %@", loginResponse);
+        [_loginDelegate loginToDatabaseFailedWithError:loginResponse];
     }
 }
 
@@ -138,6 +137,9 @@
  */
 - (void)connection:(DatabaseConnection *)connection didFailWithError:(NSError *)error
 {
+    [_loginDelegate loginToDatabaseFailedWithError:[NSString stringWithFormat:@"%@ (%@)", 
+                                                    [error localizedDescription], 
+                                                    [[error userInfo] objectForKey:NSURLErrorFailingURLErrorKey]]];
     NSLog(@"Login connection failed! Error - %@ %@",
           [error localizedDescription],
           [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey]);

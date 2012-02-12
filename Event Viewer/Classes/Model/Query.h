@@ -1,16 +1,17 @@
 
 #import <Foundation/Foundation.h>
 
+@class DatabaseHandler;
+
 // Number of objects to create during stress testing
 #define TEST_STACKS 0   // Number of stacks in each panel
 #define TEST_BANDS 15    // Number of bands in each stack
-
 
 /**
  *  Data model containing all "meta" categories that have been selected in the currently submitted query, along with all events returned by the query.
  *  Handles all interfacing with the database for the current query and the parsing of the returned events.
  */
-@interface Query : NSObject <UITableViewDataSource>
+@interface Query : NSObject <NSURLConnectionDataDelegate, UITableViewDataSource>
 
 /**
  *  Immutable dictionary with keys: "Bands", "Stacks", "Panels". 
@@ -46,12 +47,15 @@
 @property (nonatomic, assign) int timeScale;
 
 - (id) initTestWithPanels:(int)panels;
+- (id) initWithHandler:(DatabaseHandler *)dbHandler;
 
 - (int)panelNum;
 - (int)stackNum;
 - (int)bandNum;
 
 - (void)addConstraint:(Constraint *)constraint toArray:(enum UI_OBJECT)category;
+
+- (void)queryForEventsWithCurrentConstraints;
 
 // (Experimental) Pure C implementation of a 4-dimensional array (to attempt a speed-up of C-style for-loop iterations)
 float ****create4D ( int max_x, int max_y, int max_r, int max_c );

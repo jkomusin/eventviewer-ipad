@@ -1,6 +1,9 @@
 
 #import "PrimaryViewController.h"
 #import "ContentScrollView.h"
+#import "DatabaseHandler.h"
+#import "DatabaseConnection.h"
+#import "JSONKit.h"
 #import "Query.h"
 #import "Event.h"
 #import "Constraint.h"
@@ -9,6 +12,14 @@
 #define MY_FREE(x)      my_free(x)
 
 @implementation Query
+{
+    DatabaseHandler *_dbHandler;        // Handler for the database, assumed to be logged in
+    JSONDecoder *_jsonParser;           // Decoder of returned JSON packets
+    NSMutableArray *_responseArray;     // 3-dimensional array of response data for current event queries with the format:
+                                        //  [x][][] - The panel for the response's events
+                                        //  [][x][] - The stack for the response's events
+                                        //  [][][x] - The band for the response's events (this is the MutableData object)
+}
 
 @synthesize selectedMetas = _selectedMetas;
 @synthesize eventArray = _eventArray;
@@ -20,6 +31,9 @@ OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewContro
 OBJC_EXPORT float BAND_SPACING;             //
 OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
+/**
+ *  Full initialization of data model object
+ */
 - (id) init
 {
     if ((self = [super init]))
@@ -44,9 +58,28 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         [emptyBands addObject:emptyBandEvents];
         _eventArray = emptyEvents;
         
+        // Initialize _responseArray with empty arrays
+        NSMutableArray *emptyResponses = [[NSMutableArray alloc] init];
+        _responseArray = emptyResponses;
+        
         //_eventFloats = create4D(2, 2, 2, 2);
 		
 		_timeScale = -1;
+    }
+    
+    return self;
+}
+
+/**
+ *  Initializes data model with new database handler
+ *
+ *  dbHandler is the new database handler object, assumed to be logged in
+ */
+- (id) initWithHandler:(DatabaseHandler *)dbHandler
+{
+    if ((self = [self init]))
+    {
+        _dbHandler = dbHandler;
     }
     
     return self;
@@ -302,6 +335,47 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 
 #pragma mark -
+#pragma mark Querying for data
+
+- (void)queryForEventsWithCurrentConstraints
+{
+    NSArray *panelConstraints = [_selectedMetas objectForKey:@"Panels"];
+    NSArray *stackConstraints = [_selectedMetas objectForKey:@"Stacks"];
+    NSArray *bandConstraints = [_selectedMetas objectForKey:@"Bands"];
+    
+    NSMutableArray *newResponses = [[NSMutableArray alloc] init];
+    // Initialize the query response array to the size of the query
+    for (int i = 0; i < [panelConstraints count]; i++)
+    {
+        NSMutableArray *panels = [[NSMutableArray alloc] init];
+        for (int j = 0; j < [stackConstraints count]; j++)
+        {
+            NSMutableArray *stacks = [[NSMutableArray alloc] init];
+            [panels addObject:stacks];
+        }
+        [newResponses addObject:panels];
+    }
+    _responseArray = newResponses;
+    
+    for (Constraint *panel in panelConstraints)
+    {
+        for (Constraint *stack in stackConstraints)
+        {
+            for (Constraint *band in bandConstraints)
+            {
+                NSString *panelQuery = [NSString stringWithFormat:@"%@=%d", panel.type, panel.identifier];
+                NSString *stackQuery = [NSString stringWithFormat:@"%@=%d", stack.type, stack.identifier];
+                NSString *bandQuery = [NSString stringWithFormat:@"%@=%d", band.type, band.identifier];
+                NSString *params = [NSString stringWithFormat:@"method=data&%@&%@&%@", panelQuery, stackQuery, bandQuery];
+                
+                [_dbHandler queryWithParameters:params fromDelegate:self ofType:EVENT];
+            }
+        }
+    }
+}
+
+
+#pragma mark -
 #pragma mark Query builder data source
 /**
  *  We assume that the only table views accessing these methods are the tables within the query builder.
@@ -358,6 +432,166 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     cell.detailTextLabel.text = con.description;
     
     return cell;
+}
+
+
+#pragma mark -
+#pragma mark Connection delegation
+
+/**
+ *  Called when the connection has begun to be responded to by the URL.
+ *  May be called multiple times in the event of a redirect, etc.
+ */
+- (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    if (connection.type != EVENT && connection.type != EVENT_COUNT)//LOCATION && connection.type != RELATION && connection.type != META && connection.type != TIME)
+    {
+        NSString *type;
+        if (connection.type == LOGIN)       type = @"LOGIN";
+        if (connection.type == LOCATION)    type = @"LOCATION";
+        if (connection.type == RELATION)    type = @"RELATION";
+        if (connection.type == META)        type = @"META";
+        if (connection.type == TIME)        type = @"TIME";
+        NSLog(@"ERROR: Connection of type '%@' handled by QueryTree. Expected 'LOCATION', 'RELATION', or 'META'", type);
+    }
+    NSMutableData *responseData = [[NSMutableData alloc] init];
+    NSMutableArray *stackArray = [[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex];
+    if ([stackArray count] <= connection.bandIndex)
+    {
+        for (int i = [stackArray count]; i < connection.bandIndex; i++)
+        {
+            NSMutableData *newData = [[NSMutableData alloc] init];  // placeholder
+            [stackArray addObject:newData];
+        }
+    }
+    
+    [stackArray replaceObjectAtIndex:connection.bandIndex withObject:responseData];
+}
+
+/**
+ *  Called periodically when the connection recieves data.
+ */
+- (void)connection:(DatabaseConnection *)connection didReceiveData:(NSData *)data
+{
+    NSMutableData *response = [[[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
+    [response appendData:data];
+}
+
+/**
+ *  Called when the connection has completed its request.
+ */
+- (void)connectionDidFinishLoading:(DatabaseConnection *)connection
+{
+    NSMutableData *response = [[[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
+  	NSArray *jsonArr = [_jsonParser objectWithData:response];
+    
+    NSLog(@"Retrieved JSON array:");
+    NSLog(@"%@", jsonArr);
+    
+//    NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
+//    
+//    if (connection.type == RELATION)
+//    {
+//        NSDictionary *dict = (NSDictionary *)jsonArr;
+//        for (id key in dict)
+//        {
+//            NSString *keyString = (NSString *)key;
+//            if ([keyString isEqualToString:@"location"] || [keyString isEqualToString:@"height"]) 
+//            {
+//                continue;
+//            }
+//            else
+//            {
+//                Constraint *c = [[Constraint alloc] initWithName:keyString description:(NSString *)[dict objectForKey:key]];
+//                [currentConstraints addObject:c];
+//            }
+//        }
+//    }
+//    else if (connection.type == META)
+//    {
+//        for (NSDictionary *dict in jsonArr)
+//        {
+//            Constraint *c = [[Constraint alloc] initWithName:(NSString *)[dict objectForKey:@"name"] 
+//                                                 description:(NSString *)[dict objectForKey:@"description"]];
+//            
+//            if (c.name == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
+//            {
+//                c.name = @"<null>";
+//            }
+//            if (c.description == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
+//            {
+//                c.description = @"<null>";
+//            }
+//            
+//            c.type = [_titleArray objectAtIndex:(_currentDepth - 1)];
+//            NSString *metaKey = [NSString stringWithFormat:@"%@_id", c.type];
+//            c.identifier = [(NSString *)[dict objectForKey:metaKey] intValue];
+//            c.leaf = YES;
+//            
+//            [currentConstraints addObject:c];
+//        }
+//    }
+//    else if (connection.type == LOCATION)
+//    {
+//        for (NSDictionary *dict in jsonArr)
+//        {
+//            Constraint *c = [[Constraint alloc] initWithName:(NSString *)[dict objectForKey:@"name"]
+//                                                 description:@""];
+//            
+//            if (c.name == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
+//            {
+//                c.name = @"<null>";
+//            }
+//            
+//            int location = [(NSString *)[dict objectForKey:@"location_id"] intValue];
+//            if (location == 1)  // Not a 'leaf' location (has subcategories)
+//            {
+//                c.type = @"category";
+//                c.identifier = [(NSString *)[dict objectForKey:@"category_id"] intValue];
+//                if (c.identifier == 0) // There was no 'category_id', instead use 'child_id'
+//                {
+//                    c.identifier = [(NSString *)[dict objectForKey:@"child_id"] intValue];
+//                }
+//                NSLog(@"Constraint with id: %d", c.identifier);
+//                c.leaf = NO;
+//            }
+//            else // 'Leaf' location (no subcategories)
+//            {
+//                c.type = @"location";
+//                c.identifier = location;
+//                c.leaf = YES;
+//            }
+//            
+//            [currentConstraints addObject:c];
+//        }
+//    }
+//    else if (connection.type == TIME)
+//    {
+//        NSString *start = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:0] objectForKey:@"start"];
+//        NSString *end = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:1] objectForKey:@"end"];
+//        
+//        int startNum = [(NSString *)[start substringWithRange:NSMakeRange(0, 4)] intValue];
+//        int endNum = [(NSString *)[end substringWithRange:NSMakeRange(0, 4)] intValue];
+//        
+//        for (int i = endNum; i >= startNum; i--)
+//        {
+//            Constraint *c = [[Constraint alloc] initWithName:[NSString stringWithFormat:@"%d", i] description:@""];
+//            c.leaf = YES;
+//            [currentConstraints addObject:c];
+//        }
+//    }
+//    
+//    [_treeDelegate treeDidUpdateData];
+}
+
+/**
+ *  Called when the connection fails.
+ */
+- (void)connection:(DatabaseConnection *)connection didFailWithError:(NSError *)error
+{
+    NSLog(@"Event data connection failed! Error - %@ %@",
+          [error localizedDescription],
+          [[error userInfo] objectForKey:NSURLErrorFailingURLStringErrorKey]);
 }
 
 
