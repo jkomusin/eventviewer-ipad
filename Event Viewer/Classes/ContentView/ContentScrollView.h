@@ -25,16 +25,16 @@
 @property (nonatomic, strong) NSArray *panelZoomViews;          // Array of all zooming scrollviews representing the panels in the display
 @property (nonatomic, strong) UIView *queryContentView;         // View containing all panels and content within the ContentScrollView as _contentView is reserved by UIScrollView :(
 
-//- (id)initWithPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum;
-- (void)sizeForPanelNum:(int)panelNum stackNum:(int)stackNum bandNum:(int)bandNum;
+//- (id)initWithPanelNum:(NSInteger)panelNum stackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
+- (void)sizeForPanelNum:(NSInteger)panelNum stackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
 
-- (void)switchToPanel:(int)panelIndex;
+- (void)switchToPanel:(NSInteger)panelIndex;
 
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
-- (void)reorderPanel:(int)panelIndex withNewIndex:(int)index;
+- (void)reorderPanel:(NSInteger)panelIndex withNewIndex:(NSInteger)index;
 
 @end

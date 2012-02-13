@@ -24,10 +24,10 @@
 /**
  *  0-based indices specifying the location of the band in the data model
  */
-@property (nonatomic, assign) int stackNumber;
-@property (nonatomic, assign) int bandNumber;
+@property (nonatomic, assign) NSInteger stackNumber;
+@property (nonatomic, assign) NSInteger bandNumber;
 
 
-- (void)drawEventsForPanel:(int)panel fromArray:(NSArray *)eventArray inContext:(CGContextRef)context;
+- (void)drawEventsForPanel:(NSInteger)panel fromArray:(NSArray *)eventArray inContext:(CGContextRef)context;
 
 @end

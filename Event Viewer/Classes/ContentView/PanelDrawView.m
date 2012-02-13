@@ -84,7 +84,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  bandNum is the number of bands in the current query (min of 0)
  *  landScale is the scale the panel should be sized to
  */
-- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum
+- (void)sizeForStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum
 {
     CGRect frame = CGRectMake(0.0f,
                               0.0f, 
@@ -106,7 +106,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  stackNum is the number of stacks in the current query (min of 0)
  *  bandNum is the number of bands in the current query (min of 0)
  */
-- (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum
+- (void)initLayersWithStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum
 {       
     // Release old layers
     if (_stackLayerArray)
@@ -183,7 +183,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     return _zoomScale;
 }
 
-- (int)delegateRequestsCurrentPanel
+- (NSInteger)delegateRequestsCurrentPanel
 {
     return _currentPanel;
 }
@@ -192,7 +192,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 // *  Retrieve color for events of a specified panel.
 // *  If no color has been created for the panel, create one and add it to the array.
 // */
-//- (UIColor *)getColorForPanel:(int)panelIndex
+//- (UIColor *)getColorForPanel:(NSInteger)panelIndex
 //{
 //    UIColor *eColor;
 //    
@@ -218,7 +218,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  stacknNum is the 0-based index for the stack containing the band
  *  bandNum is the 0-based index for the stack containing the band
  */
-- (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum
+- (BandLayer *)getBandLayerForStack:(NSInteger)stackNum band:(NSInteger)bandNum
 {
     NSLog(@"Finding band layer");
     BandLayer *result = [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
@@ -230,7 +230,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *
  *  stackNum is the 0-based index for the stack containing the band
  */
-- (CALayer *)getStackLayerForStack:(int)stackNum
+- (CALayer *)getStackLayerForStack:(NSInteger)stackNum
 {
     NSLog(@"Finding stack layer");
     CALayer *result = [_stackLayerArray objectAtIndex:stackNum];
@@ -243,7 +243,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  stackNum is the 0-based index of the currently dragged stack
  *  index is the new 0-based index of the stack being dragged
  */
-- (void)reorderStack:(int)stackIndex withNewIndex:(int)index
+- (void)reorderStack:(NSInteger)stackIndex withNewIndex:(NSInteger)index
 {    
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
@@ -320,13 +320,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *
  *  Returns YES if the reordering occured, else NO
  */
-- (void)reorderBandsAroundBand:(int)bandIndex inStack:(int)stackIndex withNewIndex:(int)index
+- (void)reorderBandsAroundBand:(NSInteger)bandIndex inStack:(NSInteger)stackIndex withNewIndex:(NSInteger)index
 {    
     float temp_BAND_HEIGHT = BAND_HEIGHT * _globalZoomScale;
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
     
     NSMutableArray *bandLayerMutable = [_bandLayerArray mutableCopy];
-    for (int i = 0; i < [bandLayerMutable count]; i++)
+    for (NSInteger i = 0; i < [bandLayerMutable count]; i++)
     {
         NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
         
@@ -625,7 +625,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     float temp_TIMELINE_HEIGHT = TIMELINE_HEIGHT * _globalZoomScale;
 	float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
 	
-	if (data.timeScale == 1)
+	if (data.timeScale == QueryTimescaleYear)
 	{
         NSArray *months = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil];
         

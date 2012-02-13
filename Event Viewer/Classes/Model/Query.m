@@ -62,9 +62,12 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         NSMutableArray *emptyResponses = [[NSMutableArray alloc] init];
         _responseArray = emptyResponses;
         
+        // Initialize _jsonParser
+        _jsonParser = [[JSONDecoder alloc] init];
+        
         //_eventFloats = create4D(2, 2, 2, 2);
 		
-		_timeScale = -1;
+		_timeScale = QueryTimescaleInfinite;
     }
     
     return self;
@@ -90,7 +93,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  
  *  panels is the number of panels to create
  */
-- (id) initTestWithPanels:(int)panels
+- (id) initTestWithPanels:(NSInteger)panels
 {    
     if ((self = [self init]))
     {
@@ -180,7 +183,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         }
         _eventArray = newEvents;
     
-		_timeScale = 1;
+		_timeScale = QueryTimescaleYear;
     
         //(Experimental) Pure C float stlye storage for the pure-C 4-dimensional array
         //create array of floats for each band's events
@@ -222,15 +225,15 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *
  *  NOTE: Should not be used as the basis for indices into the event array, as there are initially one array per category in the event array.
  */
-- (int)panelNum
+- (NSInteger)panelNum
 {
     return [(NSArray *)[_selectedMetas objectForKey:@"Panels"] count];
 }
-- (int)stackNum
+- (NSInteger)stackNum
 {
     return [(NSArray *)[_selectedMetas objectForKey:@"Stacks"] count];
 }
-- (int)bandNum
+- (NSInteger)bandNum
 {
     return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
 }
@@ -256,7 +259,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     // Add constraint to appropriate array, and allocate event arrays, skipping adding event arrays 
     //  if we are adding the first of a type of constraint, as the event array has been initialized
     //  with one array per category.
-    if (category == BAND)
+    if (category == UIObjectBand)
     {
         // Add constraint to selected constraint array
         NSMutableArray *arr = [_selectedMetas objectForKey:@"Bands"];
@@ -275,7 +278,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
             }
         }
     }
-    else if (category == STACK)
+    else if (category == UIObjectStack)
     {
         // Add constraint to selected constraint array
         NSMutableArray *arr = [_selectedMetas objectForKey:@"Stacks"];
@@ -297,7 +300,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
             }
         }
     }
-    else if (category == PANEL)
+    else if (category == UIObjectPanel)
     {
         // Add constraint to selected constraint array
         NSMutableArray *arr = [_selectedMetas objectForKey:@"Panels"];
@@ -326,6 +329,14 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     {
         NSLog(@"ERROR: Invalid UI category index: %d", category);
     }
+    
+    // Set new timescale if necessary
+    if ([constraint.type isEqualToString:@"year"] && _timeScale > QueryTimescaleYear)
+        _timeScale = QueryTimescaleYear;
+    if ([constraint.type isEqualToString:@"month"] && _timeScale > QueryTimescaleMonth)
+        _timeScale = QueryTimescaleMonth;
+    if ([constraint.type isEqualToString:@"day"] && _timeScale > QueryTimescaleDay)
+        _timeScale = QueryTimescaleDay;
     
     NSLog(@"\nNumber of bands: %d \nNumber of stacks: %d \nNumber of panels: %d", 
           [[[_eventArray objectAtIndex:0] objectAtIndex:0] count],
@@ -357,18 +368,22 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     }
     _responseArray = newResponses;
     
-    for (Constraint *panel in panelConstraints)
+    for (int p = 0; p < [panelConstraints count]; p++) //Constraint *panel in panelConstraints)
     {
-        for (Constraint *stack in stackConstraints)
+        Constraint *panel = [panelConstraints objectAtIndex:p];
+        for (int s = 0; s < [stackConstraints count]; s++) //Constraint *stack in stackConstraints)
         {
-            for (Constraint *band in bandConstraints)
+            Constraint *stack = [stackConstraints objectAtIndex:s];
+            for (int b = 0; b < [bandConstraints count]; b++) //Constraint *band in bandConstraints)
             {
+                Constraint *band = [bandConstraints objectAtIndex:b];
+                
                 NSString *panelQuery = [NSString stringWithFormat:@"%@=%d", panel.type, panel.identifier];
                 NSString *stackQuery = [NSString stringWithFormat:@"%@=%d", stack.type, stack.identifier];
                 NSString *bandQuery = [NSString stringWithFormat:@"%@=%d", band.type, band.identifier];
                 NSString *params = [NSString stringWithFormat:@"method=data&%@&%@&%@", panelQuery, stackQuery, bandQuery];
                 
-                [_dbHandler queryWithParameters:params fromDelegate:self ofType:EVENT];
+                [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeEvent withPanelIndex:p stackIndex:s bandIndex:b];
             }
         }
     }
@@ -385,15 +400,15 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     NSArray *dataArr;
-    if (tableView.tag == BAND)
+    if (tableView.tag == UIObjectBand)
     {
         dataArr = [_selectedMetas objectForKey:@"Bands"];
     }
-    else if (tableView.tag == STACK)
+    else if (tableView.tag == UIObjectStack)
     {
         dataArr = [_selectedMetas objectForKey:@"Stacks"];
     }
-    else if (tableView.tag == PANEL)
+    else if (tableView.tag == UIObjectPanel)
     {
         dataArr = [_selectedMetas objectForKey:@"Panels"];
     }
@@ -406,15 +421,15 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     static NSString *cellIdentifier = @"BuilderConstraint";
     
     NSArray *dataArr;
-    if (tableView.tag == BAND)
+    if (tableView.tag == UIObjectBand)
     {
         dataArr = [_selectedMetas objectForKey:@"Bands"];
     }
-    else if (tableView.tag == STACK)
+    else if (tableView.tag == UIObjectStack)
     {
         dataArr = [_selectedMetas objectForKey:@"Stacks"];
     }
-    else if (tableView.tag == PANEL)
+    else if (tableView.tag == UIObjectPanel)
     {
         dataArr = [_selectedMetas objectForKey:@"Panels"];
     }
@@ -444,26 +459,32 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    if (connection.type != EVENT && connection.type != EVENT_COUNT)//LOCATION && connection.type != RELATION && connection.type != META && connection.type != TIME)
+    if (connection.type != DBConnectionTypeEvent && connection.type != DBConnectionTypeEventCount)
     {
         NSString *type;
-        if (connection.type == LOGIN)       type = @"LOGIN";
-        if (connection.type == LOCATION)    type = @"LOCATION";
-        if (connection.type == RELATION)    type = @"RELATION";
-        if (connection.type == META)        type = @"META";
-        if (connection.type == TIME)        type = @"TIME";
-        NSLog(@"ERROR: Connection of type '%@' handled by QueryTree. Expected 'LOCATION', 'RELATION', or 'META'", type);
+        if (connection.type == DBConnectionTypeLogin)       type = @"LOGIN";
+        if (connection.type == DBConnectionTypeLocation)    type = @"LOCATION";
+        if (connection.type == DBConnectionTypeRelation)    type = @"RELATION";
+        if (connection.type == DBConnectionTypeMeta)        type = @"META";
+        if (connection.type == DBConnectionTypeTime)        type = @"TIME";
+        NSLog(@"ERROR: Connection of type '%@' handled by Query. Expected 'EVENT', or 'EVENT_COUNT'", type);
     }
+    
     NSMutableData *responseData = [[NSMutableData alloc] init];
     NSMutableArray *stackArray = [[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex];
+    
+    NSLog(@"Stack array count: %d", [stackArray count]);
+    
     if ([stackArray count] <= connection.bandIndex)
     {
-        for (int i = [stackArray count]; i < connection.bandIndex; i++)
+        for (int i = [stackArray count]; i <= connection.bandIndex; i++)
         {
             NSMutableData *newData = [[NSMutableData alloc] init];  // placeholder
             [stackArray addObject:newData];
         }
     }
+    
+    NSLog(@"Stack array count: %d", [stackArray count]);
     
     [stackArray replaceObjectAtIndex:connection.bandIndex withObject:responseData];
 }
@@ -487,6 +508,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     
     NSLog(@"Retrieved JSON array:");
     NSLog(@"%@", jsonArr);
+    
+    
     
 //    NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
 //    

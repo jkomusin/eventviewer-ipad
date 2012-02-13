@@ -21,11 +21,11 @@
 @protocol DrawDelegate
 @required
 - (float)delegateRequestsZoomscale;
-- (int)delegateRequestsCurrentPanel;
-- (BandLayer *)getBandLayerForStack:(int)stackNum band:(int)bandNum;
-- (CALayer *)getStackLayerForStack:(int)stackNum;
-- (void)reorderBandsAroundBand:(int)bandIndex inStack:(int)stackIndex withNewIndex:(int)index;
-- (void)reorderStack:(int)stackIndex withNewIndex:(int)index;
+- (NSInteger)delegateRequestsCurrentPanel;
+- (BandLayer *)getBandLayerForStack:(NSInteger)stackNum band:(NSInteger)bandNum;
+- (CALayer *)getStackLayerForStack:(NSInteger)stackNum;
+- (void)reorderBandsAroundBand:(NSInteger)bandIndex inStack:(NSInteger)stackIndex withNewIndex:(NSInteger)index;
+- (void)reorderStack:(NSInteger)stackIndex withNewIndex:(NSInteger)index;
 
 @end
 
@@ -38,10 +38,10 @@
 
 @property (nonatomic, strong) id<DataDelegate> dataDelegate;
 @property (nonatomic, strong) UIPopoverController *infoPopup;   // The popover to display the EventInfo pane upon user request for details on a specific Event
-@property (nonatomic, assign) int currentPanel; // Index of the panel this zoom view displays content for
+@property (nonatomic, assign) NSInteger currentPanel; // Index of the panel this zoom view displays content for
 
-- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum;
-- (void)initLayersWithStackNum:(int)stackNum bandNum:(int)bandNum;
+- (void)sizeForStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
+- (void)initLayersWithStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
 
 - (void)drawTimelinesForData:(Query *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
 

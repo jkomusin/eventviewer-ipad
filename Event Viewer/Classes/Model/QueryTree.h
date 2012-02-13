@@ -19,11 +19,11 @@
  *      - LOCATION is for the locations tree
  *      - TIME is for the time tree
  */
-enum TreeCategory
+enum QUERY_TREE_CATEGORY
 {
-    EVENTS = 0,
-    LOCATIONS = 1,
-    TIMES = 2
+    QueryTreeCategoryEvents = 0,
+    QueryTreeCategoryLocations = 1,
+    QueryTreeCategoryTimes = 2
 };
 
 /**
@@ -47,7 +47,7 @@ enum TreeCategory
 - (NSString *)getCurrentTitle;
 - (Constraint *)getConstraintAtIndex:(NSInteger)index;
 
-- (void)drillDownToIndex:(int)index;
+- (void)drillDownToIndex:(NSInteger)index;
 - (void)drillUpOne;
 - (void)drillUpToRoot;
 

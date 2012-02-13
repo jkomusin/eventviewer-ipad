@@ -23,9 +23,9 @@
  */
 enum UI_OBJECT
 {
-    BAND = 0,
-    STACK = 1,
-    PANEL = 2
+    UIObjectBand = 0,
+    UIObjectStack = 1,
+    UIObjectPanel = 2
 };
 
 
@@ -35,13 +35,13 @@ enum UI_OBJECT
 @protocol DataDelegate
 @required
 - (Query *)delegateRequestsQueryData;
-- (int)delegateRequestsNumberOfBands;
+- (NSInteger)delegateRequestsNumberOfBands;
 - (NSArray *)delegateRequestsOverlays;
-- (int)delegateRequestsTimescale;
-- (void)swapBand:(int)i withBand:(int)j;
-- (void)swapStack:(int)i withStack:(int)j;
-- (void)swapPanel:(int)i withPanel:(int)j;
-- (UIColor *)getColorForPanel:(int)panelIndex;
+- (NSInteger)delegateRequestsTimescale;
+- (void)swapBand:(NSInteger)i withBand:(NSInteger)j;
+- (void)swapStack:(NSInteger)i withStack:(NSInteger)j;
+- (void)swapPanel:(NSInteger)i withPanel:(NSInteger)j;
+- (UIColor *)getColorForPanel:(NSInteger)panelIndex;
 
 @end
 
@@ -52,6 +52,15 @@ enum UI_OBJECT
 @required
 - (void)loginToDatabaseSucceeded;
 - (void)loginToDatabaseFailedWithError:(NSString *)error;
+
+@end
+
+/**
+ *  Delegate protocol to provide notifications of query updates.
+ */
+@protocol ContentDelegate
+@required
+- (void)queryDidUpdatePanel:(NSInteger)panelIndex;
 
 @end
 
@@ -94,13 +103,13 @@ enum UI_OBJECT
 - (void)scrubberMoved:(id)sender;
 - (void)scrubberStopped:(id)sender;
 - (void)buttonPressed:(id)sender;
-- (void)changeCurrentPanel:(int)panelIndex;
+- (void)changeCurrentPanel:(NSInteger)panelIndex;
 
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)swapButton:(int)i toIndex:(int)j;
+- (void)swapButton:(NSInteger)i toIndex:(NSInteger)j;
 
 - (void)resizeSubviews;
 

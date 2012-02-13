@@ -15,7 +15,7 @@
 
 @property (nonatomic, strong) NSString *name;           // Name of the constraint
 @property (nonatomic, strong) NSString *description;    // Description of the constraint
-@property (nonatomic, assign) int identifier;           // id number of the constraint for use in queries
+@property (nonatomic, assign) NSInteger identifier;           // id number of the constraint for use in queries
 @property (nonatomic, strong) NSString *type;           // Type of constraint, affixed with '_id' in results, possibilities include:
                                                         //  category, location, type, condition
 

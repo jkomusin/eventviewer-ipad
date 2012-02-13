@@ -30,6 +30,7 @@
 
 - (id)initWithURL:(NSString *)url username:(NSString *)user password:(NSString *)pass delegate:(id<LoginDelegate>)delegate;
 
+- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type withPanelIndex:(NSInteger)panel stackIndex:(NSInteger)stack bandIndex:(NSInteger)band;
 - (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type;
 - (void) getEventCountForQuery:(Query *)query;
 

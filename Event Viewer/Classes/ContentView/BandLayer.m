@@ -27,7 +27,7 @@ OBJC_EXPORT BOOL isPortrait;
 OBJC_EXPORT float BAND_HEIGHT;              //
 OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
 OBJC_EXPORT float BAND_SPACING;             //
-OBJC_EXPORT float TIMELINE_HEIGHT;            //
+OBJC_EXPORT float TIMELINE_HEIGHT;          //
 
 - (void)drawInContext:(CGContextRef)context
 {            
@@ -69,7 +69,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  *  eArray is the 4-dimensional array of events stored in the current QueryData object
  *  context is the current drawing context reference
  */
-- (void)drawEventsForPanel:(int)panelIndex fromArray:(NSArray *)eventArray inContext:(CGContextRef)context
+- (void)drawEventsForPanel:(NSInteger)panelIndex fromArray:(NSArray *)eventArray inContext:(CGContextRef)context
 {
     NSArray *eArr = [[[eventArray objectAtIndex:panelIndex] objectAtIndex:_stackNumber] objectAtIndex:_bandNumber];
     float zoomScale = [_drawDelegate delegateRequestsZoomscale];

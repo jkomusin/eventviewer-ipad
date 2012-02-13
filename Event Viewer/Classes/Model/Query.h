@@ -3,6 +3,22 @@
 
 @class DatabaseHandler;
 
+
+/**
+ *  Enumeration for the three root categories of queriable constraints in the system:
+ *      - EVENT is for the events tree
+ *      - LOCATION is for the locations tree
+ *      - TIME is for the time tree
+ */
+enum QUERY_TIMESCALE
+{
+    QueryTimescaleInfinite = 3,
+    QueryTimescaleYear = 2,
+    QueryTimescaleMonth = 1,
+    QueryTimescaleDay = 0
+};
+
+
 // Number of objects to create during stress testing
 #define TEST_STACKS 0   // Number of stacks in each panel
 #define TEST_BANDS 15    // Number of bands in each stack
@@ -44,14 +60,14 @@
  *		2 = month
  *		3 = day
  */
-@property (nonatomic, assign) int timeScale;
+@property (nonatomic, assign) enum QUERY_TIMESCALE timeScale;
 
-- (id) initTestWithPanels:(int)panels;
+- (id) initTestWithPanels:(NSInteger)panels;
 - (id) initWithHandler:(DatabaseHandler *)dbHandler;
 
-- (int)panelNum;
-- (int)stackNum;
-- (int)bandNum;
+- (NSInteger)panelNum;
+- (NSInteger)stackNum;
+- (NSInteger)bandNum;
 
 - (void)addConstraint:(Constraint *)constraint toArray:(enum UI_OBJECT)category;
 

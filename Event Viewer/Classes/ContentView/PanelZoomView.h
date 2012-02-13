@@ -19,8 +19,8 @@
 @property (nonatomic, strong) PanelDrawView *panelDrawView;     // The static View in which all bands are drawn. Is the view that is zoomed and panned by this ScrollView.
 @property (nonatomic, assign) CGRect originalFrame;             // The original frame of the view when drawn at zoomScale 1.0
 
-//- (id)initWithFrame:(CGRect)frame forPanelIndex:(int)panelIndex stackNum:(int)stackNum bandNum:(int)bandNum;
-- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum;
+//- (id)initWithFrame:(CGRect)frame forPanelIndex:(NSInteger)panelIndex stackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
+- (void)sizeForStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
 
 - (void)zoomToScale:(float)zoomScale;
 

@@ -30,6 +30,9 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 {
     if ((self = [super initWithFrame:frame]))
     {
+        self.backgroundColor = [UIColor blackColor];
+        self.opaque = YES;
+        
         // Set up labels
         float tableHeight = (self.frame.size.height - 4.0f - 60.0f) / 3.0f; // The 4.0 ensures an integer result and a tiny bit more space at the bottom
         
@@ -94,7 +97,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
                                   tableWidth,
                                   tableHeight);
     UITableView *newBands = [[UITableView alloc] initWithFrame:bandFrame style:UITableViewStylePlain];
-    newBands.tag = BAND;
+    newBands.tag = UIObjectBand;
     newBands.dataSource = source;
     [self addSubview:newBands];
     _bandTable = newBands;
@@ -104,7 +107,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
                                    tableWidth, 
                                    tableHeight);
     UITableView *newStacks = [[UITableView alloc] initWithFrame:stackFrame style:UITableViewStylePlain];
-    newStacks.tag = STACK;
+    newStacks.tag = UIObjectStack;
     newStacks.dataSource = source;
     [self addSubview:newStacks];
     _stackTable = newStacks;
@@ -114,7 +117,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
                                    tableWidth, 
                                    tableHeight);
     UITableView *newPanels = [[UITableView alloc] initWithFrame:panelFrame style:UITableViewStylePlain];
-    newPanels.tag = PANEL;
+    newPanels.tag = UIObjectPanel;
     newPanels.dataSource = source;
     [self addSubview:newPanels];
     _panelTable = newPanels;
@@ -129,7 +132,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     if ([_bandTable pointInside:[recognizer locationInView:_bandTable] withEvent:nil])
     {
         Query *currentQuery = (Query *)_bandTable.dataSource;
-        [currentQuery addConstraint:constraint toArray:BAND];
+        [currentQuery addConstraint:constraint toArray:UIObjectBand];
         
         [_bandTable reloadData];
         _queryHasChanged = YES;
@@ -137,7 +140,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     else if ([_stackTable pointInside:[recognizer locationInView:_stackTable] withEvent:nil])
     {
         Query *currentQuery = (Query *)_stackTable.dataSource;
-        [currentQuery addConstraint:constraint toArray:STACK];
+        [currentQuery addConstraint:constraint toArray:UIObjectStack];
         
         [_stackTable reloadData];
         _queryHasChanged = YES;
@@ -145,7 +148,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     else if ([_panelTable pointInside:[recognizer locationInView:_panelTable] withEvent:nil])
     {
         Query *currentQuery = (Query *)_panelTable.dataSource;
-        [currentQuery addConstraint:constraint toArray:PANEL];
+        [currentQuery addConstraint:constraint toArray:UIObjectPanel];
         
         [_panelTable reloadData];
         _queryHasChanged = YES;

@@ -65,7 +65,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
  *  stackNum is the number of stacks being fit
  *  bandNum is the number of bands being fit
  */
-- (void)sizeForStackNum:(int)stackNum bandNum:(int)bandNum
+- (void)sizeForStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum
 {
     CGRect frame = self.frame;
     frame.size.width = BAND_WIDTH;

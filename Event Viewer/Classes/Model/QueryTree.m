@@ -22,9 +22,9 @@
 
 - (void)drillUpOne;
 - (void)drillUpToRoot;
-- (void)drillDownLocationsThroughIndex:(int)index;
-- (void)drillDownEventsThroughIndex:(int)index;
-- (void)drillDownTimesThroughIndex:(int)index;
+- (void)drillDownLocationsThroughIndex:(NSInteger)index;
+- (void)drillDownEventsThroughIndex:(NSInteger)index;
+- (void)drillDownTimesThroughIndex:(NSInteger)index;
 
 @end
 
@@ -36,8 +36,8 @@
                                         //  array[x][] represents the level of the tree
                                         //  array[][x] represents the index of the row in the table (i.e. the child of the current node)
     NSMutableArray *_titleArray;        // Array of all titles in the current tree (the last title is the current title, the one before is its parent's)
-    int _currentDepth;                  // Current depth the drill-down constraint tree is at
-    enum TreeCategory _currentBranch;   // Current root branch of the tree (events, locations, or times)
+    NSInteger _currentDepth;                  // Current depth the drill-down constraint tree is at
+    enum QUERY_TREE_CATEGORY _currentBranch;   // Current root branch of the tree (events, locations, or times)
     
     DatabaseHandler *_dbHandler;        // Handler for the database, assumed to be logged in
     JSONDecoder *_jsonParser;           // Decoder of returned JSON packets
@@ -191,7 +191,7 @@
  *  Advances the tree to the next level, through the given index.
  *  Also advances all accociaed values in tree (current title, depth, branch)
  */
-- (void)drillDownToIndex:(int)index
+- (void)drillDownToIndex:(NSInteger)index
 {
     Constraint *c = [[_constraintArray objectAtIndex:_currentDepth] objectAtIndex:index];
     [_titleArray addObject:c.name];
@@ -207,15 +207,15 @@
     {
         if ([c.name isEqualToString:@"Events"])
         {
-            _currentBranch = EVENTS;
+            _currentBranch = QueryTreeCategoryEvents;
         }
         else if ([c.name isEqualToString:@"Locations"])
         {
-            _currentBranch = LOCATIONS;
+            _currentBranch = QueryTreeCategoryLocations;
         }
         else if ([c.name isEqualToString:@"Times"])
         {
-            _currentBranch = TIMES;
+            _currentBranch = QueryTreeCategoryTimes;
         }
         else
         {
@@ -224,15 +224,15 @@
     }
     
     // Send off to specific handler functions
-    if (_currentBranch == EVENTS)
+    if (_currentBranch == QueryTreeCategoryEvents)
     {
         [self drillDownEventsThroughIndex:index];
     }
-    else if (_currentBranch == LOCATIONS)
+    else if (_currentBranch == QueryTreeCategoryLocations)
     {
         [self drillDownLocationsThroughIndex:index];
     }
-    else if (_currentBranch == TIMES)
+    else if (_currentBranch == QueryTreeCategoryTimes)
     {
         [self drillDownTimesThroughIndex:index];
     }
@@ -264,18 +264,18 @@
 /**
  *  Drill down one level in the tree within the 'Events' branch
  */
-- (void)drillDownEventsThroughIndex:(int)index
+- (void)drillDownEventsThroughIndex:(NSInteger)index
 {
     if (_currentDepth == 1) // Find relations
     {
         NSString *params = [NSString stringWithFormat:@"method=relation"];
-        [_dbHandler queryWithParameters:params fromDelegate:self ofType:RELATION];
+        [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeRelation];
     }
     else if (_currentDepth == 2) // Find metas for selected index
     {
         Constraint *c = [[_constraintArray objectAtIndex:_currentDepth-1] objectAtIndex:index];
         NSString *params = [NSString stringWithFormat:@"method=meta&relation=%@", c.name];
-        [_dbHandler queryWithParameters:params fromDelegate:self ofType:META];
+        [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeMeta];
     }
     else
     {
@@ -286,18 +286,18 @@
 /**
  *  Drill down one level in the tree within the 'Locations' branch
  */
-- (void)drillDownLocationsThroughIndex:(int)index
+- (void)drillDownLocationsThroughIndex:(NSInteger)index
 {
     if (_currentDepth == 1) // Find root categories
     {
         NSString *params = [NSString stringWithFormat:@"method=getRootCategories"];
-        [_dbHandler queryWithParameters:params fromDelegate:self ofType:LOCATION];
+        [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeLocation];
     }
     else if (_currentDepth > 1) // Find subcategories
     {
         Constraint *c = [[_constraintArray objectAtIndex:_currentDepth-1] objectAtIndex:index];
         NSString *params = [NSString stringWithFormat:@"method=getSubCategories&category_id=%d", c.identifier];
-        [_dbHandler queryWithParameters:params fromDelegate:self ofType:LOCATION];
+        [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeLocation];
     }
     else
     {
@@ -308,7 +308,7 @@
 /**
  *  Drill down one level in the tree within the 'Times' branch
  */
-- (void)drillDownTimesThroughIndex:(int)index
+- (void)drillDownTimesThroughIndex:(NSInteger)index
 {
     NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
     
@@ -333,14 +333,17 @@
         if ([scale isEqualToString:@"Years"])
         {
             NSString *params = @"method=timerange";
-            [_dbHandler queryWithParameters:params fromDelegate:self ofType:TIME];
+            [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeTime];
         }
         else if ([scale isEqualToString:@"Months"])
         {
-            for (NSString *m in _months)
+            for (int m = 0; m < [_months count]; m++) //NSString *m in _months)
             {
-                Constraint *c = [[Constraint alloc] initWithName:m description:@""];
+                NSString *month = [_months objectAtIndex:m];
+                Constraint *c = [[Constraint alloc] initWithName:month description:@""];
                 c.leaf = YES;
+                c.type = @"month";
+                c.identifier = m+1;
                 [currentConstraints addObject:c];
             }
             
@@ -352,6 +355,8 @@
             {
                 Constraint *c = [[Constraint alloc] initWithName:[NSString stringWithFormat:@"%d", i] description:@""];
                 c.leaf = YES;
+                c.type = @"day";
+                c.identifier = i;
                 [currentConstraints addObject:c];
             }
             
@@ -378,12 +383,12 @@
  */
 - (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    if (connection.type != LOCATION && connection.type != RELATION && connection.type != META && connection.type != TIME)
+    if (connection.type != DBConnectionTypeLocation && connection.type != DBConnectionTypeRelation && connection.type != DBConnectionTypeMeta && connection.type != DBConnectionTypeTime)
     {
         NSString *type;
-        if (connection.type == LOGIN)       type = @"LOGIN";
-        if (connection.type == EVENT)       type = @"EVENT";
-        if (connection.type == EVENT_COUNT) type = @"EVENT_COUNT";
+        if (connection.type == DBConnectionTypeLogin)       type = @"LOGIN";
+        if (connection.type == DBConnectionTypeEvent)       type = @"EVENT";
+        if (connection.type == DBConnectionTypeEventCount) type = @"EVENT_COUNT";
         NSLog(@"ERROR: Connection of type '%@' handled by QueryTree. Expected 'LOCATION', 'RELATION', or 'META'", type);
     }
     _response = [[NSMutableData alloc] init];
@@ -409,7 +414,7 @@
     
     NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
     
-    if (connection.type == RELATION)
+    if (connection.type == DBConnectionTypeRelation)
     {
         NSDictionary *dict = (NSDictionary *)jsonArr;
         for (id key in dict)
@@ -426,7 +431,7 @@
             }
         }
     }
-    else if (connection.type == META)
+    else if (connection.type == DBConnectionTypeMeta)
     {
         for (NSDictionary *dict in jsonArr)
         {
@@ -442,7 +447,7 @@
                 c.description = @"<null>";
             }
             
-            c.type = [_titleArray objectAtIndex:(_currentDepth - 1)];
+            c.type = [_titleArray objectAtIndex:_currentDepth];
             NSString *metaKey = [NSString stringWithFormat:@"%@_id", c.type];
             c.identifier = [(NSString *)[dict objectForKey:metaKey] intValue];
             c.leaf = YES;
@@ -450,7 +455,7 @@
             [currentConstraints addObject:c];
         }
     }
-    else if (connection.type == LOCATION)
+    else if (connection.type == DBConnectionTypeLocation)
     {
         for (NSDictionary *dict in jsonArr)
         {
@@ -484,7 +489,7 @@
             [currentConstraints addObject:c];
         }
     }
-    else if (connection.type == TIME)
+    else if (connection.type == DBConnectionTypeTime)
     {
         NSString *start = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:0] objectForKey:@"start"];
         NSString *end = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:1] objectForKey:@"end"];
@@ -496,6 +501,8 @@
         {
             Constraint *c = [[Constraint alloc] initWithName:[NSString stringWithFormat:@"%d", i] description:@""];
             c.leaf = YES;
+            c.type = @"year";
+            c.identifier = i;
             [currentConstraints addObject:c];
         }
     }

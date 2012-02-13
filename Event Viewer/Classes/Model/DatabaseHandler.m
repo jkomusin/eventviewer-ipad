@@ -51,7 +51,7 @@
                                                 cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                             timeoutInterval:60.0];
     
-    (void) [[DatabaseConnection alloc] initWithRequest:loginRequest delegate:self ofType:LOGIN];
+    (void) [[DatabaseConnection alloc] initWithRequest:loginRequest delegate:self ofType:DBConnectionTypeLogin withPanelIndex:-1 stackIndex:-1 bandIndex:-1];
 }
 
 
@@ -66,7 +66,7 @@
  *  Data will be returned to the delegate by the delegate methods:
  *  connection:didReceiveResponse:, connection:didReceiveData:, connection:didFailWithError: and connectionDidFinishLoading:
  */
-- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
+- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type withPanelIndex:(NSInteger)panel stackIndex:(NSInteger)stack bandIndex:(NSInteger)band
 {
     NSLog(@"Querying with parameters: %@ and type: %d", params, type);
     
@@ -75,8 +75,20 @@
                                                 cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                             timeoutInterval:60.0];
     
+    (void) [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type withPanelIndex:panel stackIndex:stack bandIndex:band];
+}
+- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
+{
+    NSLog(@"Querying with parameters: %@ and type: %d", params, type);
+    
+    NSString *queryURL = [NSString stringWithFormat:@"%@?%@", _servletURL, params];
+    NSURLRequest *dbRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:queryURL]
+                                             cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                                         timeoutInterval:60.0];
+    
     (void) [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
 }
+
 
 - (void) getEventCountForQuery:(Query *)query
 {
@@ -94,14 +106,14 @@
 - (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
     NSLog(@"Type of query: %d", connection.type);
-    if (connection.type != LOGIN)
+    if (connection.type != DBConnectionTypeLogin)
     {
         NSString *type;
-        if (connection.type == LOCATION)  type = @"LOCATION";
-        if (connection.type == RELATION)  type = @"RELATION";
-        if (connection.type == META)  type = @"META";
-        if (connection.type == EVENT)       type = @"EVENT";
-        if (connection.type == EVENT_COUNT) type = @"EVENT_COUNT";
+        if (connection.type == DBConnectionTypeLocation)  type = @"LOCATION";
+        if (connection.type == DBConnectionTypeRelation)  type = @"RELATION";
+        if (connection.type == DBConnectionTypeMeta)  type = @"META";
+        if (connection.type == DBConnectionTypeEvent)       type = @"EVENT";
+        if (connection.type == DBConnectionTypeEventCount) type = @"EVENT_COUNT";
         NSLog(@"ERROR: Connection of type '%@' handled by DatabaseHandler. Expected 'LOGIN'", type);
     }
     _response = [[NSMutableData alloc] init];
