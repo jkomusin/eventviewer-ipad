@@ -164,16 +164,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 #pragma mark -
 #pragma mark Drawing delegation
 
-//- (void)setDrawingDelegateForSublayers:(id<DrawDelegate>)delegate
-//{
-//    for (CATiledLayer *s in _stackLayerArray)
-//    {
-//        for (BandLayer *b in s.sublayers)
-//        {
-//            b setD
-//        }
-//    }
-//}
 
 /**
  *  Returns the current zoomScale of the display to the requester.
@@ -187,30 +177,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 {
     return _currentPanel;
 }
-
-///**
-// *  Retrieve color for events of a specified panel.
-// *  If no color has been created for the panel, create one and add it to the array.
-// */
-//- (UIColor *)getColorForPanel:(NSInteger)panelIndex
-//{
-//    UIColor *eColor;
-//    
-//    while ([_colorArray count] < panelIndex+1)
-//    {
-//        CGFloat red =  (CGFloat)random()/(CGFloat)RAND_MAX;
-//        CGFloat blue = (CGFloat)random()/(CGFloat)RAND_MAX;
-//        CGFloat green = (CGFloat)random()/(CGFloat)RAND_MAX;
-//        eColor = [UIColor colorWithRed:red green:green blue:blue alpha:1.0f];
-//        NSMutableArray *mutableColors = [_colorArray mutableCopy];
-//        [mutableColors addObject:eColor];
-//        _colorArray = mutableColors;
-//    }
-//
-//    eColor = [_colorArray objectAtIndex:panelIndex];
-//    
-//    return eColor;
-//}
 
 /**
  *  Returns the specified layer for band drawing.
@@ -428,8 +394,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 - (NSArray *)findEventsAtPoint:(CGPoint)location
 {
     Query *data = [_dataDelegate delegateRequestsQueryData];
-    Event *test = [[[[data.eventArray objectAtIndex:0] objectAtIndex:0] objectAtIndex:0] objectAtIndex:0];
-    NSLog(@"Test event x: %f", [test x]);
     
     NSMutableArray *results = [[NSMutableArray alloc] init];
     for (int i = 0; i < [_bandLayerArray count]; i++)
@@ -445,7 +409,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
             if (CGRectContainsPoint(bFrame, location))
             {                
                 // We've found the layer, now find the Event(s) in the current panel and each overlay
-//                QueryData *data = [_dataDelegate delegateRequestsQueryData];
                 NSMutableArray *overlays = [[_dataDelegate delegateRequestsOverlays] mutableCopy];
                 [overlays addObject:[NSNumber numberWithInt:_currentPanel]];
                 BOOL currentOverlaid = NO;

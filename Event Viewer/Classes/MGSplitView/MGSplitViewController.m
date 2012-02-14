@@ -559,6 +559,8 @@
 														  style:UIBarButtonItemStyleBordered 
 														 target:self 
 														 action:@selector(showMasterPopover:)];
+		_barButtonItem.width = 75.0f;
+		
 		
 		// Inform delegate of this state of affairs.
 		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:willHideViewController:withBarButtonItem:forPopoverController:)]) {

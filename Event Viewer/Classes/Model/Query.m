@@ -21,6 +21,7 @@
                                         //  [][][x] - The band for the response's events (this is the MutableData object)
 }
 
+@synthesize contentDelegate = _contentDelegate;
 @synthesize selectedMetas = _selectedMetas;
 @synthesize eventArray = _eventArray;
 //@synthesize eventFloats = _eventFloats;
@@ -354,27 +355,42 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     NSArray *stackConstraints = [_selectedMetas objectForKey:@"Stacks"];
     NSArray *bandConstraints = [_selectedMetas objectForKey:@"Bands"];
     
+    // Initialize the query response and event arrays to the size of the query
     NSMutableArray *newResponses = [[NSMutableArray alloc] init];
-    // Initialize the query response array to the size of the query
+    NSMutableArray *newEvents = [[NSMutableArray alloc] init];
     for (int i = 0; i < [panelConstraints count]; i++)
     {
-        NSMutableArray *panels = [[NSMutableArray alloc] init];
+        NSMutableArray *panelResponse = [[NSMutableArray alloc] init];
+        NSMutableArray *panelEvents = [[NSMutableArray alloc] init];
         for (int j = 0; j < [stackConstraints count]; j++)
         {
-            NSMutableArray *stacks = [[NSMutableArray alloc] init];
-            [panels addObject:stacks];
+            NSMutableArray *stackResponse = [[NSMutableArray alloc] init];
+            NSMutableArray *stackEvents = [[NSMutableArray alloc] init];
+            // Event arrays have one more depth than the response array
+            for (int k = 0; k < [bandConstraints count]; k++)
+            {
+                NSMutableArray *bandEvents = [[NSMutableArray alloc] init];
+                [stackEvents addObject:bandEvents];
+            }
+            
+            [panelResponse addObject:stackResponse];
+            [panelEvents addObject:stackEvents];
         }
-        [newResponses addObject:panels];
+        
+        [newResponses addObject:panelResponse];
+        [newEvents addObject:panelEvents];
     }
     _responseArray = newResponses;
+    _eventArray = newEvents;
     
-    for (int p = 0; p < [panelConstraints count]; p++) //Constraint *panel in panelConstraints)
+    // Query for events
+    for (int p = 0; p < [panelConstraints count]; p++)
     {
         Constraint *panel = [panelConstraints objectAtIndex:p];
-        for (int s = 0; s < [stackConstraints count]; s++) //Constraint *stack in stackConstraints)
+        for (int s = 0; s < [stackConstraints count]; s++)
         {
             Constraint *stack = [stackConstraints objectAtIndex:s];
-            for (int b = 0; b < [bandConstraints count]; b++) //Constraint *band in bandConstraints)
+            for (int b = 0; b < [bandConstraints count]; b++)
             {
                 Constraint *band = [bandConstraints objectAtIndex:b];
                 
@@ -509,102 +525,75 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     NSLog(@"Retrieved JSON array:");
     NSLog(@"%@", jsonArr);
     
+    if (connection.type == DBConnectionTypeEvent)
+    {
+		// Returned event JSON array should have the format:
+		//	Array with elements that are dictionaries with two keys: "header" and "occurrence"
+		//	"header" containts a dictionary of the specific constraints on the events in the dictionary
+		//	"occurrence" contains an array of dictionaries which are each an event under the header
+		//		Each event dictionary has the format similar to the following example:
+		//		day = 11;
+		//		end = "2004-10-12 18:00:00-04";
+		//		instance_id = "2004-10-11 03:00:00-04";
+		//		magnitude = "15.23999023";
+		//		month = 10;
+		//		start = "2004-10-11 03:00:00-04";
+		//		year = 2004;
+		
+		NSDateFormatter *dateMaker = [[NSDateFormatter alloc] init];
+		[dateMaker setDateFormat:@"yyyy-MM-dd HH:mm"];
+		
+        NSMutableArray *eventArr = [[[_eventArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
+		for (NSDictionary *dict in jsonArr)
+        {
+			for (NSDictionary *eventDict in [dict objectForKey:@"occurrence"])
+			{
+				NSString *startString = [eventDict objectForKey:@"start"];
+				NSString *endString = [eventDict objectForKey:@"end"];
+				NSDate *start = [dateMaker dateFromString:[startString substringWithRange:NSMakeRange(0, 16)]];
+				NSDate *end = [dateMaker dateFromString:[endString substringWithRange:NSMakeRange(0, 16)]];
+				Event *e = [[Event alloc] initWithStartTime:start endTime:end];
+				e.year = [[eventDict objectForKey:@"year"] intValue];
+				e.month = [[eventDict objectForKey:@"month"] intValue];
+				e.day = [[eventDict objectForKey:@"day"] intValue];
+				
+//				int endYear = [[end substringWithRange:NSMakeRange(0, 4)] intValue];
+//				int endMonth = [[end substringWithRange:NSMakeRange(5, 2)] intValue];
+//				int endDay = [[end substringWithRange:NSMakeRange(8, 2)] intValue];
+					
+				NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
+				
+				// Determine coordinates based on timescale
+				if (_timeScale == QueryTimescaleYear)
+				{
+					float x = (e.month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (e.day - 1.0f)*(BAND_WIDTH_P / 356.0f);
+					//round to nearest 0.5 for sharpness of drawing
+					int xInt = (int)x;
+					x = xInt + 0.5f;
+					// length of event in minutes
+					int length = (int)([end timeIntervalSinceDate:start] / 60.0f);
+					float width = length * (BAND_WIDTH_P / 365.0f / 24.0f / 60.0f);
+					//fix erroneous widths
+					if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
+					e.x = x;
+					e.width = width;
+					NSLog(@"x: %f, width: %f", e.x, e.width);
+				}
+				else
+				{
+					NSLog(@"ERROR: Query timescale of %d undefined", _timeScale);
+				}
+				
+				[eventArr addObject:e];
+			}
+        }
+    }
+    else
+    {
+        NSLog(@"ERROR: Connection of type %d handled by Query data object.", connection.type);
+    }
     
-    
-//    NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
-//    
-//    if (connection.type == RELATION)
-//    {
-//        NSDictionary *dict = (NSDictionary *)jsonArr;
-//        for (id key in dict)
-//        {
-//            NSString *keyString = (NSString *)key;
-//            if ([keyString isEqualToString:@"location"] || [keyString isEqualToString:@"height"]) 
-//            {
-//                continue;
-//            }
-//            else
-//            {
-//                Constraint *c = [[Constraint alloc] initWithName:keyString description:(NSString *)[dict objectForKey:key]];
-//                [currentConstraints addObject:c];
-//            }
-//        }
-//    }
-//    else if (connection.type == META)
-//    {
-//        for (NSDictionary *dict in jsonArr)
-//        {
-//            Constraint *c = [[Constraint alloc] initWithName:(NSString *)[dict objectForKey:@"name"] 
-//                                                 description:(NSString *)[dict objectForKey:@"description"]];
-//            
-//            if (c.name == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
-//            {
-//                c.name = @"<null>";
-//            }
-//            if (c.description == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
-//            {
-//                c.description = @"<null>";
-//            }
-//            
-//            c.type = [_titleArray objectAtIndex:(_currentDepth - 1)];
-//            NSString *metaKey = [NSString stringWithFormat:@"%@_id", c.type];
-//            c.identifier = [(NSString *)[dict objectForKey:metaKey] intValue];
-//            c.leaf = YES;
-//            
-//            [currentConstraints addObject:c];
-//        }
-//    }
-//    else if (connection.type == LOCATION)
-//    {
-//        for (NSDictionary *dict in jsonArr)
-//        {
-//            Constraint *c = [[Constraint alloc] initWithName:(NSString *)[dict objectForKey:@"name"]
-//                                                 description:@""];
-//            
-//            if (c.name == (NSString *)[NSNull null] || [c.name isEqualToString:@""])
-//            {
-//                c.name = @"<null>";
-//            }
-//            
-//            int location = [(NSString *)[dict objectForKey:@"location_id"] intValue];
-//            if (location == 1)  // Not a 'leaf' location (has subcategories)
-//            {
-//                c.type = @"category";
-//                c.identifier = [(NSString *)[dict objectForKey:@"category_id"] intValue];
-//                if (c.identifier == 0) // There was no 'category_id', instead use 'child_id'
-//                {
-//                    c.identifier = [(NSString *)[dict objectForKey:@"child_id"] intValue];
-//                }
-//                NSLog(@"Constraint with id: %d", c.identifier);
-//                c.leaf = NO;
-//            }
-//            else // 'Leaf' location (no subcategories)
-//            {
-//                c.type = @"location";
-//                c.identifier = location;
-//                c.leaf = YES;
-//            }
-//            
-//            [currentConstraints addObject:c];
-//        }
-//    }
-//    else if (connection.type == TIME)
-//    {
-//        NSString *start = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:0] objectForKey:@"start"];
-//        NSString *end = (NSString *)[(NSDictionary *)[jsonArr objectAtIndex:1] objectForKey:@"end"];
-//        
-//        int startNum = [(NSString *)[start substringWithRange:NSMakeRange(0, 4)] intValue];
-//        int endNum = [(NSString *)[end substringWithRange:NSMakeRange(0, 4)] intValue];
-//        
-//        for (int i = endNum; i >= startNum; i--)
-//        {
-//            Constraint *c = [[Constraint alloc] initWithName:[NSString stringWithFormat:@"%d", i] description:@""];
-//            c.leaf = YES;
-//            [currentConstraints addObject:c];
-//        }
-//    }
-//    
-//    [_treeDelegate treeDidUpdateData];
+    [_contentDelegate queryDidUpdatePanel:connection.panelIndex];
 }
 
 /**

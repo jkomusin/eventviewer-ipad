@@ -2,7 +2,7 @@
 #import <Foundation/Foundation.h>
 
 @class DatabaseHandler;
-
+@protocol ContentDelegate;
 
 /**
  *  Enumeration for the three root categories of queriable constraints in the system:
@@ -28,6 +28,11 @@ enum QUERY_TIMESCALE
  *  Handles all interfacing with the database for the current query and the parsing of the returned events.
  */
 @interface Query : NSObject <NSURLConnectionDataDelegate, UITableViewDataSource>
+
+/**
+ *  Delegate that controls the updating of the UI elements composing the content.
+ */
+@property (nonatomic, strong) id<ContentDelegate> contentDelegate;
 
 /**
  *  Immutable dictionary with keys: "Bands", "Stacks", "Panels". 

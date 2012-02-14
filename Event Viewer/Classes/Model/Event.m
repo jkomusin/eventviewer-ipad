@@ -14,6 +14,10 @@
 @synthesize end = _end;
 @synthesize x = _x;
 @synthesize width = _width;
+@synthesize year = _year;
+@synthesize month = _month;
+@synthesize day = _day;
+@synthesize magnitude = _magnitude;
 
 
 - (id)initWithStartTime:(NSDate *)start endTime:(NSDate *)end

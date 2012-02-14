@@ -71,12 +71,13 @@ enum UI_OBJECT
  *  Used in Event Viewer to display the results of a query, as well as the query-building interface.
  */
 @interface PrimaryViewController : UIViewController 
-    <UIPopoverControllerDelegate, UIGestureRecognizerDelegate, MGSplitViewControllerDelegate, DataDelegate, LoginDelegate> 
+    <UIPopoverControllerDelegate, UIGestureRecognizerDelegate, MGSplitViewControllerDelegate, DataDelegate, LoginDelegate, ContentDelegate> 
 
 // MGUISplitViewController public properties
 @property (nonatomic, strong) IBOutlet UIToolbar *toolbar;
 @property (nonatomic, strong) id detailItem;
 @property (nonatomic, strong) IBOutlet UILabel *_detailDescriptionLabel;
+@property (nonatomic, strong) IBOutlet UILabel *_detailTitleLabel;
 // MGUISplitViewController methods
 - (IBAction)toggleMasterView:(id)sender;
 - (IBAction)toggleVertical:(id)sender;
