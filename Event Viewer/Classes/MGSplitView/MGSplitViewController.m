@@ -8,6 +8,7 @@
 
 #import "SecondaryViewController.h"
 #import "PrimaryViewController.h"
+#import "QueryBuilderView.h"
 
 #import "MGSplitViewController.h"
 #import "MGSplitDividerView.h"
@@ -32,6 +33,7 @@
 @implementation MGSplitViewController
 
 @synthesize barButtonItem = _barButtonItem;
+@synthesize barButtonDictionary = _barButtonDictionary;
 
 
 #pragma mark -
@@ -134,6 +136,9 @@
 	_dividerView.splitViewController = self;
 	_dividerView.backgroundColor = MG_DEFAULT_CORNER_COLOR;
 	_dividerStyle = MGSplitViewDividerStyleThin;
+	
+	NSMutableDictionary *barDict = [[NSMutableDictionary alloc] init];
+	_barButtonDictionary = barDict;
 }
 
 
@@ -242,13 +247,14 @@
     
     
     // Handle the disabling of the Query button in portrait, and enabling in landscape
-    if (UIInterfaceOrientationIsPortrait(theOrientation))
+	UIBarButtonItem *queryButton = [_barButtonDictionary objectForKey:@"Query"];
+	if (UIInterfaceOrientationIsPortrait(theOrientation))
     {
-        _barButtonItem.enabled = NO;
+        queryButton.enabled = NO;
     }
     else
     {
-        _barButtonItem.enabled = YES;
+        queryButton.enabled = YES;
     }
 	
 	// Layout the master, detail and divider views appropriately, adding/removing subviews as needed.
@@ -547,30 +553,39 @@
 		return;
 	}
 	
-	if (inPopover && !_hiddenPopoverController && !_barButtonItem) {
+	if (inPopover && !_hiddenPopoverController && ![_barButtonDictionary objectForKey:@"Query"]) {
 		// Create and configure popover for our masterViewController.
 		_hiddenPopoverController = nil;
 		[self.masterViewController viewWillDisappear:NO];
 		_hiddenPopoverController = [[UIPopoverController alloc] initWithContentViewController:self.masterViewController];
 		[self.masterViewController viewDidDisappear:NO];
 		
-		// Create and configure _barButtonItem.
-		_barButtonItem = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Query", nil) 
+		// Create and configure Query button
+		UIBarButtonItem *queryButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Query", nil) 
 														  style:UIBarButtonItemStyleBordered 
 														 target:self 
 														 action:@selector(showMasterPopover:)];
-		_barButtonItem.width = 75.0f;
+		queryButton.width = 75.0f;
+		[_barButtonDictionary setObject:queryButton forKey:@"Query"];
+		
+		// Create and configure Edit button
+		UIBarButtonItem *editButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Edit", nil) 
+																	   style:UIBarButtonItemStyleBordered 
+																	  target:((PrimaryViewController *)[_viewControllers objectAtIndex:1]).queryView
+																	  action:@selector(editButtonPressed)];
+		editButton.width = 75.0f;
+		[_barButtonDictionary setObject:editButton forKey:@"Edit"];
 		
 		
 		// Inform delegate of this state of affairs.
-		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:willHideViewController:withBarButtonItem:forPopoverController:)]) {
+		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:willHideViewController:withBarButtonItems:forPopoverController:)]) {
 			[(NSObject <MGSplitViewControllerDelegate> *)_delegate splitViewController:self 
 																willHideViewController:self.masterViewController 
-																	 withBarButtonItem:_barButtonItem 
+																	 withBarButtonItems:_barButtonDictionary
 																  forPopoverController:_hiddenPopoverController];
 		}
 		
-	} else if (!inPopover && _hiddenPopoverController && _barButtonItem) {
+	} else if (!inPopover && _hiddenPopoverController && [_barButtonDictionary objectForKey:@"Query"]) {
 		// I know this looks strange, but it fixes a bizarre issue with UIPopoverController leaving masterViewController's views in disarray.
 		[_hiddenPopoverController presentPopoverFromRect:CGRectZero inView:self.view permittedArrowDirections:UIPopoverArrowDirectionAny animated:NO];
 		
@@ -578,11 +593,11 @@
 		[_hiddenPopoverController dismissPopoverAnimated:NO];
 		_hiddenPopoverController = nil;
 		
-		// Inform delegate that the _barButtonItem will become invalid.
-		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:willShowViewController:invalidatingBarButtonItem:)]) {
+		// Inform delegate that the Query button will become invalid.
+		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:willShowViewController:withBarButtonItems:)]) {
 			[(NSObject <MGSplitViewControllerDelegate> *)_delegate splitViewController:self 
 																willShowViewController:self.masterViewController 
-															 invalidatingBarButtonItem:_barButtonItem];
+															 withBarButtonItems:_barButtonDictionary];
 		}
 		
 		// Move master view.
@@ -720,7 +735,7 @@
 		}
         
 		// Show popover.
-		[_hiddenPopoverController presentPopoverFromBarButtonItem:_barButtonItem permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+		[_hiddenPopoverController presentPopoverFromBarButtonItem:(UIBarButtonItem *)[_barButtonDictionary objectForKey:@"Query"] permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 	}
 }
 

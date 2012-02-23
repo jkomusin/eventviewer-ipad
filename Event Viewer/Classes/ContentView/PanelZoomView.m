@@ -15,10 +15,10 @@
 @synthesize panelDrawView = _panelDrawView;
 
 OBJC_EXPORT BOOL isPortrait;             // Global variable set in ContentViewController to specify device orientation
-OBJC_EXPORT float BAND_HEIGHT;              //
-OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
-OBJC_EXPORT float BAND_SPACING;             //
-OBJC_EXPORT float TIMELINE_HEIGHT;            //
+OBJC_EXPORT float BAND_HEIGHT;           //
+OBJC_EXPORT float BAND_WIDTH;            //  Globals set in ContentViewControlled specifying UI layout parameters
+OBJC_EXPORT float BAND_SPACING;          //
+OBJC_EXPORT float TIMELINE_HEIGHT;       //
 OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 @synthesize originalFrame = _originalFrame;

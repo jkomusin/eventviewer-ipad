@@ -38,9 +38,9 @@ enum UI_OBJECT
 - (NSInteger)delegateRequestsNumberOfBands;
 - (NSArray *)delegateRequestsOverlays;
 - (NSInteger)delegateRequestsTimescale;
-- (void)swapBand:(NSInteger)i withBand:(NSInteger)j;
-- (void)swapStack:(NSInteger)i withStack:(NSInteger)j;
-- (void)swapPanel:(NSInteger)i withPanel:(NSInteger)j;
+- (void)swapBandData:(NSInteger)i withBand:(NSInteger)j;
+- (void)swapStackData:(NSInteger)i withStack:(NSInteger)j;
+- (void)swapPanelData:(NSInteger)i withPanel:(NSInteger)j;
 - (UIColor *)getColorForPanel:(NSInteger)panelIndex;
 
 @end
@@ -61,6 +61,10 @@ enum UI_OBJECT
 @protocol ContentDelegate
 @required
 - (void)queryDidUpdatePanel:(NSInteger)panelIndex;
+- (void)queryHasRecievedBands:(NSInteger)current;
+- (void)swapBandLayer:(NSInteger)i withBand:(NSInteger)j;
+- (void)swapStackLayer:(NSInteger)i withStack:(NSInteger)j;
+- (void)swapPanelLayer:(NSInteger)i withPanel:(NSInteger)j;
 
 @end
 
@@ -111,6 +115,10 @@ enum UI_OBJECT
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (void)swapButton:(NSInteger)i toIndex:(NSInteger)j;
+
+- (void)swapBandLayer:(NSInteger)i withBand:(NSInteger)j;
+- (void)swapStackLayer:(NSInteger)i withStack:(NSInteger)j;
+- (void)swapPanelLayer:(NSInteger)i withPanel:(NSInteger)j;
 
 - (void)resizeSubviews;
 

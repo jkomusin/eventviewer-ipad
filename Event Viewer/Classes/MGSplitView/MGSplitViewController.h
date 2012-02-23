@@ -56,6 +56,7 @@ typedef enum _MGSplitViewDividerStyle {
 @property (nonatomic, assign) BOOL allowsDraggingDivider; // whether to let the user drag the divider to alter the split position (default NO).
 
 @property (nonatomic, strong) UIBarButtonItem *barButtonItem; // To be compliant with wacky UISplitViewController behaviour.
+@property (nonatomic, strong) NSMutableDictionary *barButtonDictionary; // Dictionary of bar button items (ex: "Query", "Edit")
 
 @property (nonatomic, copy) NSArray *viewControllers; // array of UIViewControllers; master is at index 0, detail is at index 1.
 @property (nonatomic, strong) IBOutlet UINavigationController *masterViewController; // convenience.
@@ -105,13 +106,13 @@ typedef enum _MGSplitViewDividerStyle {
 // Called when a button should be added to a toolbar for a hidden view controller.
 - (void)splitViewController:(MGSplitViewController*)svc 
 	 willHideViewController:(UIViewController *)aViewController 
-		  withBarButtonItem:(UIBarButtonItem*)barButtonItem 
+		  withBarButtonItems:(NSDictionary *)barButtonItems 
 	   forPopoverController: (UIPopoverController*)pc;
 
-// Called when the master view is shown again in the split view, invalidating the button and popover controller.
+// Called when the master view is shown again in the split view.
 - (void)splitViewController:(MGSplitViewController*)svc 
 	 willShowViewController:(UIViewController *)aViewController 
-  invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem;
+  withBarButtonItems:(NSDictionary *)barButtonItems;
 
 // Called when the master view is shown in a popover, so the delegate can take action like hiding other popovers.
 - (void)splitViewController:(MGSplitViewController*)svc 

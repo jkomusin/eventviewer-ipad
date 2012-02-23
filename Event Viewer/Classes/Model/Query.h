@@ -3,6 +3,7 @@
 
 @class DatabaseHandler;
 @protocol ContentDelegate;
+@protocol QueryDelegate;
 
 /**
  *  Enumeration for the three root categories of queriable constraints in the system:
@@ -33,6 +34,11 @@ enum QUERY_TIMESCALE
  *  Delegate that controls the updating of the UI elements composing the content.
  */
 @property (nonatomic, strong) id<ContentDelegate> contentDelegate;
+
+/**
+ *	Delegate that controls the updating of the querying constraints.
+ */
+@property (nonatomic, strong) id<QueryDelegate> queryDelegate;
 
 /**
  *  Immutable dictionary with keys: "Bands", "Stacks", "Panels". 
@@ -77,6 +83,10 @@ enum QUERY_TIMESCALE
 - (void)addConstraint:(Constraint *)constraint toArray:(enum UI_OBJECT)category;
 
 - (void)queryForEventsWithCurrentConstraints;
+
+- (void)swapBandData:(NSInteger)i withBand:(NSInteger)j;
+- (void)swapStackData:(NSInteger)i withStack:(NSInteger)j;
+- (void)swapPanelData:(NSInteger)i withPanel:(NSInteger)j;
 
 // (Experimental) Pure C implementation of a 4-dimensional array (to attempt a speed-up of C-style for-loop iterations)
 float ****create4D ( int max_x, int max_y, int max_r, int max_c );

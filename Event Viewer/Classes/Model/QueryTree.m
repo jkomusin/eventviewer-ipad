@@ -169,6 +169,7 @@
     // Configure the cell.
     cell.textLabel.text = con.name;
     cell.detailTextLabel.text = con.description;
+
     // Store the index f the constraint in the cell's tag
     cell.tag = indexPath.row;
     

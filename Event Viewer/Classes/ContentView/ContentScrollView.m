@@ -17,9 +17,7 @@
 
 @interface ContentScrollView ()
 - (void)createLabels;
-- (void)swapAllBandLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex skippingStack:(NSInteger)skipStackIndex areBothDragging:(BOOL)bothDragging;
-- (void)swapStackLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex;
-- (void)swapPanelLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex;
+
 @end
 
 @implementation ContentScrollView
@@ -70,7 +68,7 @@ float TOP_LABEL_SPACING = 50.0f;
 #pragma mark -
 #pragma mark Initialization
 
-- (id)init //WithPanelNum:(int)panelNum stackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum
+- (id)init
 {
     if ((self = [super init])) 
     {        
@@ -94,8 +92,6 @@ float TOP_LABEL_SPACING = 50.0f;
         _sideLabelView = newSideLabelView;
         
         self.delegate = self;
-        
-//        [self sizeForPanelNum:panelNum stackNum:stackNum bandNum:bandNum];
         
         NSArray *newDraggingArr = [[NSArray alloc] init];
         _draggingLabels = newDraggingArr;
@@ -490,15 +486,21 @@ float TOP_LABEL_SPACING = 50.0f;
     _bandLabelArray = (NSArray *)newBandLabels;
 }
 
-- (void)swapPanelLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex
+- (void)swapPanelLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex whileDragging:(BOOL)dragging
 {
     DraggableLabel *draggingLabel = [_panelLabelArray objectAtIndex:draggingIndex];
     DraggableLabel *otherLabel = [_panelLabelArray objectAtIndex:otherIndex];
     
     float panelX = draggingIndex * ZOOMED_BAND_WIDTH;
-    CGRect labelF = otherLabel.frame;
+    CGRect otherLabelF = otherLabel.frame;
+	CGRect labelF = otherLabelF;
     labelF.origin.x = panelX;
     otherLabel.frame = labelF;
+	
+	if (!dragging)
+	{
+		draggingLabel.frame = otherLabelF;
+	}
     
     // Reorder labels in array
     NSMutableArray *mutaPanelLabels = [_panelLabelArray mutableCopy];
@@ -514,7 +516,7 @@ float TOP_LABEL_SPACING = 50.0f;
  *  draggingIndex is the index of the label currently being dragged
  *  otherIndex is the index of the label being swapped
  */
-- (void)swapStackLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex
+- (void)swapStackLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex whileDragging:(BOOL)dragging
 {
     Query *data = [_dataDelegate delegateRequestsQueryData];
     float stackHeight = (data.bandNum-1.0f) * (ZOOMED_BAND_HEIGHT + ZOOMED_BAND_SPACING) + ZOOMED_BAND_HEIGHT + ZOOMED_TIMELINE_HEIGHT;
@@ -525,9 +527,15 @@ float TOP_LABEL_SPACING = 50.0f;
     float stackY;
     if (isPortrait) stackY = draggingIndex * stackHeight;
     else            stackY = draggingIndex * stackHeight + TOP_LABEL_SPACING;
-    CGRect labelF = otherLabel.frame;
+	CGRect otherLabelF = otherLabel.frame;
+    CGRect labelF = otherLabelF;
     labelF.origin.y = stackY;
     otherLabel.frame = labelF;
+	
+	if (!dragging)
+	{
+		draggingLabel.frame = otherLabelF;
+	}
     
     // Reorder labels in array
     NSMutableArray *mutaStackLabels = [_stackLabelArray mutableCopy];
@@ -635,8 +643,8 @@ float TOP_LABEL_SPACING = 50.0f;
             [draggingLabelArr addObject:draggingLabel];
             [draggingLabelArr addObject:[_panelZoomViews objectAtIndex:i]];
             [draggingLabelArr addObject:[NSNumber numberWithInt:-1]];   // band index is null as a panel pertains to all bands
-            [draggingLabelArr addObject:[NSNumber numberWithInt:-1]];    // stack index is null as a panel pertains to all stacks
-            [draggingLabelArr addObject:[NSNumber numberWithInt:i]];   // panel index
+            [draggingLabelArr addObject:[NSNumber numberWithInt:-1]];   // stack index is null as a panel pertains to all stacks
+            [draggingLabelArr addObject:[NSNumber numberWithInt:i]];	// panel index
             
             draggingLabelType = UIObjectPanel;
             
@@ -857,15 +865,15 @@ float TOP_LABEL_SPACING = 50.0f;
         if (draggingLabelType == UIObjectPanel)
         {
             [self reorderPanel:panelIndex withNewIndex:swappingPanelIndex];
-            [_dataDelegate swapPanel:panelIndex withPanel:swappingPanelIndex];
+            [_dataDelegate swapPanelData:panelIndex withPanel:swappingPanelIndex];
         }
         else if (draggingLabelType == UIObjectStack)
         {
-            [self swapStackLabels:stackIndex and:swappingStackIndex];
+            [self swapStackLabels:stackIndex and:swappingStackIndex whileDragging:YES];
             for (PanelZoomView *p in _panelZoomViews)
                 [p.panelDrawView reorderStack:stackIndex withNewIndex:swappingStackIndex];
             // Inform data delegate that reordering is needed
-            [_dataDelegate swapStack:stackIndex withStack:swappingStackIndex];
+            [_dataDelegate swapStackData:stackIndex withStack:swappingStackIndex];
         }
         else if (draggingLabelType == UIObjectBand)
         {
@@ -873,7 +881,7 @@ float TOP_LABEL_SPACING = 50.0f;
             for (PanelZoomView *p in _panelZoomViews)
                 [p.panelDrawView reorderBandsAroundBand:bandIndex inStack:stackIndex withNewIndex:swappingBandIndex];
             // Inform data delegate that reordering is needed
-            [_dataDelegate swapBand:bandIndex withBand:swappingBandIndex];
+            [_dataDelegate swapBandData:bandIndex withBand:swappingBandIndex];
         }
         
         // Set new indices by replacing the dragging array
@@ -946,9 +954,9 @@ float TOP_LABEL_SPACING = 50.0f;
             if (panelIndex >= data.panelNum || newIndex >= data.panelNum) return;
             
             [self reorderPanel:panelIndex withNewIndex:newIndex];
-            [self swapPanelLabels:panelIndex and:newIndex];
+            [self swapPanelLabels:panelIndex and:newIndex whileDragging:YES];
             // Inform data delegate
-            [_dataDelegate swapPanel:panelIndex withPanel:newIndex];
+            [_dataDelegate swapPanelData:panelIndex withPanel:newIndex];
             
             // Set new index in dragging array
             NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
@@ -967,9 +975,9 @@ float TOP_LABEL_SPACING = 50.0f;
             {
                 [p.panelDrawView reorderStack:stackIndex withNewIndex:newIndex];
             }
-            [self swapStackLabels:stackIndex and:newIndex];
+            [self swapStackLabels:stackIndex and:newIndex whileDragging:YES];
             // Inform data delegate that reordering is needed
-            [_dataDelegate swapStack:stackIndex withStack:newIndex];
+            [_dataDelegate swapStackData:stackIndex withStack:newIndex];
             
             // Set new index in dragging array
             NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
@@ -990,7 +998,7 @@ float TOP_LABEL_SPACING = 50.0f;
             }
             [self swapAllBandLabels:bandIndex and:newIndex skippingStack:stackIndex areBothDragging:NO];
             // Inform data delegate that reordering is needed
-            [_dataDelegate swapBand:bandIndex withBand:newIndex];
+            [_dataDelegate swapBandData:bandIndex withBand:newIndex];
             
             // Set new index by replacing the dragging array
             NSMutableArray *mutaDraggingLabels = [_draggingLabels mutableCopy];
@@ -1119,13 +1127,11 @@ float TOP_LABEL_SPACING = 50.0f;
     // Check to show/hide primary panel view
     if (isPortrait && panelIndex == 0)
     {
-        NSLog(@"Hit 1");
         [self addSubview:p2];
         [p1 removeFromSuperview];
     }
     if (isPortrait && index == 0)
     {
-        NSLog(@"Hit 2");
         [self addSubview:p1];
         [p2 removeFromSuperview];
     }

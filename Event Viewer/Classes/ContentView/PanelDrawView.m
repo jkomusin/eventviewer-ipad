@@ -225,13 +225,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     if (stackIndex < index)    // Move old band up
     {
         CGPoint pos = oldStack.position;
-        pos.y = pos.y - stackHeight;
+        pos.y = pos.y - stackHeight * (index - stackIndex);
         oldStack.position = pos;
     }
     else if (stackIndex > index)   // Move old band down
     {
         CGPoint pos = oldStack.position;
-        pos.y = pos.y + stackHeight;
+        pos.y = pos.y + stackHeight * (stackIndex - index);
         oldStack.position = pos;
     }
     else
@@ -242,13 +242,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     if (stackIndex < index)    // Move new band down
     {
         CGPoint pos = draggingStack.position;
-        pos.y = pos.y + stackHeight;
+        pos.y = pos.y + stackHeight * (index - stackIndex);
         draggingStack.position = pos;
     }
     else if (stackIndex > index)   // Move new band up
     {
         CGPoint pos = draggingStack.position;
-        pos.y = pos.y - stackHeight;
+        pos.y = pos.y - stackHeight * (stackIndex - index);
         draggingStack.position = pos;
     }
     else
@@ -292,7 +292,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     float temp_BAND_SPACING = BAND_SPACING * _globalZoomScale;
     
     NSMutableArray *bandLayerMutable = [_bandLayerArray mutableCopy];
-    for (NSInteger i = 0; i < [bandLayerMutable count]; i++)
+    for (NSInteger i = 0; i < [bandLayerMutable count]; i++)	// For each stack in the panel
     {
         NSMutableArray *bandArray = [[bandLayerMutable objectAtIndex:i] mutableCopy];
         
@@ -300,13 +300,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         if (bandIndex < index)    // Move old band up
         {
             CGPoint pos = oldBand.position;
-            pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING);
+            pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING) * (index - bandIndex);
             oldBand.position = pos;
         }
         else if (bandIndex > index)   // Move old band down
         {
             CGPoint pos = oldBand.position;
-            pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING);
+            pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING) * (bandIndex - index);
             oldBand.position = pos;
         }
         else
@@ -316,13 +316,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         if (bandIndex < index)    // Move new band down
         {
             CGPoint pos = draggingBand.position;
-            pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING);
+            pos.y = pos.y + (temp_BAND_HEIGHT + temp_BAND_SPACING) * (index - bandIndex);
             draggingBand.position = pos;
         }
         else if (bandIndex > index)   // Move new band up
         {
             CGPoint pos = draggingBand.position;
-            pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING);
+            pos.y = pos.y - (temp_BAND_HEIGHT + temp_BAND_SPACING) * (bandIndex - index);
             draggingBand.position = pos;
         }
         else

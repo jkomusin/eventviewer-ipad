@@ -7,6 +7,7 @@
 #import "Query.h"
 #import "Event.h"
 #import "Constraint.h"
+#import "QueryBuilderView.h"
 
 #define MY_MALLOC(x)    my_malloc( #x, x )
 #define MY_FREE(x)      my_free(x)
@@ -19,9 +20,12 @@
                                         //  [x][][] - The panel for the response's events
                                         //  [][x][] - The stack for the response's events
                                         //  [][][x] - The band for the response's events (this is the MutableData object)
+	
+	int currentBands;					// Current number of loaded bands
 }
 
 @synthesize contentDelegate = _contentDelegate;
+@synthesize queryDelegate = _queryDelegate;
 @synthesize selectedMetas = _selectedMetas;
 @synthesize eventArray = _eventArray;
 //@synthesize eventFloats = _eventFloats;
@@ -66,6 +70,9 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         // Initialize _jsonParser
         _jsonParser = [[JSONDecoder alloc] init];
         
+		// Init band counter
+		currentBands = 0;
+		
         //_eventFloats = create4D(2, 2, 2, 2);
 		
 		_timeScale = QueryTimescaleInfinite;
@@ -403,13 +410,103 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
             }
         }
     }
+	
+	currentBands = 0;
 }
+
+
+#pragma mark -
+#pragma mark Data management
+
+- (void)swapBandData:(NSInteger)i withBand:(NSInteger)j
+{
+    // Handle possibility of 0 panel or stack-query
+    int panelNum = self.panelNum;
+    if (panelNum == 0) panelNum = 1;
+    int stackNum = self.stackNum;
+    if (stackNum == 0) stackNum = 1;
+    
+    // Reorder events
+    for (int p = 0; p < panelNum; p++)
+    {
+        for (int s = 0; s < stackNum; s++)
+        {
+            NSMutableArray *mutableBands = [[[_eventArray objectAtIndex:p] objectAtIndex:s] mutableCopy];
+            NSArray *tempBand = [mutableBands objectAtIndex:i];
+            [mutableBands replaceObjectAtIndex:i withObject:[mutableBands objectAtIndex:j]];
+            [mutableBands replaceObjectAtIndex:j withObject:tempBand];
+            [[_eventArray objectAtIndex:p] replaceObjectAtIndex:s withObject:(NSArray *)mutableBands];
+        }
+    }
+    
+    // Reorder meta array
+    NSMutableArray *mutableBandMetas = [[_selectedMetas objectForKey:@"Bands"] mutableCopy];
+    Constraint *tempMeta = [mutableBandMetas objectAtIndex:i];
+    [mutableBandMetas replaceObjectAtIndex:i withObject:[mutableBandMetas objectAtIndex:j]];
+    [mutableBandMetas replaceObjectAtIndex:j withObject:tempMeta];
+    NSMutableDictionary *mutableMetas = [_selectedMetas mutableCopy];
+    [mutableMetas setObject:(NSArray *)mutableBandMetas forKey:@"Bands"];
+    _selectedMetas = (NSDictionary *)mutableMetas;
+}
+
+- (void)swapStackData:(NSInteger)i withStack:(NSInteger)j
+{
+	// Reorder events
+    NSMutableArray *mutableEvents = [_eventArray mutableCopy];
+    
+    // Handle possibility fo 0 panel-query
+    int panelNum = self.panelNum;
+    if (panelNum == 0) panelNum = 1;
+	
+    for (int p = 0; p < panelNum; p++)
+    {
+        NSMutableArray *mutableStacks = [[_eventArray objectAtIndex:p] mutableCopy];
+        NSArray *tempStack = [mutableStacks objectAtIndex:i];
+        [mutableStacks replaceObjectAtIndex:i withObject:[mutableStacks objectAtIndex:j]];
+        [mutableStacks replaceObjectAtIndex:j withObject:tempStack];
+        
+        [mutableEvents replaceObjectAtIndex:p withObject:(NSArray *)mutableStacks];
+    }
+    _eventArray = mutableEvents;
+    
+    // Reorder meta array
+    NSMutableArray *mutableStackMetas = [[_selectedMetas objectForKey:@"Stacks"] mutableCopy];
+    Constraint *tempMeta = [mutableStackMetas objectAtIndex:i];
+    [mutableStackMetas replaceObjectAtIndex:i withObject:[mutableStackMetas objectAtIndex:j]];
+    [mutableStackMetas replaceObjectAtIndex:j withObject:tempMeta];
+    NSMutableDictionary *mutableMetas = [_selectedMetas mutableCopy];
+    [mutableMetas setObject:(NSArray *)mutableStackMetas forKey:@"Stacks"];
+    _selectedMetas = (NSDictionary *)mutableMetas;
+
+}
+
+- (void)swapPanelData:(NSInteger)i withPanel:(NSInteger)j
+{
+	// Reorder events
+    NSMutableArray *mutableEvents = [_eventArray mutableCopy];
+    
+    NSArray *tempPanel = [mutableEvents objectAtIndex:i];
+    [mutableEvents replaceObjectAtIndex:i withObject:[mutableEvents objectAtIndex:j]];
+    [mutableEvents replaceObjectAtIndex:j withObject:tempPanel];
+	
+    _eventArray = mutableEvents;
+    
+    // Reorder meta array
+    NSMutableArray *mutablePanelMetas = [[_selectedMetas objectForKey:@"Panels"] mutableCopy];
+    Constraint *tempMeta = [mutablePanelMetas objectAtIndex:i];
+    [mutablePanelMetas replaceObjectAtIndex:i withObject:[mutablePanelMetas objectAtIndex:j]];
+    [mutablePanelMetas replaceObjectAtIndex:j withObject:tempMeta];
+    NSMutableDictionary *mutableMetas = [_selectedMetas mutableCopy];
+    [mutableMetas setObject:(NSArray *)mutablePanelMetas forKey:@"Panels"];
+    _selectedMetas = (NSDictionary *)mutableMetas;
+}
+
 
 
 #pragma mark -
 #pragma mark Query builder data source
 /**
- *  We assume that the only table views accessing these methods are the tables within the query builder.
+ *  We assume that the only table views accessing these methods are the tables within the query builder specifying selected constraints.
  *  We also assume that each table has its 'tag' property set to an identifying number to specify if it is either the band, stack, or panel table.
  */
 
@@ -450,12 +547,21 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         dataArr = [_selectedMetas objectForKey:@"Panels"];
     }
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (cell == nil) 
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
     }
-    
+    if (tableView.editing)
+	{
+		cell.showsReorderControl = YES;
+	}
+	else
+	{
+		cell.showsReorderControl = NO;
+	}
+	
+	
     Constraint *con = [dataArr objectAtIndex:indexPath.row];
     
     // Configure the cell.
@@ -463,6 +569,76 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     cell.detailTextLabel.text = con.description;
     
     return cell;
+}
+
+
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	return YES;
+}
+
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
+{	
+	NSLog(@"Swapping row %d for %d", fromIndexPath.row, toIndexPath.row);
+	
+	NSMutableArray *consArr;
+    if (tableView.tag == UIObjectBand)
+    {
+        consArr = [_selectedMetas objectForKey:@"Bands"];
+		[self swapBandData:fromIndexPath.row withBand:toIndexPath.row];
+    }
+    else if (tableView.tag == UIObjectStack)
+    {
+        consArr = [_selectedMetas objectForKey:@"Stacks"];
+		[self swapStackData:fromIndexPath.row withStack:toIndexPath.row];
+    }
+    else if (tableView.tag == UIObjectPanel)
+    {
+        consArr = [_selectedMetas objectForKey:@"Panels"];
+		[self swapPanelData:fromIndexPath.row withPanel:toIndexPath.row];
+    }
+	
+	Constraint *cTemp = [consArr objectAtIndex:toIndexPath.row];
+	[consArr replaceObjectAtIndex:toIndexPath.row withObject:[consArr objectAtIndex:fromIndexPath.row]];
+	[consArr replaceObjectAtIndex:fromIndexPath.row withObject:cTemp];
+	
+	if (tableView.tag == UIObjectBand)
+	{
+		[_contentDelegate swapBandLayer:fromIndexPath.row withBand:toIndexPath.row];
+	}
+	else if (tableView.tag == UIObjectStack)
+	{
+		[_contentDelegate swapStackLayer:fromIndexPath.row withStack:toIndexPath.row];
+	}
+	else if (tableView.tag == UIObjectPanel)
+	{
+		[_contentDelegate swapPanelLayer:fromIndexPath.row withPanel:toIndexPath.row];
+	}
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	NSMutableArray *dataArr;
+    if (tableView.tag == UIObjectBand)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Bands"];
+    }
+    else if (tableView.tag == UIObjectStack)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Stacks"];
+    }
+    else if (tableView.tag == UIObjectPanel)
+    {
+        dataArr = [_selectedMetas objectForKey:@"Panels"];
+    }
+	
+	if (editingStyle == UITableViewCellEditingStyleDelete)
+	{
+		[dataArr removeObjectAtIndex:indexPath.row];
+		[tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationTop];
+	}
+	
+	[_queryDelegate queryDidChange];
 }
 
 
@@ -522,8 +698,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     NSMutableData *response = [[[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
   	NSArray *jsonArr = [_jsonParser objectWithData:response];
     
-    NSLog(@"Retrieved JSON array:");
-    NSLog(@"%@", jsonArr);
+//    NSLog(@"Retrieved JSON array:");
+//    NSLog(@"%@", jsonArr);
     
     if (connection.type == DBConnectionTypeEvent)
     {
@@ -556,12 +732,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 				e.year = [[eventDict objectForKey:@"year"] intValue];
 				e.month = [[eventDict objectForKey:@"month"] intValue];
 				e.day = [[eventDict objectForKey:@"day"] intValue];
-				
-//				int endYear = [[end substringWithRange:NSMakeRange(0, 4)] intValue];
-//				int endMonth = [[end substringWithRange:NSMakeRange(5, 2)] intValue];
-//				int endDay = [[end substringWithRange:NSMakeRange(8, 2)] intValue];
 					
-				NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
+//				NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
 				
 				// Determine coordinates based on timescale
 				if (_timeScale == QueryTimescaleYear)
@@ -594,6 +766,9 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     }
     
     [_contentDelegate queryDidUpdatePanel:connection.panelIndex];
+
+	currentBands++;
+	[_contentDelegate queryHasRecievedBands:currentBands];
 }
 
 /**

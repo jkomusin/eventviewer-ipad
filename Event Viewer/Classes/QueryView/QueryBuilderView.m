@@ -20,10 +20,12 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 @implementation QueryBuilderView
 {
-    UITableView *_bandTable;     //
-    UITableView *_stackTable;    // The group of tables containing the seleced constraints
-    UITableView *_panelTable;    //
 }
+
+@synthesize primaryController = _primaryController;
+@synthesize panelTable = _panelTable;
+@synthesize stackTable = _stackTable;
+@synthesize bandTable = _bandTable;
 
 @synthesize queryHasChanged = _queryHasChanged;
 
@@ -73,7 +75,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
         [panelL setTextColor:[UIColor whiteColor]];
         [panelL setText:@"Panels"];
         [self addSubview:panelL];
-        
+		
         _queryHasChanged = NO;
     }
     
@@ -85,7 +87,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
  *  In placing the tables, we assume that the query builder view has been sized to take into account the nav bar and query table, etc.
  *  We also assume that the orientation is landscape.
  */
-- (void)initQueryTablesWithDataSource:(id<UITableViewDataSource>)source
+- (void)initQueryTablesWithDataSource:(Query *)source
 {
     if (_bandTable) [_bandTable removeFromSuperview];
     if (_stackTable) [_stackTable removeFromSuperview];
@@ -101,6 +103,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     UITableView *newBands = [[UITableView alloc] initWithFrame:bandFrame style:UITableViewStylePlain];
     newBands.tag = UIObjectBand;
     newBands.dataSource = source;
+	newBands.allowsSelection = NO;
 	newBands.layer.cornerRadius = 5.0f;
 	newBands.showsVerticalScrollIndicator = YES;
     [self addSubview:newBands];
@@ -113,6 +116,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     UITableView *newStacks = [[UITableView alloc] initWithFrame:stackFrame style:UITableViewStylePlain];
     newStacks.tag = UIObjectStack;
     newStacks.dataSource = source;
+	newStacks.allowsSelection = NO;
 	newStacks.layer.cornerRadius = 5.0f;
 	newStacks.showsVerticalScrollIndicator = YES;
     [self addSubview:newStacks];
@@ -125,10 +129,13 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     UITableView *newPanels = [[UITableView alloc] initWithFrame:panelFrame style:UITableViewStylePlain];
     newPanels.tag = UIObjectPanel;
     newPanels.dataSource = source;
+	newPanels.allowsSelection = NO;
 	newPanels.layer.cornerRadius = 5.0f;
 	newPanels.showsVerticalScrollIndicator = YES;
     [self addSubview:newPanels];
     _panelTable = newPanels;
+	
+	source.queryDelegate = self;
 }
 
 
@@ -143,7 +150,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
         [currentQuery addConstraint:constraint toArray:UIObjectBand];
         
         [_bandTable reloadData];
-        _queryHasChanged = YES;
+        [self queryDidChange];
     }
     else if ([_stackTable pointInside:[recognizer locationInView:_stackTable] withEvent:nil])
     {
@@ -151,7 +158,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
         [currentQuery addConstraint:constraint toArray:UIObjectStack];
         
         [_stackTable reloadData];
-        _queryHasChanged = YES;
+        [self queryDidChange];
     }
     else if ([_panelTable pointInside:[recognizer locationInView:_panelTable] withEvent:nil])
     {
@@ -159,8 +166,99 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
         [currentQuery addConstraint:constraint toArray:UIObjectPanel];
         
         [_panelTable reloadData];
-        _queryHasChanged = YES;
+        [self queryDidChange];
     }
+}
+
+
+- (void)editButtonPressed
+{
+	if (_bandTable.editing || _stackTable.editing || _panelTable.editing)
+	{
+		[_bandTable setEditing:NO];
+		for (UITableViewCell *cell in _bandTable.visibleCells)
+		{
+			cell.showsReorderControl = NO;
+		}
+		
+		[_stackTable setEditing:NO];
+		for (UITableViewCell *cell in _stackTable.visibleCells)
+		{
+			cell.showsReorderControl = NO;
+		}
+		
+		[_panelTable setEditing:NO];
+		for (UITableViewCell *cell in _panelTable.visibleCells)
+		{
+			cell.showsReorderControl = NO;
+		}
+
+	}
+	else
+	{
+		[_bandTable setEditing:YES];
+		for (UITableViewCell *cell in _bandTable.visibleCells)
+		{
+			cell.showsReorderControl = YES;
+		}
+		
+		[_stackTable setEditing:YES];
+		for (UITableViewCell *cell in _stackTable.visibleCells)
+		{
+			cell.showsReorderControl = YES;
+		}
+		
+		[_panelTable setEditing:YES];
+		for (UITableViewCell *cell in _panelTable.visibleCells)
+		{
+			cell.showsReorderControl = YES;
+		}
+	}
+}
+
+
+#pragma mark -
+#pragma mark Query delegation
+
+/**
+ *	Called whenever the query has been modified in such a way that requerying is necessary.
+ *	Primarily for adding/deleting constraints
+ */
+- (void)queryDidChange
+{
+	_queryHasChanged = YES;
+}
+
+/**
+ *	Called upon reordering of rows in the query tables
+ */
+- (void)queryDidSwapLabelsOfUIType:(enum UI_OBJECT)type withIndices:(NSInteger)i and:(NSInteger)j
+{
+	if (type == UIObjectPanel)
+	{
+		// Swap data model
+		[_primaryController swapPanelData:i withPanel:j];
+		// Swap visual respresentation
+		[_primaryController swapPanelLayer:i withPanel:j];
+	}
+	else if (type == UIObjectStack)
+	{
+		// Swap data model
+		[_primaryController swapStackData:i withStack:j];
+		// Swap visual representation
+		[_primaryController swapStackLayer:i withStack:j];
+	}
+	else if (type == UIObjectBand)
+	{
+		// Swap data model
+		[_primaryController swapBandData:i withBand:j];
+		// Swap visual representation
+		[_primaryController swapBandLayer:i withBand:j];
+	}
+	else
+	{
+		NSLog(@"ERROR: Problem in Query builder view, attempting to swap with unknwon type: %d", type);
+	}
 }
 
 
