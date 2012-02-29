@@ -749,7 +749,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 					if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
 					e.x = x;
 					e.width = width;
-					NSLog(@"x: %f, width: %f", e.x, e.width);
 				}
 				else
 				{

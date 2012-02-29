@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
 
 @class Event;
 @class Query;
@@ -48,8 +47,6 @@
 - (void)doneZooming;
 - (void)zoomToScale:(float)zoomScale;
 
--(void)handleLongPress:(UILongPressGestureRecognizer *)longPressRecognizer;
-- (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
 - (NSArray *)findEventsAtPoint:(CGPoint)location;
 
 

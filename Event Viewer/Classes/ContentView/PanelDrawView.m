@@ -6,6 +6,8 @@
 //  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
 //
 
+#import <QuartzCore/QuartzCore.h>
+
 #import "PrimaryViewController.h"
 #import "ContentScrollView.h"
 #import "PanelDrawView.h"
@@ -66,11 +68,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 		_zoomScale = 1.0f;
         _newZoomScale = 1.0f;
         _globalZoomScale = 1.0f;
-        
-        // Handler for event details
-        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-        [longPressRecognizer setMinimumPressDuration:0.2f];
-        [self addGestureRecognizer:longPressRecognizer]; 
     }
     
     return self;
@@ -344,46 +341,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 
 #pragma mark -
-#pragma mark Long-press handling
+#pragma mark Event-press handling
 
-/**
- *  Handling of long-press gestures in regards to displaying specifics on the event that has been pressed.
- *  NOTE: We do not care about any other events related to the long-press other than it's initial recognization,
- *  as dismissal of the popover is handled by the popover's delegate (us in popoverControllerShouldDismissPopover).
- */
--(void)handleLongPress:(UILongPressGestureRecognizer *)longPressRecognizer 
-{    
-    switch ([longPressRecognizer state]) 
-    {
-        case UIGestureRecognizerStateBegan:
-            [self startLongPress:longPressRecognizer];
-            break;
-        case UIGestureRecognizerStateChanged:
-        case UIGestureRecognizerStateEnded:
-        case UIGestureRecognizerStateCancelled:
-        case UIGestureRecognizerStateFailed:
-            break;
-        default:
-            break;
-    }
-}
-
-/**
- *  Initiate the popup of the event details pane, as the long-press gesture has been recognized
- */
-- (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
-{
-    [self becomeFirstResponder];
-    CGPoint location = [gestureRecognizer locationInView:self];
-    NSArray *pressedEvents = [self findEventsAtPoint:location];
-    
-    if ([pressedEvents count] == 0) return;
-    
-    EventInfo *eInfo = [[EventInfo alloc] initWithEventArray:pressedEvents];
-    _infoPopup = [[UIPopoverController alloc] initWithContentViewController:eInfo];
-    CGRect eRect = CGRectMake(location.x, location.y, 1.0f, 1.0f);
-    [_infoPopup presentPopoverFromRect:eRect inView:self permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-}
 
 /**
  *  Find and return an array of all events underneath the specified point.

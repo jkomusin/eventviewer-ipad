@@ -12,11 +12,14 @@
 #import "PanelZoomView.h"
 #import "PanelDrawView.h"
 #import "BandLayer.h"
+#import "EventInfo.h"
 #import "Query.h"
 #import "Constraint.h"
 
 @interface ContentScrollView ()
 - (void)createLabels;
+- (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
+-(void)handleEventPress:(UILongPressGestureRecognizer *)longPressRecognizer;
 
 @end
 
@@ -99,6 +102,11 @@ float TOP_LABEL_SPACING = 50.0f;
 		self.showsVerticalScrollIndicator = NO;
 		self.showsHorizontalScrollIndicator = NO;
 		[self setBackgroundColor:[UIColor blackColor]];
+		
+		// Handler for event details
+        UILongPressGestureRecognizer *longPressRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleEventPress:)];
+        [longPressRecognizer setMinimumPressDuration:0.25f];
+        [self addGestureRecognizer:longPressRecognizer]; 
         
         _draggingType = -1; // Not currently dragging
         
@@ -254,20 +262,27 @@ float TOP_LABEL_SPACING = 50.0f;
     // Set zoom properties
     if (isPortrait)
     {
+		// We need to disable all gesture recognizers in all the zoom views,
+		//	but we need userInteraction to be enabled for hit testing purposes.
         for (PanelZoomView *p in _panelZoomViews)
         {
-            p.bouncesZoom = YES;
-            p.pinchGestureRecognizer.enabled = YES;
+			[p.gestureRecognizers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) 
+			{
+				((UIGestureRecognizer *)obj).enabled = YES;
+			}];
         }
         self.maximumZoomScale = 1.0f;
         self.minimumZoomScale = 1.0f;
     }
     else
     {
+		// See above
         for (PanelZoomView *p in _panelZoomViews)
         {
-            p.bouncesZoom = NO;
-            p.pinchGestureRecognizer.enabled = NO;
+			[p.gestureRecognizers enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) 
+			{
+				((UIGestureRecognizer *)obj).enabled = NO;
+			}];
         }
         self.maximumZoomScale = 10.0f;
         self.minimumZoomScale = 1.0f;
@@ -1108,6 +1123,62 @@ float TOP_LABEL_SPACING = 50.0f;
     {
         return NO;
     }
+}
+
+
+#pragma mark -
+#pragma mark Event detail handling
+
+/**
+ *  Handling of long-press gestures in regards to displaying specifics on the event that has been pressed.
+ *  NOTE: We do not care about any other events related to the long-press other than it's initial recognization,
+ *  as dismissal of the popover is handled by the popover's delegate (the drawView's popoverControllerShouldDismissPopover).
+ */
+-(void)handleEventPress:(UILongPressGestureRecognizer *)longPressRecognizer 
+{
+	NSLog(@"Handling event press!");
+    switch ([longPressRecognizer state]) 
+    {
+        case UIGestureRecognizerStateBegan:
+            [self startLongPress:longPressRecognizer];
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+        default:
+            break;
+    }
+}
+
+/**
+ *  Initiate the popup of the event details pane, as the long-press gesture has been recognized
+ */
+- (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+	UIView *v = [self hitTest:[gestureRecognizer locationInView:self] withEvent:nil];
+	PanelDrawView *drawView;
+	if ([v isKindOfClass:[PanelDrawView class]])
+	{
+		drawView = (PanelDrawView *)v;
+	}
+	else
+	{
+		return;
+	}
+	
+    [drawView becomeFirstResponder];
+    CGPoint location = [gestureRecognizer locationInView:drawView];
+    
+	NSArray *pressedEvents = [drawView findEventsAtPoint:location];
+    if ([pressedEvents count] == 0) 
+	{
+		return;
+	}
+    
+    EventInfo *eInfo = [[EventInfo alloc] initWithEventArray:pressedEvents];
+    drawView.infoPopup = [[UIPopoverController alloc] initWithContentViewController:eInfo];
+    CGRect eRect = CGRectMake([gestureRecognizer locationInView:self].x, [gestureRecognizer locationInView:self].y, 1.0f, 1.0f);
+    [drawView.infoPopup presentPopoverFromRect:eRect inView:self permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
 }
 
 

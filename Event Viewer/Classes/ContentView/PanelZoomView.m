@@ -104,8 +104,6 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     CGRect newFrame = _originalFrame;
     newFrame.size.width = _originalFrame.size.width * zoomScale;
     newFrame.size.height = _originalFrame.size.height * zoomScale;
-//    int selfIndex = (_originalFrame.origin.x - SIDE_LABEL_SPACING) / _originalFrame.size.width;
-//    NSLog(@"Self-index: %d, currentPanel: %d", selfIndex, _panelDrawView.currentPanel);
     if (_panelDrawView.currentPanel != 0)
     {
         // Move to new x index, determined by the difference of the new band width multiplied by how many panels precede this one
