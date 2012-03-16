@@ -39,14 +39,18 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
     // Draw background
     CGContextSetRGBFillColor(context, 1.0f, 1.0f, 1.0f, 1.0f);
     CGContextFillRect(context, bandDrawF);
-    
+	
+	// Retrieve event array copy to draw from to avoid problems during drawing (eventArray has the 'copy' modifier)
+	//	(concurrent modifications may result during the return of queries)
+	NSArray *eventArray = data.eventArray;
+	
     // Draw events for overlaid & current panels
     int currentPanel = [_drawDelegate delegateRequestsCurrentPanel];
     BOOL currentPanelIsOverlaid = NO;
     NSArray *overlays = [_dataDelegate delegateRequestsOverlays];
     for (NSNumber *i in overlays)
     {
-        [self drawEventsForPanel:[i intValue] fromArray:data.eventArray inContext:context];
+        [self drawEventsForPanel:[i intValue] fromArray:eventArray inContext:context];
         if ([i intValue] == currentPanel) 
         {
             currentPanelIsOverlaid = YES;
@@ -54,7 +58,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
     }
     if (!currentPanelIsOverlaid && currentPanel != -1)
     {
-        [self drawEventsForPanel:currentPanel fromArray:data.eventArray inContext:context];
+        [self drawEventsForPanel:currentPanel fromArray:eventArray inContext:context];
     }
 
     // Draw frame

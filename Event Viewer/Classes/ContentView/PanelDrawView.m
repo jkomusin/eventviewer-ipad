@@ -159,6 +159,20 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 
 
 #pragma mark -
+#pragma mark Class variable for month storage
++ (NSArray *)monthArray
+{
+	static NSArray* mArray = nil;
+    if (mArray == nil)
+    {
+        mArray = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil];
+    }
+	
+    return mArray;
+}
+
+
+#pragma mark -
 #pragma mark Drawing delegation
 
 
@@ -436,7 +450,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
             bandF.size.width = BAND_WIDTH * _newZoomScale;
             
             b.frame = bandF;
-            
         }
     }
     [CATransaction commit];
@@ -549,7 +562,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 	
 	if (data.timeScale == QueryTimescaleYear)
 	{
-        NSArray *months = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil];
+//        NSArray *months = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil];
         
 		for (int m = 0; m < 12; m++)
 		{
@@ -558,15 +571,16 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 			CGRect monthF = CGRectMake(x, 0.0f, width, self.frame.size.height);
 			monthF = CGRectInset(monthF, -0.5f, 0.5f);
 			CGContextStrokeRect(context, monthF);
+			NSString *month = [[PanelDrawView monthArray] objectAtIndex:m];
 			
 			// Labels
 			for (int i = 0; i <= [_stackLayerArray count]; i++)
 			{
 				float stackY = stackHeight * i;
-				NSString *month = [months objectAtIndex:m];
 				CGRect tFrame = CGRectMake(monthF.origin.x, stackY + 8.0f, width, 16.0f);
-                float fontSize = (temp_TIMELINE_HEIGHT / 3.0f) + 1.0f;
-				[month drawInRect:tFrame withFont:[UIFont fontWithName:@"Helvetica" size:fontSize] lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
+                int fontSize = (int)((temp_TIMELINE_HEIGHT / 3.0f) + 1.0f);
+				UIFont *font = [UIFont fontWithName:@"Helvetica" size:fontSize];
+				[month drawInRect:tFrame withFont:font lineBreakMode:UILineBreakModeClip alignment:UITextAlignmentCenter];
 			}
 		}
 	}

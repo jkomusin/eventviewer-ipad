@@ -43,6 +43,7 @@
 - (void)initLayersWithStackNum:(NSInteger)stackNum bandNum:(NSInteger)bandNum;
 
 - (void)drawTimelinesForData:(Query *)data inContext:(CGContextRef)context withMonthWidth:(float)width;
++ (NSArray *)monthArray;
 
 - (void)doneZooming;
 - (void)zoomToScale:(float)zoomScale;

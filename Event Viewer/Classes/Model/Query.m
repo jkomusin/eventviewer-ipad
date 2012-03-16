@@ -57,7 +57,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         NSMutableArray *emptyEvents = [[NSMutableArray alloc] init];
         NSMutableArray *emptyStacks = [[NSMutableArray alloc] init];
         NSMutableArray *emptyBands = [[NSMutableArray alloc] init];
-        NSMutableArray *emptyBandEvents = [[NSMutableArray alloc] init];
+        NSArray *emptyBandEvents = [[NSMutableArray alloc] init];
         [emptyEvents addObject:emptyStacks];
         [emptyStacks addObject:emptyBands];
         [emptyBands addObject:emptyBandEvents];
@@ -719,7 +719,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 		NSDateFormatter *dateMaker = [[NSDateFormatter alloc] init];
 		[dateMaker setDateFormat:@"yyyy-MM-dd HH:mm"];
 		
-        NSMutableArray *eventArr = [[[_eventArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
+        NSMutableArray *eventArr = [[NSMutableArray alloc] init];
 		for (NSDictionary *dict in jsonArr)
         {
 			for (NSDictionary *eventDict in [dict objectForKey:@"occurrence"])
@@ -733,7 +733,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 				e.month = [[eventDict objectForKey:@"month"] intValue];
 				e.day = [[eventDict objectForKey:@"day"] intValue];
 					
-//				NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
+//	NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
 				
 				// Determine coordinates based on timescale
 				if (_timeScale == QueryTimescaleYear)
@@ -758,6 +758,9 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 				[eventArr addObject:e];
 			}
         }
+		
+		// Store new events
+		[[[_eventArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] replaceObjectAtIndex:connection.bandIndex withObject:eventArr];
     }
     else
     {

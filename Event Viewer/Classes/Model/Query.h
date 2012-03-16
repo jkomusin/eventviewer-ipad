@@ -47,14 +47,16 @@ enum QUERY_TIMESCALE
 @property (nonatomic, copy) NSDictionary *selectedMetas;
 
 /**
- *  Immutable 4-dimensional array of all events resulting from the current query.
+ *  Mutable 4-dimensional array of all events resulting from the current query. Atomic to avoid concurrency problems when query results are being simultaneously returned and drawn.
  *  In traditional array notation, i.e. 'eventArray[][][][]':
  *  - [x][][][] specifies the panel number
  *  - [][x][][] specifies the stack number
  *  - [][][x][] specifies the band number
  *  - [][][][x] specifies the event number
+ *
+ *	NOTE: The lowest level of the array (i.e. the array holding the events) is immutable.
  */
-@property (nonatomic, copy) NSMutableArray *eventArray;   
+@property (atomic, copy) NSMutableArray *eventArray;   
 
 /**
  *  4-dimensional array similar to eventArray's mapping.
