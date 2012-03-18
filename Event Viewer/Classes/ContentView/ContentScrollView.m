@@ -19,7 +19,11 @@
 @interface ContentScrollView ()
 - (void)createLabels;
 - (void)startLongPress:(UILongPressGestureRecognizer *)gestureRecognizer;
--(void)handleEventPress:(UILongPressGestureRecognizer *)longPressRecognizer;
+- (void)handleEventPress:(UILongPressGestureRecognizer *)longPressRecognizer;
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
 @end
 
@@ -353,7 +357,7 @@ float TOP_LABEL_SPACING = 50.0f;
     // Remove old panel labels
     for (UIView *sub in _topLabelView.subviews)
     {
-        if ([sub isKindOfClass:[UILabel class]])
+        if ([sub isKindOfClass:[DraggableLabel class]])
             [sub removeFromSuperview];
     }
     // Resize top label view
@@ -367,7 +371,7 @@ float TOP_LABEL_SPACING = 50.0f;
 	// Remove old band & stack labels
 	for (UIView *sub in _sideLabelView.subviews)
 	{
-		if ([sub isKindOfClass:[UILabel class]])
+		if ([sub isKindOfClass:[DraggableLabel class]])
 			[sub removeFromSuperview];
 	}
     // Resize side label view
@@ -611,7 +615,7 @@ float TOP_LABEL_SPACING = 50.0f;
 
 
 #pragma mark -
-#pragma mark Drag-and-drop Handling
+#pragma mark Drag-and-drop handling of labels
 
 /**
  *  Initial entry point for a drag-and-drop gesture.

@@ -89,6 +89,7 @@ enum QUERY_TIMESCALE
 - (void)swapBandData:(NSInteger)i withBand:(NSInteger)j;
 - (void)swapStackData:(NSInteger)i withStack:(NSInteger)j;
 - (void)swapPanelData:(NSInteger)i withPanel:(NSInteger)j;
+- (void)swapBinData:(enum UI_OBJECT)i withBin:(enum UI_OBJECT)j;
 
 // (Experimental) Pure C implementation of a 4-dimensional array (to attempt a speed-up of C-style for-loop iterations)
 float ****create4D ( int max_x, int max_y, int max_r, int max_c );

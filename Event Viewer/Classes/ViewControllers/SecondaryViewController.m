@@ -76,13 +76,13 @@
 
 
 #pragma mark -
-#pragma mark Drag-and-drop Handling
+#pragma mark Drag-and-drop handling for table cells
 
 /**
  *  Initial entry point for a drag-and-drop gesture related to dragging a tableCell "Meta".
- *  Deals with all actions occurring inside the PanGestureRecognizer.
+ *  Deals with all actions occurring inside the LongPressGestureRecognizer.
  *
- *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {
@@ -107,7 +107,7 @@
 /**
  *  Initialize the table cell for dragging
  *
- *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {    
@@ -154,7 +154,7 @@
 /**
  *  Move the temporary _draggingCell to the new location specified by the gesture recognizer's new point.
  *
- *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
 {
@@ -166,7 +166,7 @@
 /**
  *  Handle the resulting location of the dragged table cell, depending on where hit-tests register.
  *
- *  gestureRecognizer is the UIPanGestureRecognizer responsible for drag-and-drop functionality.
+ *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
 - (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
 {

@@ -572,6 +572,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 			monthF = CGRectInset(monthF, -0.5f, 0.5f);
 			CGContextStrokeRect(context, monthF);
 			NSString *month = [[PanelDrawView monthArray] objectAtIndex:m];
+			NSLog(@"M: %d, Month: %@", m, month);
 			
 			// Labels
 			for (int i = 0; i <= [_stackLayerArray count]; i++)

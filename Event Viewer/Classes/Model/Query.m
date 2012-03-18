@@ -501,6 +501,86 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     _selectedMetas = (NSDictionary *)mutableMetas;
 }
 
+- (void)swapBinData:(enum UI_OBJECT)i withBin:(enum UI_OBJECT)j
+{
+	// Reorder event array
+	int newPanels = -1;
+	int newStacks = -1;
+	int newBands = -1;
+	NSString *iKey = @"";
+	NSString *jKey = @"";
+	// Check all 6 possible permuations of swaps between bins, and determine new number of indices
+	if ((i == UIObjectPanel && j == UIObjectStack) || (j == UIObjectPanel && i == UIObjectStack))
+	{
+		// Swap panels and stacks 
+		newPanels = [[_eventArray objectAtIndex:0] count];
+		newStacks = [_eventArray count];
+		newBands = [[[_eventArray objectAtIndex:0] objectAtIndex:0] count];
+		iKey = @"Panels";
+		jKey = @"Stacks";
+	}
+	else if ((i == UIObjectPanel && j == UIObjectBand) || (j == UIObjectPanel && i == UIObjectBand))
+	{
+		// Swap panels and bands
+		newPanels = [[[_eventArray objectAtIndex:0] objectAtIndex:0] count];
+		newStacks = [[_eventArray objectAtIndex:0] count];
+		newBands = [_eventArray count];
+		iKey = @"Panels";
+		jKey = @"Stacks";
+	}
+	else if ((i == UIObjectStack && j == UIObjectBand) || (j == UIObjectStack && i == UIObjectBand))
+	{
+		// Swap stacks and bands
+		newPanels = [_eventArray count];
+		newStacks = [[[_eventArray objectAtIndex:0] objectAtIndex:0] count];
+		newBands = [[_eventArray objectAtIndex:0] count];
+		iKey = @"Stacks";
+		jKey = @"Bands";
+	}
+	else
+	{
+		NSLog(@"ERROR: Illegal arrangement of bins to swap: %d and %d", i, j);
+	}
+	// Reorder meta dictionary
+	NSMutableDictionary *newMetas = [_selectedMetas mutableCopy];
+	NSMutableArray *temp = [_selectedMetas objectForKey:iKey];
+	[newMetas setObject:[_selectedMetas objectForKey:jKey] forKey:iKey];
+	[newMetas setObject:temp forKey:jKey];
+	_selectedMetas = (NSDictionary *)newMetas;
+	
+	// Create new array
+	NSMutableArray *newEventArr = [[NSMutableArray alloc] init];
+	for (int p = 0; p < newPanels; p++)
+	{
+		NSMutableArray *newPanelArr = [[NSMutableArray alloc] init];
+		for (int s = 0; s < newStacks; s++)
+		{
+			NSMutableArray *newStackArr = [[NSMutableArray alloc] init];
+			for (int b = 0; b < newBands; b++)
+			{
+				// Grab band from old index, insert into new index
+				NSArray *band;
+				if ((i == UIObjectPanel && j == UIObjectStack) || (j == UIObjectPanel && i == UIObjectStack))
+				{
+					band = [[[[_eventArray objectAtIndex:s] objectAtIndex:p] objectAtIndex:b] copy];
+				}
+				else if ((i == UIObjectPanel && j == UIObjectBand) || (j == UIObjectPanel && i == UIObjectBand))
+				{
+					band = [[[[_eventArray objectAtIndex:b] objectAtIndex:s] objectAtIndex:p] copy];
+				}
+				else if ((i == UIObjectStack && j == UIObjectBand) || (j == UIObjectStack && i == UIObjectBand))
+				{
+					band = [[[[_eventArray objectAtIndex:p] objectAtIndex:b] objectAtIndex:s] copy];
+				}
+				[newStackArr addObject:band];
+			}
+			[newPanelArr addObject:newStackArr];
+		}
+		[newEventArr addObject:newPanelArr];
+	}
+	_eventArray = newEventArr;
+}
+
 
 
 #pragma mark -

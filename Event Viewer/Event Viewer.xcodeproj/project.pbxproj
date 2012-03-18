@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0331700814BCC64700C9B287 /* DraggableLabel.m */; };
 		0344847B14B1139100537F77 /* Constraint.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Constraint.m */; };
+		0357156215165CEA000109D0 /* QueryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0357156115165CEA000109D0 /* QueryTableView.m */; };
 		03993F2214CD033A00045B24 /* QueryTree.m in Sources */ = {isa = PBXBuildFile; fileRef = 03993F2114CD033A00045B24 /* QueryTree.m */; };
 		03A2527214D4879900C3BAB7 /* DetailView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A2527014D4879900C3BAB7 /* DetailView.xib */; };
 		03A2527314D4879900C3BAB7 /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03A2527114D4879900C3BAB7 /* MainWindow.xib */; };
@@ -46,6 +47,8 @@
 		0331700814BCC64700C9B287 /* DraggableLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = DraggableLabel.m; path = "UI Subclasses/DraggableLabel.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		0344847914B1139100537F77 /* Constraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = Constraint.h; path = Model/Constraint.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		0344847A14B1139100537F77 /* Constraint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = Constraint.m; path = Model/Constraint.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		0357156015165CEA000109D0 /* QueryTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = QueryTableView.h; path = QueryView/QueryTableView.h; sourceTree = "<group>"; };
+		0357156115165CEA000109D0 /* QueryTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = QueryTableView.m; path = QueryView/QueryTableView.m; sourceTree = "<group>"; };
 		03993F2014CD033A00045B24 /* QueryTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = QueryTree.h; path = Model/QueryTree.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		03993F2114CD033A00045B24 /* QueryTree.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = QueryTree.m; path = Model/QueryTree.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		03A2527014D4879900C3BAB7 /* DetailView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DetailView.xib; path = IBViews/DetailView.xib; sourceTree = "<group>"; };
@@ -244,6 +247,8 @@
 			children = (
 				03DE3C7D14CCF6FF0054FB1D /* QueryBuilderView.h */,
 				03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */,
+				0357156015165CEA000109D0 /* QueryTableView.h */,
+				0357156115165CEA000109D0 /* QueryTableView.m */,
 			);
 			name = QueryView;
 			sourceTree = "<group>";
@@ -389,6 +394,7 @@
 				03A2527A14D491EB00C3BAB7 /* DatabaseHandler.m in Sources */,
 				03A2528314D493AE00C3BAB7 /* JSONKit.m in Sources */,
 				03A252B414D4A25700C3BAB7 /* DatabaseConnection.m in Sources */,
+				0357156215165CEA000109D0 /* QueryTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

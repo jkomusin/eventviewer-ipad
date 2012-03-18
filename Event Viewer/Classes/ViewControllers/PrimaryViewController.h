@@ -65,6 +65,7 @@ enum UI_OBJECT
 - (void)swapBandLayer:(NSInteger)i withBand:(NSInteger)j;
 - (void)swapStackLayer:(NSInteger)i withStack:(NSInteger)j;
 - (void)swapPanelLayer:(NSInteger)i withPanel:(NSInteger)j;
+- (void)reConfigureCanvas;
 
 @end
 
@@ -109,12 +110,6 @@ enum UI_OBJECT
 - (void)scrubberStopped:(id)sender;
 - (void)buttonPressed:(id)sender;
 - (void)changeCurrentPanel:(NSInteger)panelIndex;
-
-- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)swapButton:(NSInteger)i toIndex:(NSInteger)j;
 
 - (void)swapBandLayer:(NSInteger)i withBand:(NSInteger)j;
 - (void)swapStackLayer:(NSInteger)i withStack:(NSInteger)j;

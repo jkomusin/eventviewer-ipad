@@ -160,7 +160,7 @@
 
         UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
         [dragGesture setNumberOfTouchesRequired:1];
-        [dragGesture setMinimumPressDuration:0.25f];
+        [dragGesture setMinimumPressDuration:0.1f];
         [cell addGestureRecognizer:dragGesture];
     }
     

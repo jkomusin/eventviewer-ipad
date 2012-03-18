@@ -11,6 +11,7 @@
 #import "QueryBuilderView.h"
 #import "MGSplitViewController.h"
 #import "PrimaryViewController.h"
+#import "QueryTableView.h"
 #import "Constraint.h"
 #import "Query.h"
 
@@ -18,8 +19,20 @@
 OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 
+@interface QueryBuilderView ()
+- (void)setTableToRest:(QueryTableView *)table;
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
+
+@end
+
+
 @implementation QueryBuilderView
 {
+	BOOL _isDragging;	// Is the user currently dragging a bin?
+	BOOL _isEditing;		// Is the user currently editing bins?
 }
 
 @synthesize primaryController = _primaryController;
@@ -29,6 +42,10 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 @synthesize queryHasChanged = _queryHasChanged;
 
+// UI Layout constants
+float TABLE_HEIGHT = ((768.0f - 44.0f) - 65.0f - 45.0f) / 3.0f;
+float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDTH) - 20.0f;
+
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -36,47 +53,10 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     {
         self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
-        
-        // Set up labels
-        float tableHeight = (self.frame.size.height - 65.0f - 5.0f - 60.0f) / 3.0f; // The 4.0 ensures an integer result and a tiny bit more space at the bottom
-        
-        CGRect bandF = CGRectMake(20.0f, 
-                                  80.0f, 
-                                  SIDE_LABEL_SPACING - 40.0f, 
-                                  tableHeight);
-        UILabel *bandL = [[UILabel alloc] initWithFrame:bandF];
-        [bandL setTextAlignment:UITextAlignmentRight];
-        [bandL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:32.0f]];
-        [bandL setBackgroundColor:[UIColor clearColor]];
-        [bandL setTextColor:[UIColor whiteColor]];
-        [bandL setText:@"Bands"];
-        [self addSubview:bandL];
-        
-        CGRect stackF = CGRectMake(20.0f, 
-                                   80.0f + tableHeight + 15.0f, 
-                                   SIDE_LABEL_SPACING - 40.0f, 
-                                   tableHeight);
-        UILabel *stackL = [[UILabel alloc] initWithFrame:stackF];
-        [stackL setTextAlignment:UITextAlignmentRight];
-        [stackL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:32.0f]];
-        [stackL setBackgroundColor:[UIColor clearColor]];
-        [stackL setTextColor:[UIColor whiteColor]];
-        [stackL setText:@"Stacks"];
-        [self addSubview:stackL];
-        
-        CGRect panelF = CGRectMake(20.0f, 
-                                   80.0f + 2.0f * (tableHeight + 15.0f), 
-                                   SIDE_LABEL_SPACING - 40.0f, 
-                                   tableHeight);
-        UILabel *panelL = [[UILabel alloc] initWithFrame:panelF];
-        [panelL setTextAlignment:UITextAlignmentRight];
-        [panelL setFont:[UIFont fontWithName:@"Helvetica-Bold" size:32.0f]];
-        [panelL setBackgroundColor:[UIColor clearColor]];
-        [panelL setTextColor:[UIColor whiteColor]];
-        [panelL setText:@"Panels"];
-        [self addSubview:panelL];
 		
         _queryHasChanged = NO;
+		_isDragging = NO;
+		_isEditing = NO;
     }
     
     return self;
@@ -93,47 +73,53 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
     if (_stackTable) [_stackTable removeFromSuperview];
     if (_panelTable) [_panelTable removeFromSuperview];
     
-    float tableHeight = (self.frame.size.height - 65.0f - 5.0f - 60.0f) / 3.0f;
-    float tableWidth = self.frame.size.width - SIDE_LABEL_SPACING - 20.0f;
-    
-    CGRect bandFrame = CGRectMake(SIDE_LABEL_SPACING,
+    CGRect bandFrame = CGRectMake(10.0f,
                                   80.0f,
-                                  tableWidth,
-                                  tableHeight);
-    UITableView *newBands = [[UITableView alloc] initWithFrame:bandFrame style:UITableViewStylePlain];
-    newBands.tag = UIObjectBand;
-    newBands.dataSource = source;
-	newBands.allowsSelection = NO;
-	newBands.layer.cornerRadius = 5.0f;
-	newBands.showsVerticalScrollIndicator = YES;
-    [self addSubview:newBands];
-    _bandTable = newBands;
-    
-    CGRect stackFrame = CGRectMake(SIDE_LABEL_SPACING, 
-                                   80.0f + tableHeight + 15.0f, 
-                                   tableWidth, 
-                                   tableHeight);
-    UITableView *newStacks = [[UITableView alloc] initWithFrame:stackFrame style:UITableViewStylePlain];
-    newStacks.tag = UIObjectStack;
-    newStacks.dataSource = source;
-	newStacks.allowsSelection = NO;
-	newStacks.layer.cornerRadius = 5.0f;
-	newStacks.showsVerticalScrollIndicator = YES;
-    [self addSubview:newStacks];
-    _stackTable = newStacks;
-    
-    CGRect panelFrame = CGRectMake(SIDE_LABEL_SPACING, 
-                                   80.0f + 2.0F * (tableHeight + 15.0f), 
-                                   tableWidth, 
-                                   tableHeight);
-    UITableView *newPanels = [[UITableView alloc] initWithFrame:panelFrame style:UITableViewStylePlain];
-    newPanels.tag = UIObjectPanel;
-    newPanels.dataSource = source;
-	newPanels.allowsSelection = NO;
-	newPanels.layer.cornerRadius = 5.0f;
-	newPanels.showsVerticalScrollIndicator = YES;
-    [self addSubview:newPanels];
-    _panelTable = newPanels;
+                                  TABLE_WIDTH,
+                                  TABLE_HEIGHT);
+	QueryTableView *bandTable = [[QueryTableView alloc] initWithFrame:bandFrame];
+	bandTable.titleView.text = @"Bands";
+	bandTable.tableView.dataSource = source;
+	bandTable.tableView.tag = UIObjectBand;
+	UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+	bDragGesture.delegate = self;
+	[bDragGesture setNumberOfTouchesRequired:1];
+	[bDragGesture setMinimumPressDuration:0.1f];
+	[bandTable addGestureRecognizer:bDragGesture];
+	[bandTable setUserInteractionEnabled:YES];
+	[self addSubview:bandTable];
+	
+	CGRect stackFrame = CGRectMake(10.0f, 
+								   80.0f + TABLE_HEIGHT + 5.0f, 
+								   TABLE_WIDTH, 
+								   TABLE_HEIGHT);
+	QueryTableView *stackTable = [[QueryTableView alloc] initWithFrame:stackFrame];
+	stackTable.titleView.text = @"Stacks";
+	stackTable.tableView.dataSource = source;
+	stackTable.tableView.tag = UIObjectStack;
+	UILongPressGestureRecognizer* sDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+	sDragGesture.delegate = self;
+	[sDragGesture setNumberOfTouchesRequired:1];
+	[sDragGesture setMinimumPressDuration:0.1f];
+	[stackTable addGestureRecognizer:sDragGesture];
+	[stackTable setUserInteractionEnabled:YES];
+	[self addSubview:stackTable];
+	
+	CGRect panelFrame = CGRectMake(10.0f, 
+								   80.0f + 2.0f * (TABLE_HEIGHT + 5.0f), 
+								   TABLE_WIDTH, 
+								   TABLE_HEIGHT);
+	QueryTableView *panelTable = [[QueryTableView alloc] initWithFrame:panelFrame];
+	panelTable.titleView.text = @"Panels";
+	panelTable.tableView.dataSource = source;
+	panelTable.tableView.tag = UIObjectPanel;
+	UILongPressGestureRecognizer* pDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+	pDragGesture.delegate = self;
+	[pDragGesture setNumberOfTouchesRequired:1];
+	[pDragGesture setMinimumPressDuration:0.1f];
+	[panelTable addGestureRecognizer:pDragGesture];
+	[panelTable setUserInteractionEnabled:YES];
+	[self addSubview:panelTable];
 	
 	source.queryDelegate = self;
 }
@@ -144,76 +130,163 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 - (void)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer
 {
-    if ([_bandTable pointInside:[recognizer locationInView:_bandTable] withEvent:nil])
-    {
-        Query *currentQuery = (Query *)_bandTable.dataSource;
-        [currentQuery addConstraint:constraint toArray:UIObjectBand];
-        
-        [_bandTable reloadData];
-        [self queryDidChange];
-    }
-    else if ([_stackTable pointInside:[recognizer locationInView:_stackTable] withEvent:nil])
-    {
-        Query *currentQuery = (Query *)_stackTable.dataSource;
-        [currentQuery addConstraint:constraint toArray:UIObjectStack];
-        
-        [_stackTable reloadData];
-        [self queryDidChange];
-    }
-    else if ([_panelTable pointInside:[recognizer locationInView:_panelTable] withEvent:nil])
-    {
-        Query *currentQuery = (Query *)_panelTable.dataSource;
-        [currentQuery addConstraint:constraint toArray:UIObjectPanel];
-        
-        [_panelTable reloadData];
-        [self queryDidChange];
-    }
+	for (UIView *v in [self subviews])
+	{
+		if ([v isKindOfClass:[QueryTableView class]] && [v pointInside:[recognizer locationInView:v] withEvent:nil])
+		{
+			QueryTableView *table = (QueryTableView *)v;
+			Query *currentQuery = (Query *)table.tableView.dataSource;
+			[currentQuery addConstraint:constraint toArray:table.tableView.tag];	// tag indicates type
+			
+			[table.tableView reloadData];
+			[self queryDidChange];
+		}
+	}
 }
-
 
 - (void)editButtonPressed
 {
-	if (_bandTable.editing || _stackTable.editing || _panelTable.editing)
+	for (UIView *v in [self subviews])
 	{
-		[_bandTable setEditing:NO];
-		for (UITableViewCell *cell in _bandTable.visibleCells)
+		if ([v isKindOfClass:[QueryTableView class]])
 		{
-			cell.showsReorderControl = NO;
+			QueryTableView *table = (QueryTableView *)v;
+			[table.tableView setEditing:(!_isEditing)];
+			for (UITableViewCell *cell in table.tableView.visibleCells)
+			{
+				cell.showsReorderControl = (!_isEditing);
+			}
 		}
-		
-		[_stackTable setEditing:NO];
-		for (UITableViewCell *cell in _stackTable.visibleCells)
-		{
-			cell.showsReorderControl = NO;
-		}
-		
-		[_panelTable setEditing:NO];
-		for (UITableViewCell *cell in _panelTable.visibleCells)
-		{
-			cell.showsReorderControl = NO;
-		}
+	}
+	
+	_isEditing = (!_isEditing);
+}
 
+
+#pragma mark -
+#pragma mark Drag-and-drop handling for bins
+
+/**
+ *	Entry point for dragging-and-dropping of bin label
+ */
+- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+	switch ([gestureRecognizer state]) 
+    {
+        case UIGestureRecognizerStateBegan:
+            [self startDragging:gestureRecognizer];
+            break;
+        case UIGestureRecognizerStateChanged:
+            [self doDrag:gestureRecognizer];
+            break;
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+            [self stopDragging:gestureRecognizer];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+	if (_isDragging)	
+	{
+		gestureRecognizer.enabled = NO;	// toggling this will cancel the gesture
+		gestureRecognizer.enabled = YES;
+		return;
 	}
 	else
 	{
-		[_bandTable setEditing:YES];
-		for (UITableViewCell *cell in _bandTable.visibleCells)
+		_isDragging = YES;
+	}
+	
+	QueryTableView *draggingTable = (QueryTableView *)gestureRecognizer.view;
+	draggingTable.alpha = 0.75f;
+	[self bringSubviewToFront:draggingTable];
+}
+
+- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+	QueryTableView *draggingTable = (QueryTableView *)gestureRecognizer.view;
+	CGPoint p = [gestureRecognizer locationInView:self];
+	p.x = draggingTable.center.x;
+	[draggingTable setCenter:p];
+}
+
+- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+{
+	QueryTableView *draggingTable = (QueryTableView *)gestureRecognizer.view;
+	
+	for (UIView *v in [self subviews])
+	{
+		if ([v isKindOfClass:[QueryTableView class]] && [v pointInside:[gestureRecognizer locationInView:v] withEvent:nil] && v != draggingTable)
 		{
-			cell.showsReorderControl = YES;
-		}
-		
-		[_stackTable setEditing:YES];
-		for (UITableViewCell *cell in _stackTable.visibleCells)
-		{
-			cell.showsReorderControl = YES;
-		}
-		
-		[_panelTable setEditing:YES];
-		for (UITableViewCell *cell in _panelTable.visibleCells)
-		{
-			cell.showsReorderControl = YES;
+			QueryTableView *table = (QueryTableView *)v;
+			
+			// Swap their types
+			enum UI_OBJECT temp = table.tableView.tag;
+			table.tableView.tag = draggingTable.tableView.tag;
+			draggingTable.tableView.tag = temp;
+			
+			// Swap their labels
+			NSString *tempString = table.titleView.text;
+			table.titleView.text = draggingTable.titleView.text;
+			draggingTable.titleView.text = tempString;
+			
+			// Notify data model
+			Query *q = (Query *)draggingTable.tableView.dataSource;
+			[q swapBinData:draggingTable.tableView.tag withBin:table.tableView.tag];
+			
+			[self setTableToRest:table];
+
+			// Notfy content controller
+			[_primaryController reConfigureCanvas];
 		}
 	}
+	
+	// Set tables to their resting positions
+	[self setTableToRest:draggingTable];
+	draggingTable.alpha = 1.0f;
+	_isDragging = NO;
+}
+
+/**
+ *	Sets a QueryTableView's frame to it's proper location given its table's tag
+ */
+- (void)setTableToRest:(QueryTableView *)table
+{
+	CGRect frame = CGRectNull;
+	if (table.tableView.tag == UIObjectBand)
+	{
+		frame = CGRectMake(10.0f,
+						   80.0f,
+						   TABLE_WIDTH,
+						   TABLE_HEIGHT);
+	}
+	else if (table.tableView.tag == UIObjectStack)
+	{
+		frame = CGRectMake(10.0f, 
+						   80.0f + TABLE_HEIGHT + 5.0f, 
+						   TABLE_WIDTH, 
+						   TABLE_HEIGHT);
+	}
+	else if (table.tableView.tag == UIObjectPanel)
+	{
+		frame = CGRectMake(10.0f, 
+						   80.0f + 2.0f * (TABLE_HEIGHT + 5.0f), 
+						   TABLE_WIDTH, 
+						   TABLE_HEIGHT);
+	}
+	else
+	{
+		NSLog(@"ERROR: Invalid table tag: %d", table.tableView.tag);
+	}
+
+	[QueryTableView beginAnimations:nil context:nil];
+	table.frame = frame;
+	[QueryTableView commitAnimations];
 }
 
 

@@ -29,11 +29,6 @@
 
 - (void)switchToPanel:(NSInteger)panelIndex;
 
-- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer;
-- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
-
 - (void)swapAllBandLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex skippingStack:(NSInteger)skipStackIndex areBothDragging:(BOOL)bothDragging;
 - (void)swapStackLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex  whileDragging:(BOOL)dragging;
 - (void)swapPanelLabels:(NSInteger)draggingIndex and:(NSInteger)otherIndex  whileDragging:(BOOL)dragging;
