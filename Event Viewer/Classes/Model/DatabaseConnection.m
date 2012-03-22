@@ -10,27 +10,10 @@
 
 @implementation DatabaseConnection
 {
-    
 }
 
 @synthesize type = _type;
-@synthesize panelIndex = _panelIndex;
-@synthesize stackIndex = _stackIndex;
-@synthesize bandIndex = _bandIndex;
 
-- (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate ofType:(enum ConnectionType)type withPanelIndex:(NSInteger)panel stackIndex:(NSInteger)stack bandIndex:(NSInteger)band
-
-{
-    if ((self = [super initWithRequest:request delegate:delegate]))
-    {
-        self.type = type;
-        self.panelIndex = panel;
-        self.stackIndex = stack;
-        self.bandIndex = band;
-    }
-    
-    return self;
-}
 - (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate ofType:(enum ConnectionType)type
 {
     if ((self = [super initWithRequest:request delegate:delegate]))

@@ -16,12 +16,8 @@
 {
     DatabaseHandler *_dbHandler;        // Handler for the database, assumed to be logged in
     JSONDecoder *_jsonParser;           // Decoder of returned JSON packets
-    NSMutableArray *_responseArray;     // 3-dimensional array of response data for current event queries with the format:
-                                        //  [x][][] - The panel for the response's events
-                                        //  [][x][] - The stack for the response's events
-                                        //  [][][x] - The band for the response's events (this is the MutableData object)
-	
-	int currentBands;					// Current number of loaded bands
+    NSMutableData *_response;			// Response for current query
+	DatabaseConnection *_queryConnect;	// Connection to current query
 }
 
 @synthesize contentDelegate = _contentDelegate;
@@ -63,15 +59,8 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         [emptyBands addObject:emptyBandEvents];
         _eventArray = emptyEvents;
         
-        // Initialize _responseArray with empty arrays
-        NSMutableArray *emptyResponses = [[NSMutableArray alloc] init];
-        _responseArray = emptyResponses;
-        
         // Initialize _jsonParser
         _jsonParser = [[JSONDecoder alloc] init];
-        
-		// Init band counter
-		currentBands = 0;
 		
         //_eventFloats = create4D(2, 2, 2, 2);
 		
@@ -362,56 +351,63 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     NSArray *stackConstraints = [_selectedMetas objectForKey:@"Stacks"];
     NSArray *bandConstraints = [_selectedMetas objectForKey:@"Bands"];
     
-    // Initialize the query response and event arrays to the size of the query
-    NSMutableArray *newResponses = [[NSMutableArray alloc] init];
+    // Initialize the event arrays to the size of the query
     NSMutableArray *newEvents = [[NSMutableArray alloc] init];
-    for (int i = 0; i < [panelConstraints count]; i++)
+    for (int p = 0; p < [panelConstraints count]; p++)
     {
-        NSMutableArray *panelResponse = [[NSMutableArray alloc] init];
         NSMutableArray *panelEvents = [[NSMutableArray alloc] init];
-        for (int j = 0; j < [stackConstraints count]; j++)
+        for (int s = 0; s < [stackConstraints count]; s++)
         {
-            NSMutableArray *stackResponse = [[NSMutableArray alloc] init];
             NSMutableArray *stackEvents = [[NSMutableArray alloc] init];
-            // Event arrays have one more depth than the response array
-            for (int k = 0; k < [bandConstraints count]; k++)
+            for (int b = 0; b < [bandConstraints count]; b++)
             {
                 NSMutableArray *bandEvents = [[NSMutableArray alloc] init];
                 [stackEvents addObject:bandEvents];
             }
             
-            [panelResponse addObject:stackResponse];
             [panelEvents addObject:stackEvents];
         }
         
-        [newResponses addObject:panelResponse];
         [newEvents addObject:panelEvents];
     }
-    _responseArray = newResponses;
     _eventArray = newEvents;
     
     // Query for events
-    for (int p = 0; p < [panelConstraints count]; p++)
-    {
-        Constraint *panel = [panelConstraints objectAtIndex:p];
+	NSMutableString *parameters = [[NSMutableString alloc] init];
+	if ([panelConstraints count] > 0)
+	{
+		[parameters appendString:@"panels="];
+		for (int p = 0; p < [panelConstraints count]; p++)
+		{
+			Constraint *panel = [panelConstraints objectAtIndex:p];
+			[parameters appendFormat:@"%@=%d,", panel.type, panel.identifier];
+		}
+		parameters = [[parameters substringToIndex:[parameters length]-1] mutableCopy]; // Remove trailing comma
+		[parameters appendString:@"&"];	// Add delimiter
+	}
+	if ([stackConstraints count] > 0)
+	{
+		[parameters appendString:@"stacks="];
         for (int s = 0; s < [stackConstraints count]; s++)
         {
             Constraint *stack = [stackConstraints objectAtIndex:s];
-            for (int b = 0; b < [bandConstraints count]; b++)
-            {
-                Constraint *band = [bandConstraints objectAtIndex:b];
-                
-                NSString *panelQuery = [NSString stringWithFormat:@"%@=%d", panel.type, panel.identifier];
-                NSString *stackQuery = [NSString stringWithFormat:@"%@=%d", stack.type, stack.identifier];
-                NSString *bandQuery = [NSString stringWithFormat:@"%@=%d", band.type, band.identifier];
-                NSString *params = [NSString stringWithFormat:@"method=data&%@&%@&%@", panelQuery, stackQuery, bandQuery];
-                
-                [_dbHandler queryWithParameters:params fromDelegate:self ofType:DBConnectionTypeEvent withPanelIndex:p stackIndex:s bandIndex:b];
-            }
-        }
+			[parameters appendFormat:@"%@=%d,", stack.type, stack.identifier];			
+		}
+		parameters = [[parameters substringToIndex:[parameters length]-1] mutableCopy];
+		[parameters appendString:@"&"];
+	}
+	if ([bandConstraints count] > 0)
+	{
+		[parameters appendString:@"bands="];
+		for (int b = 0; b < [bandConstraints count]; b++)
+		{
+			Constraint *band = [bandConstraints objectAtIndex:b];
+			[parameters appendFormat:@"%@=%d,", band.type, band.identifier];
+		}
+		parameters = [[parameters substringToIndex:[parameters length]-1] mutableCopy];
     }
 	
-	currentBands = 0;
+	[_dbHandler queryDataWithParameters:parameters fromDelegate:self ofType:DBConnectionTypeEvent];
 }
 
 
@@ -526,7 +522,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 		newStacks = [[_eventArray objectAtIndex:0] count];
 		newBands = [_eventArray count];
 		iKey = @"Panels";
-		jKey = @"Stacks";
+		jKey = @"Bands";
 	}
 	else if ((i == UIObjectStack && j == UIObjectBand) || (j == UIObjectStack && i == UIObjectBand))
 	{
@@ -742,23 +738,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
         NSLog(@"ERROR: Connection of type '%@' handled by Query. Expected 'EVENT', or 'EVENT_COUNT'", type);
     }
     
-    NSMutableData *responseData = [[NSMutableData alloc] init];
-    NSMutableArray *stackArray = [[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex];
-    
-    NSLog(@"Stack array count: %d", [stackArray count]);
-    
-    if ([stackArray count] <= connection.bandIndex)
-    {
-        for (int i = [stackArray count]; i <= connection.bandIndex; i++)
-        {
-            NSMutableData *newData = [[NSMutableData alloc] init];  // placeholder
-            [stackArray addObject:newData];
-        }
-    }
-    
-    NSLog(@"Stack array count: %d", [stackArray count]);
-    
-    [stackArray replaceObjectAtIndex:connection.bandIndex withObject:responseData];
+    _response = [[NSMutableData alloc] init];
 }
 
 /**
@@ -766,8 +746,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (void)connection:(DatabaseConnection *)connection didReceiveData:(NSData *)data
 {
-    NSMutableData *response = [[[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
-    [response appendData:data];
+    [_response appendData:data];
 }
 
 /**
@@ -775,15 +754,21 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (void)connectionDidFinishLoading:(DatabaseConnection *)connection
 {
-    NSMutableData *response = [[[_responseArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] objectAtIndex:connection.bandIndex];
-  	NSArray *jsonArr = [_jsonParser objectWithData:response];
+  	NSArray *jsonArr = [_jsonParser objectWithData:_response];
     
-//    NSLog(@"Retrieved JSON array:");
-//    NSLog(@"%@", jsonArr);
+    NSLog(@"Retrieved JSON array:");
+    NSLog(@"%@", jsonArr);
     
     if (connection.type == DBConnectionTypeEvent)
     {
 		// Returned event JSON array should have the format:
+		//	3-dimensional array with arrays indexed as follows:
+		//		[x][][] specifies the panel
+		//		[][x][] specifies the stack
+		//		[][][x] specifies the return value of the get.php script's 'data' method
+		//
+		//	Each return value of the original get.php 'data' methd is formatted as follows:
+		//
 		//	Array with elements that are dictionaries with two keys: "header" and "occurrence"
 		//	"header" containts a dictionary of the specific constraints on the events in the dictionary
 		//	"occurrence" contains an array of dictionaries which are each an event under the header
@@ -799,58 +784,67 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 		NSDateFormatter *dateMaker = [[NSDateFormatter alloc] init];
 		[dateMaker setDateFormat:@"yyyy-MM-dd HH:mm"];
 		
-        NSMutableArray *eventArr = [[NSMutableArray alloc] init];
-		for (NSDictionary *dict in jsonArr)
-        {
-			for (NSDictionary *eventDict in [dict objectForKey:@"occurrence"])
+		for (int p = 0; p < [jsonArr count]; p++)
+		{
+			NSArray *panelArr = [jsonArr objectAtIndex:p];
+			for (int s = 0; s < [panelArr count]; s++)
 			{
-				NSString *startString = [eventDict objectForKey:@"start"];
-				NSString *endString = [eventDict objectForKey:@"end"];
-				NSDate *start = [dateMaker dateFromString:[startString substringWithRange:NSMakeRange(0, 16)]];
-				NSDate *end = [dateMaker dateFromString:[endString substringWithRange:NSMakeRange(0, 16)]];
-				Event *e = [[Event alloc] initWithStartTime:start endTime:end];
-				e.year = [[eventDict objectForKey:@"year"] intValue];
-				e.month = [[eventDict objectForKey:@"month"] intValue];
-				e.day = [[eventDict objectForKey:@"day"] intValue];
+				NSArray *stackArr = [panelArr objectAtIndex:s];
+				for (int b = 0; b < [stackArr count]; b++)
+				{
+					NSArray *bandArr = [stackArr objectAtIndex:b];
+					NSMutableArray *eventArr = [[NSMutableArray alloc] init];
+					for (NSDictionary *dict in bandArr)
+					{
+						for (NSDictionary *eventDict in [dict objectForKey:@"occurrence"])
+						{
+							NSString *startString = [eventDict objectForKey:@"start"];
+							NSString *endString = [eventDict objectForKey:@"end"];
+							NSDate *start = [dateMaker dateFromString:[startString substringWithRange:NSMakeRange(0, 16)]];
+							NSDate *end = [dateMaker dateFromString:[endString substringWithRange:NSMakeRange(0, 16)]];
+							Event *e = [[Event alloc] initWithStartTime:start endTime:end];
+							e.year = [[eventDict objectForKey:@"year"] intValue];
+							e.month = [[eventDict objectForKey:@"month"] intValue];
+							e.day = [[eventDict objectForKey:@"day"] intValue];
+								
+			//	NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
+							
+							// Determine coordinates based on timescale
+							if (_timeScale == QueryTimescaleYear)
+							{
+								float x = (e.month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (e.day - 1.0f)*(BAND_WIDTH_P / 356.0f);
+								//round to nearest 0.5 for sharpness of drawing
+								int xInt = (int)x;
+								x = xInt + 0.5f;
+								// length of event in minutes
+								int length = (int)([end timeIntervalSinceDate:start] / 60.0f);
+								float width = length * (BAND_WIDTH_P / 365.0f / 24.0f / 60.0f);
+								//fix erroneous widths
+								if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
+								e.x = x;
+								e.width = width;
+							}
+							else
+							{
+								NSLog(@"ERROR: Query timescale of %d undefined", _timeScale);
+							}
+							
+							[eventArr addObject:e];
+						}
+					}
 					
-//	NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
-				
-				// Determine coordinates based on timescale
-				if (_timeScale == QueryTimescaleYear)
-				{
-					float x = (e.month - 1.0f)*(BAND_WIDTH_P / 12.0f) + (e.day - 1.0f)*(BAND_WIDTH_P / 356.0f);
-					//round to nearest 0.5 for sharpness of drawing
-					int xInt = (int)x;
-					x = xInt + 0.5f;
-					// length of event in minutes
-					int length = (int)([end timeIntervalSinceDate:start] / 60.0f);
-					float width = length * (BAND_WIDTH_P / 365.0f / 24.0f / 60.0f);
-					//fix erroneous widths
-					if (x + width > BAND_WIDTH_P) width = width - ((x + width) - BAND_WIDTH_P);
-					e.x = x;
-					e.width = width;
+					// Store new events
+					[[[_eventArray objectAtIndex:p] objectAtIndex:s] replaceObjectAtIndex:b withObject:eventArr];
 				}
-				else
-				{
-					NSLog(@"ERROR: Query timescale of %d undefined", _timeScale);
-				}
-				
-				[eventArr addObject:e];
 			}
-        }
-		
-		// Store new events
-		[[[_eventArray objectAtIndex:connection.panelIndex] objectAtIndex:connection.stackIndex] replaceObjectAtIndex:connection.bandIndex withObject:eventArr];
+		}		
     }
     else
     {
         NSLog(@"ERROR: Connection of type %d handled by Query data object.", connection.type);
     }
-    
-    [_contentDelegate queryDidUpdatePanel:connection.panelIndex];
 
-	currentBands++;
-	[_contentDelegate queryHasRecievedBands:currentBands];
+	[_contentDelegate queryHasRecievedData];
 }
 
 /**

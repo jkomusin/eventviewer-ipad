@@ -60,8 +60,7 @@ enum UI_OBJECT
  */
 @protocol ContentDelegate
 @required
-- (void)queryDidUpdatePanel:(NSInteger)panelIndex;
-- (void)queryHasRecievedBands:(NSInteger)current;
+- (void)queryHasRecievedData;
 - (void)swapBandLayer:(NSInteger)i withBand:(NSInteger)j;
 - (void)swapStackLayer:(NSInteger)i withStack:(NSInteger)j;
 - (void)swapPanelLayer:(NSInteger)i withPanel:(NSInteger)j;

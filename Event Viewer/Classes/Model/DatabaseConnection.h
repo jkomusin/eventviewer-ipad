@@ -37,11 +37,7 @@ enum ConnectionType
 }
 
 @property (nonatomic, assign) enum ConnectionType type; // Type of data requested by this connection
-@property (nonatomic, assign) NSInteger panelIndex;           // Optional index of the panel whose events were requested by this connection
-@property (nonatomic, assign) NSInteger stackIndex;           // Optional index of the stack whose events were requested by this connection
-@property (nonatomic, assign) NSInteger bandIndex;            // Optional index of the band whose events were requested by this connection
 
-- (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate ofType:(enum ConnectionType)type withPanelIndex:(NSInteger)panel stackIndex:(NSInteger)stack bandIndex:(NSInteger)band;
 - (id)initWithRequest:(NSURLRequest *)request delegate:(id)delegate ofType:(enum ConnectionType)type;
 
 @end

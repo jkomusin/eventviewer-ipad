@@ -21,7 +21,7 @@
 @implementation DatabaseHandler
 {
     NSString *_servletURL;       // URL of the servlet, or 'get.php' script
-    
+    NSString *_dataServletURL;	 // URL of the servlet pertaining to data, or 'get_data.php' script
     NSMutableData *_response;    // The response of the current login query
 }
 
@@ -31,12 +31,13 @@
 #pragma mark -
 #pragma mark Initialization
 
-- (id)initWithURL:(NSString *)url username:(NSString *)user password:(NSString *)pass delegate:(id<LoginDelegate>)delegate
+- (id)initWithURL:(NSString *)url dataURL:(NSString *)dURL username:(NSString *)user password:(NSString *)pass delegate:(id<LoginDelegate>)delegate
 {
     if ((self = [super init]))
     { 
         _loginDelegate = delegate;
         _servletURL = url;
+		_dataServletURL = dURL;
         [self loginWithUsername:user password:pass];
     }
     
@@ -51,7 +52,7 @@
                                                 cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                             timeoutInterval:60.0];
     
-    (void) [[DatabaseConnection alloc] initWithRequest:loginRequest delegate:self ofType:DBConnectionTypeLogin withPanelIndex:-1 stackIndex:-1 bandIndex:-1];
+    (void) [[DatabaseConnection alloc] initWithRequest:loginRequest delegate:self ofType:DBConnectionTypeLogin];
 }
 
 
@@ -66,18 +67,7 @@
  *  Data will be returned to the delegate by the delegate methods:
  *  connection:didReceiveResponse:, connection:didReceiveData:, connection:didFailWithError: and connectionDidFinishLoading:
  */
-- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type withPanelIndex:(NSInteger)panel stackIndex:(NSInteger)stack bandIndex:(NSInteger)band
-{
-    NSLog(@"Querying with parameters: %@ and type: %d", params, type);
-    
-    NSString *queryURL = [NSString stringWithFormat:@"%@?%@", _servletURL, params];
-    NSURLRequest *dbRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:queryURL]
-                                                cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
-                                            timeoutInterval:60.0];
-    
-    (void) [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type withPanelIndex:panel stackIndex:stack bandIndex:band];
-}
-- (void) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
+- (DatabaseConnection *) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
 {
     NSLog(@"Querying with parameters: %@ and type: %d", params, type);
     
@@ -86,7 +76,18 @@
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                          timeoutInterval:60.0];
     
-    (void) [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
+    return [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
+}
+- (DatabaseConnection *) queryDataWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
+{
+    NSLog(@"Querying with parameters: %@ and type: %d", params, type);
+    
+    NSString *queryURL = [NSString stringWithFormat:@"%@?%@", _dataServletURL, params];
+    NSURLRequest *dbRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:queryURL]
+                                             cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
+                                         timeoutInterval:60.0];
+    
+    return [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
 }
 
 
