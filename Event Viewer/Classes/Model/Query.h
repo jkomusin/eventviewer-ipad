@@ -59,12 +59,6 @@ enum QUERY_TIMESCALE
 @property (atomic, copy) NSMutableArray *eventArray;   
 
 /**
- *  4-dimensional array similar to eventArray's mapping.
- *  Instead contains two floats for each event as normalized drawing dimensions for event rects.
- */
-//@property () float ****eventFloats;
-
-/**
  *	Smallest unit of time in the current query, determines scale of timelines.
  *	Value must be an integer from -1 - 3, where:
  *	   -1 = undefined
@@ -74,6 +68,11 @@ enum QUERY_TIMESCALE
  *		3 = day
  */
 @property (nonatomic, assign) enum QUERY_TIMESCALE timeScale;
+
+/**
+ *	Whether or not there is currently a query in progress
+ */
+@property (nonatomic, assign) BOOL isQuerying;
 
 - (id) initTestWithPanels:(NSInteger)panels;
 - (id) initWithHandler:(DatabaseHandler *)dbHandler;
@@ -90,10 +89,5 @@ enum QUERY_TIMESCALE
 - (void)swapStackData:(NSInteger)i withStack:(NSInteger)j;
 - (void)swapPanelData:(NSInteger)i withPanel:(NSInteger)j;
 - (void)swapBinData:(enum UI_OBJECT)i withBin:(enum UI_OBJECT)j;
-
-// (Experimental) Pure C implementation of a 4-dimensional array (to attempt a speed-up of C-style for-loop iterations)
-float ****create4D ( int max_x, int max_y, int max_r, int max_c );
-void my_free( void *ptr );
-void *my_malloc ( char *expr, size_t size );
 
 @end

@@ -34,5 +34,6 @@
 - (DatabaseConnection *) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type;
 - (DatabaseConnection *) queryDataWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type;
 - (void) getEventCountForQuery:(Query *)query;
+- (void) cancelCurrentQuery;
 
 @end

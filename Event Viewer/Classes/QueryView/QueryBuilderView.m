@@ -83,6 +83,7 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 	bandTable.tableView.tag = UIObjectBand;
 	UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
 	bDragGesture.delegate = self;
+	bDragGesture.cancelsTouchesInView = NO;
 	[bDragGesture setNumberOfTouchesRequired:1];
 	[bDragGesture setMinimumPressDuration:0.1f];
 	[bandTable addGestureRecognizer:bDragGesture];
@@ -99,6 +100,7 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 	stackTable.tableView.tag = UIObjectStack;
 	UILongPressGestureRecognizer* sDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
 	sDragGesture.delegate = self;
+	sDragGesture.cancelsTouchesInView = NO;
 	[sDragGesture setNumberOfTouchesRequired:1];
 	[sDragGesture setMinimumPressDuration:0.1f];
 	[stackTable addGestureRecognizer:sDragGesture];
@@ -115,6 +117,7 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 	panelTable.tableView.tag = UIObjectPanel;
 	UILongPressGestureRecognizer* pDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
 	pDragGesture.delegate = self;
+	pDragGesture.cancelsTouchesInView = NO;
 	[pDragGesture setNumberOfTouchesRequired:1];
 	[pDragGesture setMinimumPressDuration:0.1f];
 	[panelTable addGestureRecognizer:pDragGesture];

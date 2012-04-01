@@ -23,6 +23,7 @@
     NSString *_servletURL;       // URL of the servlet, or 'get.php' script
     NSString *_dataServletURL;	 // URL of the servlet pertaining to data, or 'get_data.php' script
     NSMutableData *_response;    // The response of the current login query
+	DatabaseConnection *_current;// Currently processing query
 }
 
 @synthesize loginDelegate = _loginDelegate;
@@ -76,7 +77,8 @@
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                          timeoutInterval:60.0];
     
-    return [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
+    _current =  [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
+	return _current;
 }
 - (DatabaseConnection *) queryDataWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
 {
@@ -87,13 +89,19 @@
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
                                          timeoutInterval:60.0];
     
-    return [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
+    _current = [[DatabaseConnection alloc] initWithRequest:dbRequest delegate:delegate ofType:type];
+	return _current;
 }
 
 
 - (void) getEventCountForQuery:(Query *)query
 {
     
+}
+
+- (void) cancelCurrentQuery
+{
+	[_current cancel];
 }
 
 
