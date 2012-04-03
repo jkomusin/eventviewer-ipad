@@ -598,6 +598,13 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
     if (cell == nil) 
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
+		for (UIGestureRecognizer *rec in cell.gestureRecognizers)
+		{
+			if ([rec isKindOfClass:[UILongPressGestureRecognizer class]])
+			{
+				NSLog(@"FOund!");
+			}
+		}
     }
     if (tableView.editing)
 	{

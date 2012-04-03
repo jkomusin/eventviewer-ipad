@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "DatabaseConnection.h"
 
+
 @class Query;
 @class DatabaseConnection;
 @protocol LoginDelegate;

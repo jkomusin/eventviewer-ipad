@@ -77,54 +77,56 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
                                   80.0f,
                                   TABLE_WIDTH,
                                   TABLE_HEIGHT);
-	QueryTableView *bandTable = [[QueryTableView alloc] initWithFrame:bandFrame];
-	bandTable.titleView.text = @"Bands";
-	bandTable.tableView.dataSource = source;
-	bandTable.tableView.tag = UIObjectBand;
+	_bandTable = [[QueryTableView alloc] initWithFrame:bandFrame];
+	_bandTable.titleView.text = @"Bands";
+	_bandTable.tableView.dataSource = source;
+	_bandTable.tableView.tag = UIObjectBand;
 	UILongPressGestureRecognizer* bDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
 	bDragGesture.delegate = self;
 	bDragGesture.cancelsTouchesInView = NO;
 	[bDragGesture setNumberOfTouchesRequired:1];
 	[bDragGesture setMinimumPressDuration:0.1f];
-	[bandTable addGestureRecognizer:bDragGesture];
-	[bandTable setUserInteractionEnabled:YES];
-	[self addSubview:bandTable];
+	[_bandTable addGestureRecognizer:bDragGesture];
+	[_bandTable setUserInteractionEnabled:YES];
+	[self addSubview:_bandTable];
 	
 	CGRect stackFrame = CGRectMake(10.0f, 
 								   80.0f + TABLE_HEIGHT + 5.0f, 
 								   TABLE_WIDTH, 
 								   TABLE_HEIGHT);
-	QueryTableView *stackTable = [[QueryTableView alloc] initWithFrame:stackFrame];
-	stackTable.titleView.text = @"Stacks";
-	stackTable.tableView.dataSource = source;
-	stackTable.tableView.tag = UIObjectStack;
+	_stackTable = [[QueryTableView alloc] initWithFrame:stackFrame];
+	_stackTable.titleView.text = @"Stacks";
+	_stackTable.tableView.dataSource = source;
+	_stackTable.tableView.tag = UIObjectStack;
 	UILongPressGestureRecognizer* sDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
 	sDragGesture.delegate = self;
 	sDragGesture.cancelsTouchesInView = NO;
 	[sDragGesture setNumberOfTouchesRequired:1];
 	[sDragGesture setMinimumPressDuration:0.1f];
-	[stackTable addGestureRecognizer:sDragGesture];
-	[stackTable setUserInteractionEnabled:YES];
-	[self addSubview:stackTable];
+	[_stackTable addGestureRecognizer:sDragGesture];
+	[_stackTable setUserInteractionEnabled:YES];
+	[self addSubview:_stackTable];
 	
 	CGRect panelFrame = CGRectMake(10.0f, 
 								   80.0f + 2.0f * (TABLE_HEIGHT + 5.0f), 
 								   TABLE_WIDTH, 
 								   TABLE_HEIGHT);
-	QueryTableView *panelTable = [[QueryTableView alloc] initWithFrame:panelFrame];
-	panelTable.titleView.text = @"Panels";
-	panelTable.tableView.dataSource = source;
-	panelTable.tableView.tag = UIObjectPanel;
+	_panelTable = [[QueryTableView alloc] initWithFrame:panelFrame];
+	_panelTable.titleView.text = @"Panels";
+	_panelTable.tableView.dataSource = source;
+	_panelTable.tableView.tag = UIObjectPanel;
 	UILongPressGestureRecognizer* pDragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
 	pDragGesture.delegate = self;
 	pDragGesture.cancelsTouchesInView = NO;
 	[pDragGesture setNumberOfTouchesRequired:1];
 	[pDragGesture setMinimumPressDuration:0.1f];
-	[panelTable addGestureRecognizer:pDragGesture];
-	[panelTable setUserInteractionEnabled:YES];
-	[self addSubview:panelTable];
+	[_panelTable addGestureRecognizer:pDragGesture];
+	[_panelTable setUserInteractionEnabled:YES];
+	[self addSubview:_panelTable];
 	
 	source.queryDelegate = self;
+	
+	[self editButtonPressed];
 }
 
 
@@ -168,6 +170,21 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 
 #pragma mark -
 #pragma mark Drag-and-drop handling for bins
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
+{
+	if ([_panelTable.tableView pointInside:[touch locationInView:_panelTable.tableView] withEvent:nil] ||
+		[_stackTable.tableView pointInside:[touch locationInView:_stackTable.tableView] withEvent:nil] ||
+		[_bandTable.tableView pointInside:[touch locationInView:_bandTable.tableView] withEvent:nil]
+		)
+	{
+		return NO;
+	}
+	else
+	{
+		return YES;
+	}
+}
 
 /**
  *	Entry point for dragging-and-dropping of bin label
