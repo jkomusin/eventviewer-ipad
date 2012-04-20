@@ -28,6 +28,16 @@ enum UI_OBJECT
     UIObjectPanel = 2
 };
 
+/**
+ *	Enumeration for overlay styles
+ */
+enum EVENT_STYLE
+{
+	UIEventStylePlain = 0,	// Basic overlay, nothing special, uses panel's color for Events
+	UIEventStyleOverlap = 1,	// Event color based on number of Events overlapping
+	UIEventStyleMagnitude = 2	// Event color based on magnitude of Events
+};
+
 
 /**
  *  Delegate protocol to provide access to the data model to outside objects.
@@ -108,6 +118,7 @@ enum UI_OBJECT
 - (void)scrubberMoved:(id)sender;
 - (void)scrubberStopped:(id)sender;
 - (void)buttonPressed:(id)sender;
+- (void)eventButtonPressed;
 - (void)changeCurrentPanel:(NSInteger)panelIndex;
 
 - (void)swapBandLayer:(NSInteger)i withBand:(NSInteger)j;

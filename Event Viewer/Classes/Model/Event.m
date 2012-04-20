@@ -31,4 +31,9 @@
     return self;
 }
 
+- (float)endX
+{
+	return _x + _width;
+}
+
 @end

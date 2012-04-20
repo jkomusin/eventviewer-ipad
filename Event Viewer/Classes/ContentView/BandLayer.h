@@ -13,6 +13,16 @@
 
 
 /**
+ *	Enum to simplify the START and END locations inside the 'floatArray' function's return value.
+ */
+enum EVENT_LOCATION_TYPE
+{
+	EventLocationStart = 0,
+	EventLocationEnd = 1
+};
+
+
+/**
  *  Layers that contain all events and are resized along with the BandDrawView.
  *  Are all sublayers of the BandDrawView.
  */
@@ -27,7 +37,5 @@
 @property (nonatomic, assign) NSInteger stackNumber;
 @property (nonatomic, assign) NSInteger bandNumber;
 
-
-- (void)drawEventsForPanel:(NSInteger)panel fromArray:(NSArray *)eventArray inContext:(CGContextRef)context;
 
 @end

@@ -65,7 +65,17 @@ enum QUERY_TIMESCALE
  *
  *	NOTE: The lowest level of the array (i.e. the array holding the events) is immutable.
  */
-@property (atomic, copy) NSMutableArray *eventArray;   
+@property (atomic, copy) NSMutableArray *eventArray;
+
+///**
+// *	Mutable 5-dimensional array of float representations of Events.
+// *	Formatted in the same way as 'eventArray', however, instead of Events, each object at the
+// *	'Event' level is a 2-tuple of:
+// *		- float at index 0 specifying the un-zoomed location on the Band
+// *		- An enum specifying whether or not the float specifies an Events START or END location
+// *	These can be used to create overlays drawn in colors related to the number of Events overlapping.
+// */
+//@property (atomic, copy) NSMutableArray *floatArray;
 
 /**
  *	Smallest unit of time in the current query, determines scale of timelines.

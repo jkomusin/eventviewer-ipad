@@ -23,5 +23,6 @@
 @property (nonatomic, assign) float magnitude;
 
 - (id)initWithStartTime:(NSDate *)start endTime:(NSDate *)end;
+- (float)endX;
 
 @end

@@ -576,6 +576,12 @@
 		editButton.width = 75.0f;
 		[_barButtonDictionary setObject:editButton forKey:@"Edit"];
 		
+		// Create and configure Overlay button
+		UIBarButtonItem *eventButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Event", nil) 
+																		  style:UIBarButtonItemStyleBordered target:(PrimaryViewController *)[_viewControllers objectAtIndex:1]  action:@selector(eventButtonPressed)];
+		eventButton.width = 75.0f;
+		[_barButtonDictionary setObject:eventButton forKey:@"Event"];
+		
 		
 		// Inform delegate of this state of affairs.
 		if (_delegate && [_delegate respondsToSelector:@selector(splitViewController:willHideViewController:withBarButtonItems:forPopoverController:)]) {

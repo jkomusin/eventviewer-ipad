@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		031571ED15410A6E00FF302A /* EventPriorityQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 031571EC15410A6E00FF302A /* EventPriorityQueue.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		0331700914BCC64700C9B287 /* DraggableLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0331700814BCC64700C9B287 /* DraggableLabel.m */; };
 		0344847B14B1139100537F77 /* Constraint.m in Sources */ = {isa = PBXBuildFile; fileRef = 0344847A14B1139100537F77 /* Constraint.m */; };
 		0357156215165CEA000109D0 /* QueryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0357156115165CEA000109D0 /* QueryTableView.m */; };
@@ -44,6 +45,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		031571EB15410A6D00FF302A /* EventPriorityQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EventPriorityQueue.h; path = Model/EventPriorityQueue.h; sourceTree = "<group>"; };
+		031571EC15410A6E00FF302A /* EventPriorityQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EventPriorityQueue.m; path = Model/EventPriorityQueue.m; sourceTree = "<group>"; };
 		0331700714BCC64700C9B287 /* DraggableLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = DraggableLabel.h; path = "UI Subclasses/DraggableLabel.h"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		0331700814BCC64700C9B287 /* DraggableLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = DraggableLabel.m; path = "UI Subclasses/DraggableLabel.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		0344847914B1139100537F77 /* Constraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = Constraint.h; path = Model/Constraint.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -290,6 +293,8 @@
 				84E626641451FC58007DDF98 /* Query.m */,
 				84A7E5CF1466FF6B006A6022 /* Event.h */,
 				84A7E5D01466FF6B006A6022 /* Event.m */,
+				031571EB15410A6D00FF302A /* EventPriorityQueue.h */,
+				031571EC15410A6E00FF302A /* EventPriorityQueue.m */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -401,6 +406,7 @@
 				03A252B414D4A25700C3BAB7 /* DatabaseConnection.m in Sources */,
 				0357156215165CEA000109D0 /* QueryTableView.m in Sources */,
 				03B7375D152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.m in Sources */,
+				031571ED15410A6E00FF302A /* EventPriorityQueue.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
