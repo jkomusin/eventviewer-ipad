@@ -151,8 +151,10 @@
     // Move current recognizer to this new cell, and add a new one to the old cell
     [draggingCell addGestureRecognizer:recognizer];
     [cell removeGestureRecognizer:recognizer];
-	// Store reference to the old cell in the recognizer
-	recognizer.storage = (id)cell;
+	// Store reference to the old cell and Constraint in the recognizer
+	UITableView *table = (UITableView *)[cell superview];
+	NSArray *arr = [NSArray arrayWithObjects:cell, [_queryTree getConstraintAtIndex:[table indexPathForCell:cell].row], nil];
+	recognizer.storage = arr;
 	
     UILongPressBackpackGestureRecognizer* dragGesture = [[UILongPressBackpackGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
     [dragGesture setNumberOfTouchesRequired:1];
@@ -181,12 +183,14 @@
  */
 - (void)stopDragging:(UILongPressBackpackGestureRecognizer *)gestureRecognizer
 {
-    Constraint *c = [_queryTree getConstraintAtIndex:gestureRecognizer.view.tag];
+//    Constraint *c = [_queryTree getConstraintAtIndex:gestureRecognizer.view.tag];
+	NSArray *arr = gestureRecognizer.storage;
+	Constraint *c = (Constraint *)[arr objectAtIndex:1];
     
     if ([_detailViewController droppedViewWithGestureRecognizer:gestureRecognizer forConstraint:c])
 	{
 		// Remove constraint from tree
-		UITableViewCell *cell = (UITableViewCell *)gestureRecognizer.storage;
+		UITableViewCell *cell = (UITableViewCell *)[arr objectAtIndex:0];
 		UITableViewController *table = (UITableViewController *)self.topViewController;
 		NSIndexPath *path = [table.tableView indexPathForCell:cell];
 		[_queryTree removeContraintAtIndex:path.row];

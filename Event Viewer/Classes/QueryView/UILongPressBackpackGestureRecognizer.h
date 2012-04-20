@@ -19,7 +19,7 @@
 {
 }
 
-@property (nonatomic, assign) id storage;	// Pointer to any object to be used as storage backpacking
+@property (nonatomic, strong) NSArray *storage;	// Array to be used as storage backpacking
 											//	on top of the recognizer
 
 @end

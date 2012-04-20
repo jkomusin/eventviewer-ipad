@@ -55,18 +55,4 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 	return self;
 }
 
-//- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-//{
-//	for (UITouch *touch in touches)
-//	{
-//		if ([_tableView pointInside:[touch locationInView:_tableView] withEvent:event])
-//		{
-//			[_tableView touchesBegan:touches withEvent:event];
-//			return;
-//		}
-//	}
-//	
-//	[super touchesBegan:touches withEvent:event];
-//}
-
 @end
