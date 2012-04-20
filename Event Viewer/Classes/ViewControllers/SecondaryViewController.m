@@ -2,6 +2,7 @@
 #import "SecondaryViewController.h"
 #import "MGSplitViewController.h"
 #import "PrimaryViewController.h"
+#import "UILongPressBackpackGestureRecognizer.h"
 #import "QueryBuilderView.h"
 #import "QueryTree.h"
 #import "Query.h"
@@ -64,6 +65,13 @@
     self.contentSizeForViewInPopover = CGSizeMake(MG_DEFAULT_SPLIT_POSITION, 600.0f);
 }
 
+//- (void)viewDidAppear:(BOOL)animated
+//{
+//	[super viewDidAppear:animated];
+//	UITableViewController *table = (UITableViewController *)self.topViewController;
+//	[table.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+//}
+
 
 - (void)initQueryTreeWithHandler:(DatabaseHandler *)dbHandler
 {
@@ -84,7 +92,7 @@
  *
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+- (void)handleDragging:(UILongPressBackpackGestureRecognizer *)gestureRecognizer
 {
     switch ([gestureRecognizer state]) 
     {
@@ -109,7 +117,7 @@
  *
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)startDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+- (void)startDragging:(UILongPressBackpackGestureRecognizer *)gestureRecognizer
 {    
     UITableViewCell* cell = (UITableViewCell *)gestureRecognizer.view;
     cell.highlighted = NO;
@@ -125,7 +133,7 @@
  *  cell is the table cell in the table view that has begun to be dragged.
  *  origin is the point representing the absolute origin of the point in the MGUISplitViewController.
  */
-- (void)makeDraggingCellWithCell:(UITableViewCell*)cell atOrigin:(CGPoint)origin withRecognizer:(UILongPressGestureRecognizer *)recognizer
+- (void)makeDraggingCellWithCell:(UITableViewCell*)cell atOrigin:(CGPoint)origin withRecognizer:(UILongPressBackpackGestureRecognizer *)recognizer
 {    
     static NSString *cellIdentifier = @"Constraint";    
     
@@ -143,9 +151,12 @@
     // Move current recognizer to this new cell, and add a new one to the old cell
     [draggingCell addGestureRecognizer:recognizer];
     [cell removeGestureRecognizer:recognizer];
-    UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
+	// Store reference to the old cell in the recognizer
+	recognizer.storage = (id)cell;
+	
+    UILongPressBackpackGestureRecognizer* dragGesture = [[UILongPressBackpackGestureRecognizer alloc] initWithTarget:self action:@selector(handleDragging:)];
     [dragGesture setNumberOfTouchesRequired:1];
-    [dragGesture setMinimumPressDuration:0.5f];
+    [dragGesture setMinimumPressDuration:0.1f];
     [cell addGestureRecognizer:dragGesture];
     
     [_detailViewController.view addSubview:draggingCell];
@@ -156,7 +167,7 @@
  *
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)doDrag:(UILongPressGestureRecognizer *)gestureRecognizer
+- (void)doDrag:(UILongPressBackpackGestureRecognizer *)gestureRecognizer
 {
     UITableViewCell *draggingCell = (UITableViewCell *)gestureRecognizer.view;
 
@@ -168,11 +179,21 @@
  *
  *  gestureRecognizer is the UILongPressGestureRecognizer responsible for drag-and-drop functionality.
  */
-- (void)stopDragging:(UILongPressGestureRecognizer *)gestureRecognizer
+- (void)stopDragging:(UILongPressBackpackGestureRecognizer *)gestureRecognizer
 {
     Constraint *c = [_queryTree getConstraintAtIndex:gestureRecognizer.view.tag];
     
-    [_detailViewController droppedViewWithGestureRecognizer:gestureRecognizer forConstraint:c];
+    if ([_detailViewController droppedViewWithGestureRecognizer:gestureRecognizer forConstraint:c])
+	{
+		// Remove constraint from tree
+		UITableViewCell *cell = (UITableViewCell *)gestureRecognizer.storage;
+		UITableViewController *table = (UITableViewController *)self.topViewController;
+		NSIndexPath *path = [table.tableView indexPathForCell:cell];
+		[_queryTree removeContraintAtIndex:path.row];
+		NSArray *array = [NSArray arrayWithObject:path];
+		[table.tableView deleteRowsAtIndexPaths:array withRowAnimation:UITableViewRowAnimationAutomatic];
+		[table.tableView performSelectorOnMainThread:@selector(reloadData) withObject:nil waitUntilDone:NO];
+	}
 
     [(UITableViewCell *)gestureRecognizer.view removeFromSuperview];
 }
@@ -272,6 +293,11 @@
     }
     
     [tableView reloadData];
+}
+
+- (NSDictionary *)getSelectedMetas
+{
+	return _detailViewController.queryData.selectedMetas;
 }
 
 

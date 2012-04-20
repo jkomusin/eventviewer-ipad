@@ -21,7 +21,6 @@
 @implementation PanelDrawView
 {
     id<DataDelegate> dataDelegate;
-    NSArray *_colorArray;
 	
 	float _zoomScale;           // Current scale of the events and bands specified by the BandZoomView, for use in re-drawing at appropriate sizes
     float _newZoomScale;        // Zoom scale to be used during band zooming, due to the manual management of transforms
@@ -61,9 +60,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
     {
         self.backgroundColor = [UIColor blackColor];
         self.opaque = YES;
-        
-        NSArray *newColors = [[NSArray alloc] init];
-        _colorArray = newColors;
 		
 		_zoomScale = 1.0f;
         _newZoomScale = 1.0f;
@@ -197,7 +193,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (BandLayer *)getBandLayerForStack:(NSInteger)stackNum band:(NSInteger)bandNum
 {
-    NSLog(@"Finding band layer");
     BandLayer *result = [[_bandLayerArray objectAtIndex:stackNum] objectAtIndex:bandNum];
     return result;
 }
@@ -209,7 +204,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
  */
 - (CALayer *)getStackLayerForStack:(NSInteger)stackNum
 {
-    NSLog(@"Finding stack layer");
     CALayer *result = [_stackLayerArray objectAtIndex:stackNum];
     return result;
 }
@@ -561,9 +555,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 	float stackHeight = (data.bandNum-1.0f) * (temp_BAND_HEIGHT + temp_BAND_SPACING) + temp_BAND_HEIGHT + temp_TIMELINE_HEIGHT;
 	
 	if (data.timeScale == QueryTimescaleYear)
-	{
-//        NSArray *months = [[NSArray alloc] initWithObjects:@"Jan", @"Feb", @"Mar", @"Apr", @"May", @"Jun", @"Jul", @"Aug", @"Sep", @"Oct", @"Nov", @"Dec", nil];
-        
+	{        
 		for (int m = 0; m < 12; m++)
 		{
 			int xInt = m * (int)width;
@@ -572,7 +564,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;            //
 			monthF = CGRectInset(monthF, -0.5f, 0.5f);
 			CGContextStrokeRect(context, monthF);
 			NSString *month = [[PanelDrawView monthArray] objectAtIndex:m];
-			NSLog(@"M: %d, Month: %@", m, month);
 			
 			// Labels
 			for (int i = 0; i <= [_stackLayerArray count]; i++)

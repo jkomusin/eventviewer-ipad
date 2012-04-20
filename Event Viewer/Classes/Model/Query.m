@@ -24,6 +24,9 @@
 @synthesize eventArray = _eventArray;
 @synthesize timeScale = _timeScale;
 @synthesize isQuerying = _isQuerying;
+@synthesize hidingSelectedBands = _hidingSelectedBands;
+@synthesize hidingSelectedStacks = _hidingSelectedStacks;
+@synthesize hidingSelectedPanels = _hidingSelectedPanels;
 
 OBJC_EXPORT float BAND_HEIGHT;              //
 OBJC_EXPORT float BAND_WIDTH;               //  Globals set in ContentViewControlled specifying UI layout parameters
@@ -46,6 +49,10 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
         NSMutableArray *bandArray = [NSMutableArray arrayWithObjects:nil];
         [mutableMetas setObject:bandArray forKey:@"Bands"];
         _selectedMetas = mutableMetas;
+		
+		_hidingSelectedBands = NO;
+		_hidingSelectedStacks = NO;
+		_hidingSelectedPanels = NO;
         
         // Initialize _eventArray with empty arrays
         NSMutableArray *emptyEvents = [[NSMutableArray alloc] init];
@@ -186,15 +193,52 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
  */
 - (NSInteger)panelNum
 {
-    return [(NSArray *)[_selectedMetas objectForKey:@"Panels"] count];
+    return [(NSArray *)[self.selectedMetas objectForKey:@"Panels"] count];
 }
 - (NSInteger)stackNum
 {
-    return [(NSArray *)[_selectedMetas objectForKey:@"Stacks"] count];
+    return [(NSArray *)[self.selectedMetas objectForKey:@"Stacks"] count];
 }
 - (NSInteger)bandNum
 {
-    return [(NSArray *)[_selectedMetas objectForKey:@"Bands"] count];
+    return [(NSArray *)[self.selectedMetas objectForKey:@"Bands"] count];
+}
+
+/**
+ *	SelectedMeta accessor
+ *	Takes into account whether certain metas should be hidden or not
+ */
+- (NSDictionary *)selectedMetas
+{
+	NSMutableDictionary *dict;
+	@synchronized(self)
+	{	
+		dict = [_selectedMetas mutableCopy];
+		if (_hidingSelectedPanels)
+		{
+			[dict setObject:[NSArray arrayWithObjects:nil] forKey:@"Panels"];
+		}
+		if (_hidingSelectedStacks)
+		{
+			[dict setObject:[NSArray arrayWithObjects:nil] forKey:@"Stacks"];
+		}
+		if (_hidingSelectedBands)
+		{
+			[dict setObject:[NSArray arrayWithObjects:nil] forKey:@"Bands"];
+		}
+	}
+	return (NSDictionary *)dict;
+}
+// Need to implement the atomic setter manually
+- (void)setSelectedMetas:(NSDictionary *)selectedMetas
+{
+	@synchronized(self)
+	{
+		if (_selectedMetas != selectedMetas)
+		{
+			_selectedMetas = selectedMetas;
+		}
+	}
 }
 
 
@@ -296,11 +340,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
         _timeScale = QueryTimescaleMonth;
     if ([constraint.type isEqualToString:@"day"] && _timeScale > QueryTimescaleDay)
         _timeScale = QueryTimescaleDay;
-    
-    NSLog(@"\nNumber of bands: %d \nNumber of stacks: %d \nNumber of panels: %d", 
-          [[[_eventArray objectAtIndex:0] objectAtIndex:0] count],
-          [[_eventArray objectAtIndex:0] count],
-          [_eventArray count]);
 }
 
 
@@ -309,9 +348,11 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
 
 - (void)queryForEventsWithCurrentConstraints
 {
-    NSArray *panelConstraints = [_selectedMetas objectForKey:@"Panels"];
-    NSArray *stackConstraints = [_selectedMetas objectForKey:@"Stacks"];
-    NSArray *bandConstraints = [_selectedMetas objectForKey:@"Bands"];
+	NSDictionary *metas = self.selectedMetas;
+	
+    NSArray *panelConstraints = [metas objectForKey:@"Panels"];
+    NSArray *stackConstraints = [metas objectForKey:@"Stacks"];
+    NSArray *bandConstraints = [metas objectForKey:@"Bands"];
     
     // Initialize the event arrays to the size of the query
     NSMutableArray *newEvents = [[NSMutableArray alloc] init];
@@ -598,13 +639,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
     if (cell == nil) 
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
-		for (UIGestureRecognizer *rec in cell.gestureRecognizers)
-		{
-			if ([rec isKindOfClass:[UILongPressGestureRecognizer class]])
-			{
-				NSLog(@"FOund!");
-			}
-		}
     }
     if (tableView.editing)
 	{
@@ -632,9 +666,7 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
 }
 
 - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{	
-	NSLog(@"Swapping row %d for %d", fromIndexPath.row, toIndexPath.row);
-	
+{		
 	NSMutableArray *consArr;
     if (tableView.tag == UIObjectBand)
     {
@@ -678,33 +710,44 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
 		if (tableView.tag == UIObjectBand)
 		{
 			dataArr = [_selectedMetas objectForKey:@"Bands"];
-			// Remove allocated space for events
-			for (NSMutableArray *panelArr in _eventArray)
+			if ([dataArr count] > 1)
 			{
-				for (NSMutableArray *stackArr in panelArr)
+				// Remove allocated space for events
+				for (NSMutableArray *panelArr in _eventArray)
 				{
-					[stackArr removeObjectAtIndex:indexPath.row];
+					for (NSMutableArray *stackArr in panelArr)
+					{
+						[stackArr removeObjectAtIndex:indexPath.row];
+					}
 				}
 			}
 		}
 		else if (tableView.tag == UIObjectStack)
 		{
 			dataArr = [_selectedMetas objectForKey:@"Stacks"];
-			// Remove allocated space for events
-			for (NSMutableArray *panelArr in _eventArray)
+			if ([dataArr count] > 1)
 			{
-				[panelArr removeObjectAtIndex:indexPath.row];
+				// Remove allocated space for events
+				for (NSMutableArray *panelArr in _eventArray)
+				{
+					[panelArr removeObjectAtIndex:indexPath.row];
+				}
 			}
 		}
 		else if (tableView.tag == UIObjectPanel)
 		{
 			dataArr = [_selectedMetas objectForKey:@"Panels"];
-			// Remove allocated space for events
-			[_eventArray removeObjectAtIndex:indexPath.row];
+			if ([dataArr count] > 1)
+			{
+				// Remove allocated space for events
+				[_eventArray removeObjectAtIndex:indexPath.row];
+			}
 		}
 		
+		Constraint *c = [dataArr objectAtIndex:indexPath.row];
 		[dataArr removeObjectAtIndex:indexPath.row];
-		[tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationTop];
+		[tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+		[_queryDelegate queryDeletedRowWithConstraint:c fromTableWithTag:tableView.tag];
 	}
 	
 	[_queryDelegate queryDidChange];
@@ -750,9 +793,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
 	_isQuerying = NO;
 	
   	NSArray *jsonArr = [_jsonParser objectWithData:_response];
-    
-    NSLog(@"Retrieved JSON array:");
-    NSLog(@"%@", jsonArr);
     
     if (connection.type == DBConnectionTypeEvent)
     {
@@ -811,8 +851,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
 							e.year = [[eventDict objectForKey:@"year"] intValue];
 							e.month = [[eventDict objectForKey:@"month"] intValue];
 							e.day = [[eventDict objectForKey:@"day"] intValue];
-								
-			//	NSLog(@"Event for (p,s,b)=(%d,%d,%d) date: %d - %d - %d", connection.panelIndex, connection.stackIndex, connection.bandIndex, e.day, e.month, e.year);
 							
 							// Determine coordinates based on timescale
 							if (_timeScale == QueryTimescaleYear)
@@ -878,7 +916,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
     
     copy.selectedMetas = newMetas;
     copy.eventArray = newEvents;
-//    copy.eventFloats = _eventFloats;
 	copy.timeScale = _timeScale;
     return copy;
 }

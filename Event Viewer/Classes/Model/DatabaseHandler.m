@@ -69,9 +69,7 @@
  *  connection:didReceiveResponse:, connection:didReceiveData:, connection:didFailWithError: and connectionDidFinishLoading:
  */
 - (DatabaseConnection *) queryWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
-{
-    NSLog(@"Querying with parameters: %@ and type: %d", params, type);
-    
+{    
     NSString *queryURL = [NSString stringWithFormat:@"%@?%@", _servletURL, params];
     NSURLRequest *dbRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:queryURL]
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
@@ -82,8 +80,6 @@
 }
 - (DatabaseConnection *) queryDataWithParameters:(NSString *)params fromDelegate:(id)delegate ofType:(enum ConnectionType)type
 {
-    NSLog(@"Querying with parameters: %@ and type: %d", params, type);
-    
     NSString *queryURL = [NSString stringWithFormat:@"%@?%@", _dataServletURL, params];
     NSURLRequest *dbRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:queryURL]
                                              cachePolicy:NSURLRequestReloadIgnoringLocalCacheData
@@ -114,7 +110,6 @@
  */
 - (void)connection:(DatabaseConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
-    NSLog(@"Type of query: %d", connection.type);
     if (connection.type != DBConnectionTypeLogin)
     {
         NSString *type;

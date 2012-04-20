@@ -28,4 +28,23 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)object
+{
+	if ([object isKindOfClass:[Constraint class]])
+	{
+		Constraint *c = (Constraint *)object;
+		if (self.type != c.type || self.identifier != c.identifier)
+		{
+			return NO;
+		}
+		return YES;
+	}
+	return NO;
+}
+
+- (NSUInteger)hash
+{
+	return [_name hash] ^ [_description hash] ^ _identifier ^ [_type hash];
+}
+
 @end

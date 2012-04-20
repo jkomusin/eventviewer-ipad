@@ -99,7 +99,7 @@ enum UI_OBJECT
 - (void)handleInterfaceRotationForOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (void)configureView;
 
-- (void)droppedViewWithGestureRecognizer:(UIGestureRecognizer *)recognizer forConstraint:(Constraint *)constraint;
+- (BOOL)droppedViewWithGestureRecognizer:(UIGestureRecognizer *)recognizer forConstraint:(Constraint *)constraint;
 
 - (void)showQueryBuilder;
 - (void)hideQueryBuilderAndRemove:(BOOL)remove;

@@ -31,7 +31,7 @@ OBJC_EXPORT float SIDE_LABEL_SPACING;
 
 @implementation QueryBuilderView
 {
-	BOOL _isDragging;	// Is the user currently dragging a bin?
+	BOOL _isDragging;		// Is the user currently dragging a bin?
 	BOOL _isEditing;		// Is the user currently editing bins?
 }
 
@@ -124,6 +124,18 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 	[_panelTable setUserInteractionEnabled:YES];
 	[self addSubview:_panelTable];
 	
+	// Check which tables the user should be able to add to
+	if (source.bandNum == 0)
+	{
+		_stackTable.userInteractionEnabled = NO;
+		_stackTable.alpha = 0.5f;
+	}
+	if (source.stackNum == 0)
+	{
+		_panelTable.userInteractionEnabled = NO;
+		_panelTable.alpha = 0.5f;
+	}
+	
 	source.queryDelegate = self;
 	
 	[self editButtonPressed];
@@ -133,20 +145,43 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 #pragma mark -
 #pragma mark Drop management
 
-- (void)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer
+- (BOOL)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer
 {
 	for (UIView *v in [self subviews])
 	{
-		if ([v isKindOfClass:[QueryTableView class]] && [v pointInside:[recognizer locationInView:v] withEvent:nil])
+		if ([v isKindOfClass:[QueryTableView class]] && v.userInteractionEnabled && [v pointInside:[recognizer locationInView:v] withEvent:nil])
 		{
 			QueryTableView *table = (QueryTableView *)v;
 			Query *currentQuery = (Query *)table.tableView.dataSource;
 			[currentQuery addConstraint:constraint toArray:table.tableView.tag];	// tag indicates type
+
+			// Check if we need to unlock a table
+			if ((table.tableView.tag == UIObjectBand) && (!_stackTable.userInteractionEnabled))
+			{
+				_stackTable.userInteractionEnabled = YES;
+				_stackTable.alpha = 1.0f;
+				currentQuery.hidingSelectedStacks = NO;
+				if (currentQuery.hidingSelectedPanels)
+				{
+					_panelTable.userInteractionEnabled = YES;
+					_panelTable.alpha = 1.0f;
+					currentQuery.hidingSelectedPanels = NO;
+				}
+			}
+			else if ((table.tableView.tag == UIObjectStack) && (!_panelTable.userInteractionEnabled))
+			{
+				_panelTable.userInteractionEnabled = YES;
+				_panelTable.alpha = 1.0f;
+				currentQuery.hidingSelectedPanels = NO;
+			}
 			
 			[table.tableView reloadData];
 			[self queryDidChange];
+			return YES;
 		}
 	}
+	
+	return NO;
 }
 
 - (void)editButtonPressed
@@ -320,6 +355,41 @@ float TABLE_WIDTH = (1024.0f - MG_DEFAULT_SPLIT_POSITION - MG_DEFAULT_SPLIT_WIDT
 - (void)queryDidChange
 {
 	_queryHasChanged = YES;
+}
+
+/**
+ *	Called once a deletion-style edit has been committed to a table with the specified tag.
+ */
+- (void)queryDeletedRowWithConstraint:(Constraint *)c fromTableWithTag:(NSInteger)tag
+{
+	if ((tag == UIObjectStack) && (((Query *)_stackTable.tableView.dataSource).stackNum == 0))
+	{
+		// Check if we need to also clear and lock tables above the stack table
+		if (_panelTable.userInteractionEnabled)
+		{
+			_panelTable.userInteractionEnabled = NO;
+			_panelTable.alpha = 0.5f;
+			Query *currentQuery = (Query *)_panelTable.tableView.dataSource;
+			if (currentQuery.panelNum != 0) currentQuery.hidingSelectedPanels = YES;
+		}
+	}
+	else if ((tag == UIObjectBand) && (((Query *)_bandTable.tableView.dataSource).bandNum == 0))
+	{
+		// Check if we need to clear and lock tables above the band table
+		if (_stackTable.userInteractionEnabled)
+		{
+			_stackTable.userInteractionEnabled = NO;
+			_stackTable.alpha = 0.5f;
+			Query *currentQuery = (Query *)_stackTable.tableView.dataSource;
+			if (currentQuery.stackNum != 0) currentQuery.hidingSelectedStacks = YES;
+			if (_panelTable.userInteractionEnabled)
+			{
+				_panelTable.userInteractionEnabled = NO;
+				_panelTable.alpha = 0.5f;
+				if (currentQuery.panelNum != 0) currentQuery.hidingSelectedPanels = YES;
+			}
+		}
+	}
 }
 
 /**

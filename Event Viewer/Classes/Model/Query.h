@@ -44,7 +44,16 @@ enum QUERY_TIMESCALE
  *  Immutable dictionary with keys: "Bands", "Stacks", "Panels". 
  *  Each key points to a mutable array of all parameters of the current query for the key's category.
  */
-@property (nonatomic, copy) NSDictionary *selectedMetas;
+@property (atomic, copy) NSDictionary *selectedMetas;
+
+/**
+ *	Whether or not the contents of the related selectedMetas should be considered as sctive.
+ *	Ex: If hidingSelectedStacks, there may be metas selected in the "Stacks" key of selectedMetas,
+ *		but they should not be considered active for querying, etc. (therefore, hidden)
+ */
+@property (nonatomic, assign) BOOL hidingSelectedPanels;
+@property (nonatomic, assign) BOOL hidingSelectedStacks;
+@property (nonatomic, assign) BOOL hidingSelectedBands;
 
 /**
  *  Mutable 4-dimensional array of all events resulting from the current query. Atomic to avoid concurrency problems when query results are being simultaneously returned and drawn.

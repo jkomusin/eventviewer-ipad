@@ -18,6 +18,7 @@
 @protocol QueryDelegate
 @required
 - (void)queryDidChange;
+- (void)queryDeletedRowWithConstraint:(Constraint *)c fromTableWithTag:(NSInteger)tag;
 - (void)queryDidSwapLabelsOfUIType:(enum UI_OBJECT)type withIndices:(NSInteger)i and:(NSInteger)j; 
 
 @end
@@ -39,7 +40,7 @@
 
 - (void)initQueryTablesWithDataSource:(id<UITableViewDataSource>)source;
 
-- (void)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer;
+- (BOOL)droppedConstraint:(Constraint *)constraint withGesture:(UIGestureRecognizer *)recognizer;
 
 - (void)editButtonPressed;
 

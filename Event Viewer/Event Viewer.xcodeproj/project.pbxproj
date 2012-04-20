@@ -18,6 +18,7 @@
 		03A2528414D493AE00C3BAB7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 03A2528214D493AE00C3BAB7 /* README.md */; };
 		03A252B414D4A25700C3BAB7 /* DatabaseConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 03A252B314D4A25700C3BAB7 /* DatabaseConnection.m */; };
 		03A78B0614C0951E00DEE1C0 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 03A78B0514C0951E00DEE1C0 /* icon.png */; };
+		03B7375D152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 03B7375C152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.m */; };
 		03D2750814A3E6FA00C91945 /* EventInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 03D2750714A3E6F900C91945 /* EventInfo.m */; };
 		03DE3C7F14CCF6FF0054FB1D /* QueryBuilderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */; };
 		03DE3C8614CCFDCC0054FB1D /* PrimaryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 03DE3C8314CCFDCC0054FB1D /* PrimaryViewController.m */; };
@@ -61,6 +62,8 @@
 		03A252B214D4A25700C3BAB7 /* DatabaseConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = DatabaseConnection.h; path = Model/DatabaseConnection.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		03A252B314D4A25700C3BAB7 /* DatabaseConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = DatabaseConnection.m; path = Model/DatabaseConnection.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		03A78B0514C0951E00DEE1C0 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
+		03B7375B152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UILongPressBackpackGestureRecognizer.h; path = QueryView/UILongPressBackpackGestureRecognizer.h; sourceTree = "<group>"; };
+		03B7375C152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UILongPressBackpackGestureRecognizer.m; path = QueryView/UILongPressBackpackGestureRecognizer.m; sourceTree = "<group>"; };
 		03D2750614A3E6F900C91945 /* EventInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = EventInfo.h; path = ContentView/EventInfo.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		03D2750714A3E6F900C91945 /* EventInfo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; name = EventInfo.m; path = ContentView/EventInfo.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		03DE3C7D14CCF6FF0054FB1D /* QueryBuilderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; name = QueryBuilderView.h; path = QueryView/QueryBuilderView.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -249,6 +252,8 @@
 				03DE3C7E14CCF6FF0054FB1D /* QueryBuilderView.m */,
 				0357156015165CEA000109D0 /* QueryTableView.h */,
 				0357156115165CEA000109D0 /* QueryTableView.m */,
+				03B7375B152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.h */,
+				03B7375C152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.m */,
 			);
 			name = QueryView;
 			sourceTree = "<group>";
@@ -395,6 +400,7 @@
 				03A2528314D493AE00C3BAB7 /* JSONKit.m in Sources */,
 				03A252B414D4A25700C3BAB7 /* DatabaseConnection.m in Sources */,
 				0357156215165CEA000109D0 /* QueryTableView.m in Sources */,
+				03B7375D152B7E3100A9DC69 /* UILongPressBackpackGestureRecognizer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

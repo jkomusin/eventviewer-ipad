@@ -1109,7 +1109,6 @@ float TOP_LABEL_SPACING = 50.0f;
     // If last of the labels being dragged, reset the status to dragging no labels
     if ([_draggingLabels count] == 0)
     {
-        NSLog(@"Resetting dragging type!!!");
         _draggingType = -1;
     }
 }
@@ -1120,7 +1119,6 @@ float TOP_LABEL_SPACING = 50.0f;
         [otherGestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]] &&
         [gestureRecognizer view] == [otherGestureRecognizer view])
     {
-        if (gestureRecognizer == otherGestureRecognizer) NSLog(@"Gesture recognizers are equal");
         return YES;
     }
     else
@@ -1140,7 +1138,6 @@ float TOP_LABEL_SPACING = 50.0f;
  */
 -(void)handleEventPress:(UILongPressGestureRecognizer *)longPressRecognizer 
 {
-	NSLog(@"Handling event press!");
     switch ([longPressRecognizer state]) 
     {
         case UIGestureRecognizerStateBegan:
@@ -1191,6 +1188,10 @@ float TOP_LABEL_SPACING = 50.0f;
 
 - (void)reorderPanel:(int)panelIndex withNewIndex:(int)index
 {    
+	if ([_panelZoomViews count]-1 <= panelIndex || [_panelZoomViews count]-1 <= index)
+	{	// We have to jump out in the event that the panelZoomViews have not been created yet
+		return;
+	}
     PanelZoomView *p1 = [_panelZoomViews objectAtIndex:panelIndex];
     PanelZoomView *p2 = [_panelZoomViews objectAtIndex:index];
     CGRect p1Frame = p1.frame;

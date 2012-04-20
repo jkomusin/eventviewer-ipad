@@ -51,4 +51,7 @@ enum QUERY_TREE_CATEGORY
 - (void)drillUpOne;
 - (void)drillUpToRoot;
 
+- (void)removeContraintAtIndex:(NSInteger)i;
+- (void)addConstraint:(Constraint *)c;
+
 @end

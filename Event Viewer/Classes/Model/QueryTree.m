@@ -8,6 +8,7 @@
 
 #import "QueryTree.h"
 #import "SecondaryViewController.h"
+#import "UILongPressBackpackGestureRecognizer.h"
 #import "DatabaseHandler.h"
 #import "DatabaseConnection.h"
 #import "Constraint.h"
@@ -157,11 +158,6 @@
     if (cell == nil) 
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
-
-        UILongPressGestureRecognizer* dragGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
-        [dragGesture setNumberOfTouchesRequired:1];
-        [dragGesture setMinimumPressDuration:0.1f];
-        [cell addGestureRecognizer:dragGesture];
     }
     
     Constraint *con = [[_constraintArray objectAtIndex:_currentDepth] objectAtIndex:indexPath.row];
@@ -177,9 +173,48 @@
     if (!con.leaf)
     {
         [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+		// Remove dragging gesture
+		for (UIGestureRecognizer *rec in cell.gestureRecognizers)
+		{
+			if ([rec isKindOfClass:[UILongPressBackpackGestureRecognizer class]])
+			{
+				[cell removeGestureRecognizer:rec];
+			}
+		}
     }
+	else
+	{
+		BOOL foundRec = NO;
+		// Make sure gesture rec is available
+		for (UIGestureRecognizer *rec in cell.gestureRecognizers)
+		{
+			if ([rec isKindOfClass:[UILongPressBackpackGestureRecognizer class]])
+			{
+				foundRec = YES;
+			}
+		}
+		if (!foundRec)
+		{
+			UILongPressBackpackGestureRecognizer* dragGesture = [[UILongPressBackpackGestureRecognizer alloc] initWithTarget:_treeDelegate action:@selector(handleDragging:)];
+			[dragGesture setNumberOfTouchesRequired:1];
+			[dragGesture setMinimumPressDuration:0.1f];
+			[cell addGestureRecognizer:dragGesture];
+		}
+	}
     
     return cell;
+}
+
+- (void)removeContraintAtIndex:(NSInteger)i
+{
+	NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
+	[currentConstraints removeObjectAtIndex:i];
+}
+
+- (void)addConstraint:(Constraint *)c
+{
+	NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
+	[currentConstraints insertObject:c atIndex:0];
 }
 
 
@@ -410,9 +445,6 @@
 {
   	NSArray *jsonArr = [_jsonParser objectWithData:_response];
     
-    NSLog(@"Retrieved JSON array:");
-    NSLog(@"%@", jsonArr);
-    
     NSMutableArray *currentConstraints = [_constraintArray objectAtIndex:_currentDepth];
     
     if (connection.type == DBConnectionTypeRelation)
@@ -477,7 +509,6 @@
                 {
                     c.identifier = [(NSString *)[dict objectForKey:@"child_id"] intValue];
                 }
-                NSLog(@"Constraint with id: %d", c.identifier);
                 c.leaf = NO;
             }
             else // 'Leaf' location (no subcategories)
@@ -504,9 +535,24 @@
             c.leaf = YES;
             c.type = @"year";
             c.identifier = i;
+			
             [currentConstraints addObject:c];
         }
     }
+	
+	// Check against selected constraints for duplicates
+	NSDictionary *selected = [_treeDelegate getSelectedMetas];
+	for (NSArray *arr in [selected allValues])
+	{
+		for (Constraint *c in arr)
+		{
+			int i = [currentConstraints indexOfObject:c];
+			if (i != NSNotFound)
+			{
+				[currentConstraints removeObjectAtIndex:i];
+			}
+		}
+	}
     
     [_treeDelegate treeDidUpdateData];
 }

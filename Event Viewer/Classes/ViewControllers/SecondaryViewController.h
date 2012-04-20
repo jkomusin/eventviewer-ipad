@@ -12,6 +12,7 @@
 @protocol TreeDelegate
 @required
 - (void)treeDidUpdateData;
+- (NSDictionary *)getSelectedMetas;
 - (void)handleDragging:(UILongPressGestureRecognizer *)gestureRecognizer;
 
 @end
