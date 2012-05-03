@@ -16,8 +16,6 @@
     JSONDecoder *_jsonParser;           // Decoder of returned JSON packets
     NSMutableData *_response;			// Response for current query
 	DatabaseConnection *_queryConnect;	// Connection to current query
-	
-	CFTimeInterval timer;	// Used for timing queries
 }
 
 @synthesize contentDelegate = _contentDelegate;
@@ -413,10 +411,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
     }
 	
 	_isQuerying = YES;
-	
-	// Begin timer
-	timer = CFAbsoluteTimeGetCurrent();
-	
 	[_dbHandler queryDataWithParameters:parameters fromDelegate:self ofType:DBConnectionTypeEvent];
 }
 
@@ -797,10 +791,6 @@ OBJC_EXPORT float TIMELINE_HEIGHT;          //
 - (void)connectionDidFinishLoading:(DatabaseConnection *)connection
 {
 	_isQuerying = NO;
-	
-	// End timer
-	CFTimeInterval elapsed = CFAbsoluteTimeGetCurrent() - timer;
-	NSLog(@"Time elapsed in query: %f", elapsed);
 	
   	NSArray *jsonArr = [_jsonParser objectWithData:_response];
     
