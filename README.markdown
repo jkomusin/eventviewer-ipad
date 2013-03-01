@@ -1,4 +1,4 @@
-# Original [Event Viewer](http://ivi.sagepub.com/content/7/2/133)
+## Original [Event Viewer](http://ivi.sagepub.com/content/7/2/133)
 by Kate Beard, et. al.
 
 ## iPad Implementation
