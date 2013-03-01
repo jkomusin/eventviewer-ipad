@@ -1,4 +1,4 @@
-# Event Viewer
+# Original [Event Viewer](http://ivi.sagepub.com/content/7/2/133)
 by Kate Beard, et. al.
 
 ## iPad Implementation
@@ -9,7 +9,7 @@ jkomusin@gmail.com
 ### Requirements:
 * Mac OSX (tested on version 10.7.3)
 * XCode (tested on version 4.3.2)
-* iOS Development libraries for iOS (tested on version 5.1)  
+* iOS Development libraries for iOS (tested on version 5.1)
 
 ***
 ### To Use:
