@@ -1,10 +1,3 @@
-//
-//  QueryTableView.m
-//  Event Viewer
-//
-//  Created by Home on 3/18/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
-//
 
 #import "QueryTableView.h"
 

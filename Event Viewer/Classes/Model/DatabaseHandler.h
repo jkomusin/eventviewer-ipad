@@ -1,10 +1,3 @@
-//
-//  DatabaseHandler.h
-//  Event Viewer
-//
-//  Created by Home on 1/28/12.
-//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
-//
 
 #import <Foundation/Foundation.h>
 #import "DatabaseConnection.h"
@@ -16,7 +9,7 @@
 
 /**
  *  Object that handles all interfacing with the get.php script and parsing of the results.
- *  Must be instantiated with a script URL and a unsername/password.
+ *  Must be instantiated with a script URL and a username/password.
  *
  *  The key to submitting recieving requests asynchronously is the assignment of the correct delegate:
  *      - The DatabaseHandler should be the delegate only for the return of login requests
