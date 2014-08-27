@@ -27,7 +27,7 @@ and modify any database connections to use the application.
 
 ***
 ### Details:
-A demonstration video can be found [here](https://www.youtube.com/watch?v=o3lsqyPI1Rs).
+**A demonstrational video can be found [here](https://www.youtube.com/watch?v=o3lsqyPI1Rs).**
 
 The Event Viewer framework was originally implemented on a web-based interface.
 This application is an exploration of porting desktop-oriented applications to
@@ -54,8 +54,8 @@ constraint of the panel it is grouped into.
 
 By arranging bands into stacks and panels, transitioning from one band to another
 in the same stack, the matching band in another stack, or the matching band in the
-matching stack in another panel allows comparison between timelines by a single
-variable.
+matching stack in another panel allows comparison between timelines differing by 
+a single variable.
 
 This grouping allows for a large array of timelines to be assembled and compared
 a la [Tufte's small multiples](http://en.wikipedia.org/wiki/Small_multiple).
